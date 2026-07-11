@@ -47,7 +47,7 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
 
 ## Status
 
-- [ ] Milestone 1: Minimal board bring-up
+- [x] Milestone 1: Minimal board bring-up
   - [x] Heartbeat RTL and reset behavior
   - [x] Reset synchronizer
   - [x] Input synchronizing/debouncing
@@ -56,11 +56,13 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [x] Self-checking UART and top-level smoke testbenches pass in Vivado 2026.1 XSim
   - [x] Python serial monitor written and syntax-checked
   - [ ] Timing and utilization reports captured for this revision
-  - [ ] Bitstream programmed and LED/reset behavior observed on hardware
-  - [ ] Laptop-side UART text captured and confirmed readable at 115200 8N1
+  - [x] Bitstream programmed and LED/reset behavior observed on hardware
+  - [x] Laptop-side UART text confirmed readable on COM4 at 115200 8N1
 - [ ] Milestone 2: Core convolution datapath
 - [ ] Milestone 3: Camera bring-up
 - [ ] Milestone 4: Ethernet bring-up
 - [ ] Milestone 5: Full integration
 
-Milestone 1 deliberately remains unchecked until the bitstream, timing, and physical-board pass criteria are evidenced. See `docs/milestone1_logic_walkthrough.md` for a detailed implementation explanation and `docs/milestone1_hardware_validation.md` for the exact hardware checklist.
+Milestone 1 physical behavior has been validated. The final timing/utilization reports should still be regenerated after the corrected UART XDC mapping so the archived implementation artifacts match the validated source. See `docs/milestone1_logic_walkthrough.md` for a detailed implementation explanation and `docs/milestone1_hardware_validation.md` for the validation record.
+
+The completed-work handoff and detailed plan for a substantial streaming-convolution Milestone 2 are in `docs/milestone1_handoff_and_milestone2_plan.md`.
