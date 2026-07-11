@@ -1,0 +1,20 @@
+Milestone 1 behavioral simulation evidence
+Date: 2026-07-11
+Simulator: Vivado 2026.1 XSim (SW Build 6511674)
+
+Testbench: tb_uart_tx
+Result: PASS
+Console: PASS: UART idle, start, 8 data bits, stop, busy, and completion verified.
+Simulation finish time: 1266 ns
+
+Testbench: tb_arty_m1_bringup_top
+Result: PASS
+Console: PASS: top-level reset release, LED behavior, switch display, and UART activity verified.
+Simulation finish time: 1166 ns
+
+Invocation from scripts/:
+  $env:XILINX_LOCAL_USER_DATA = "NO"
+  C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat -mode batch -source run_simulations.tcl
+
+Scope note:
+These are behavioral simulation results. They do not prove timing closure, pin-level hardware operation, board programming, or laptop-side serial readability.

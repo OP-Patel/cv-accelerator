@@ -13,12 +13,14 @@ set_property board_part $board_part [current_project]
 # --- Milestone 1 sources ---
 add_files -norecurse {
     ../rtl/top/arty_bringup_top.sv
+    ../rtl/debug/reset_sync.sv
     ../rtl/debug/uart_tx.sv
     ../rtl/debug/debounce.sv
 }
 
 add_files -fileset sim_1 -norecurse {
     ../sim/tb/tb_uart_tx.sv
+    ../sim/tb/tb_arty_m1_bringup_top.sv
 }
 
 add_files -fileset constrs_1 -norecurse {

@@ -16,3 +16,12 @@ usage_statistics_webtalk.html
 
 # OS junk
 .DS_Store
+
+# Markdown files
+*.md
+!README.md
+!docs/**/*.md
+
+# Python bytecode
+__pycache__/
+*.pyc
