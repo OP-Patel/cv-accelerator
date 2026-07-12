@@ -24,5 +24,5 @@ if {[get_property STATUS [get_runs impl_1]] != "write_bitstream Complete!"} {
 puts "Bitstream generated: [glob ../vivado_project/arty_conv.runs/impl_1/*.bit]"
 
 open_run impl_1
-report_timing_summary -file ../docs/timing_summary_milestone1.rpt
-report_utilization -file ../docs/utilization_milestone1.rpt
+report_timing_summary -file ../docs/timing_summary_milestone2.rpt
+report_utilization -file ../docs/utilization_milestone2.rpt

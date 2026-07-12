@@ -1,6 +1,6 @@
 # Arty A7-100T Real-Time Streaming Convolution Accelerator
 
-This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 establishes a trustworthy board-debug foundation before camera, convolution, and Ethernet work begins.
+This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 adds a one-pixel-per-clock grayscale Sobel pipeline and a deterministic FPGA checksum demo.
 
 ## Milestone 1 interface
 
@@ -11,6 +11,17 @@ This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Mileston
 - Pressing any of `BTN1` through `BTN3` requests an immediate status line.
 - The USB-UART transmitter emits `M1 OK SW=0xN` after reset and every five seconds at 115200 baud, 8 data bits, no parity, and 1 stop bit.
 - The USB-UART receive pin is exposed and synchronized, but receive functionality is reserved for a later milestone.
+
+## Milestone 2 interface
+
+- The reusable core accepts raster-ordered `in_valid`, `in_x`, `in_y`, and 8-bit grayscale pixels.
+- Valid gaps are legal and pause all image state.
+- A 320x240 input produces 318x238 cropped Sobel output pixels.
+- Two even/odd line banks infer as `RAMB18E1` block RAMs.
+- `BTN1` starts the synthetic pattern selected by `SW2:SW0`.
+- `LD5` indicates running, `LD6` is sticky pass, and `LD7` is sticky error.
+- UART reports hexadecimal input/output counts, CRC-32, and PASS/FAIL at 115200 8N1.
+- UART baud is parameterized independently from the full-speed image pipeline for a later faster host link.
 
 ## Build and simulation
 
@@ -31,8 +42,15 @@ $env:XILINX_LOCAL_USER_DATA = "NO"
 The build script writes:
 
 ```text
-docs/timing_summary_milestone1.rpt
-docs/utilization_milestone1.rpt
+docs/timing_summary_milestone2.rpt
+docs/utilization_milestone2.rpt
+```
+
+Generate or inspect the bit-exact software reference data with:
+
+```text
+python scripts/python/golden_sobel.py --width 320 --height 240
+python scripts/python/generate_m2_vectors.py
 ```
 
 Monitor the board's serial output with:
@@ -59,6 +77,15 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [x] Bitstream programmed and LED/reset behavior observed on hardware
   - [x] Laptop-side UART text confirmed readable on COM4 at 115200 8N1
 - [ ] Milestone 2: Core convolution datapath
+  - [x] Stream, coordinate, valid-gap, reset, and cropped-border contract
+  - [x] RGB565 grayscale conversion and exhaustive 8-bit saturation tests
+  - [x] BRAM-backed line banks and proven 3x3 window alignment
+  - [x] Four-stage signed Sobel pipeline at one accepted pixel per clock
+  - [x] Bit-exact Python model, generated vectors, directed/random-style regressions
+  - [x] Reset, valid-gap, consecutive-frame, and complete 320x240 regressions
+  - [x] Synthetic FPGA source, CRC-32 checker, LEDs, and UART PASS reporter
+  - [x] 100 MHz implementation and bitstream: WNS 2.284 ns, WHS 0.093 ns
+  - [ ] Program the generated bitstream and capture PASS lines on the physical board
 - [ ] Milestone 3: Camera bring-up
 - [ ] Milestone 4: Ethernet bring-up
 - [ ] Milestone 5: Full integration
@@ -66,3 +93,5 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
 Milestone 1 physical behavior has been validated. The final timing/utilization reports should still be regenerated after the corrected UART XDC mapping so the archived implementation artifacts match the validated source. See `docs/milestone1_logic_walkthrough.md` for a detailed implementation explanation and `docs/milestone1_hardware_validation.md` for the validation record.
 
 The completed-work handoff and detailed plan for a substantial streaming-convolution Milestone 2 are in `docs/milestone1_handoff_and_milestone2_plan.md`.
+
+See `docs/milestone2_logic_walkthrough.md` for the implementation, `docs/milestone2_simulation_results.txt` for automated evidence, and `docs/milestone2_hardware_validation.md` for the final board procedure.

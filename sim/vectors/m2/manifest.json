@@ -1,0 +1,69 @@
+{
+  "seed": 20260712,
+  "cases": [
+    {
+      "name": "pattern_0",
+      "width": 16,
+      "height": 16,
+      "input_pixels": 256,
+      "output_pixels": 196,
+      "crc32": "EA76F752"
+    },
+    {
+      "name": "pattern_1",
+      "width": 16,
+      "height": 16,
+      "input_pixels": 256,
+      "output_pixels": 196,
+      "crc32": "EA76F752"
+    },
+    {
+      "name": "pattern_2",
+      "width": 16,
+      "height": 16,
+      "input_pixels": 256,
+      "output_pixels": 196,
+      "crc32": "8A70C5B0"
+    },
+    {
+      "name": "pattern_3",
+      "width": 16,
+      "height": 16,
+      "input_pixels": 256,
+      "output_pixels": 196,
+      "crc32": "CCDF8702"
+    },
+    {
+      "name": "pattern_4",
+      "width": 16,
+      "height": 16,
+      "input_pixels": 256,
+      "output_pixels": 196,
+      "crc32": "D62B38E4"
+    },
+    {
+      "name": "pattern_5",
+      "width": 16,
+      "height": 16,
+      "input_pixels": 256,
+      "output_pixels": 196,
+      "crc32": "6D5361B4"
+    },
+    {
+      "name": "single_bright",
+      "width": 16,
+      "height": 16,
+      "input_pixels": 256,
+      "output_pixels": 196,
+      "crc32": "F02F3BD2"
+    },
+    {
+      "name": "random",
+      "width": 16,
+      "height": 16,
+      "input_pixels": 256,
+      "output_pixels": 196,
+      "crc32": "62FB0276"
+    }
+  ]
+}

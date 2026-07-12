@@ -1,0 +1,44 @@
+Milestone 2 simulation results
+Date: 2026-07-12
+Tool: Vivado 2026.1 XSim
+
+Command (from scripts/):
+  vivado -mode batch -source run_simulations.tcl
+
+PASS tb_uart_tx
+  Existing 8N1 transmitter regression.
+
+PASS tb_arty_m1_bringup_top
+  Existing Milestone 1 board-support regression.
+
+PASS tb_saturate_u8
+  Exhaustively checked all 2,048 possible 11-bit inputs.
+
+PASS tb_grayscale_rgb565
+  Checked black, white, primary colors, a mixed color, valid gaps, and reset.
+
+PASS tb_line_buffer_window
+  Checked all nine 3x3 taps over a coordinate-encoded 6x5 image with valid gaps.
+
+PASS tb_sobel3x3
+  Checked signed gradients, saturation, coordinate delay, and consecutive throughput.
+
+PASS tb_conv_pipeline
+  Checked 8x8 directed patterns, deterministic valid gaps, consecutive frames, and mid-row reset.
+
+PASS tb_conv_pipeline_320
+  Checked a complete 320x240 coordinate-hash input.
+  Expected/actual output count: 75,684 (318x238)
+  Expected/actual CRC-32: E09929FA
+
+PASS tb_arty_m2_sobel_top
+  Checked the complete board-demo path and decoded its UART report.
+  Pattern: 2 (vertical edge)
+  UART fields: IN=00012C00 OUT=000127A4 CRC=18C9D29E PASS
+
+Python checks:
+  python -m py_compile scripts/python/golden_sobel.py scripts/python/generate_m2_vectors.py
+  python scripts/python/golden_sobel.py --width 320 --height 240
+  python scripts/python/generate_m2_vectors.py
+
+All listed checks passed.

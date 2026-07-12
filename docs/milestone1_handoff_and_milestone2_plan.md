@@ -85,7 +85,7 @@ Physical validation was reported successful on 2026-07-11:
 - USB-UART enumeration on COM4 passed;
 - readable 115200 8N1 status text passed.
 
-The remaining archival actions are:
+The archival actions are:
 
 1. Regenerate the on-disk implementation artifacts so `arty_bringup_top_io_placed.rpt` records FPGA RX on A9 and FPGA TX on D10.
 2. Copy fresh timing and utilization reports into `docs/` and record final WNS/WHS and resource counts.
@@ -419,7 +419,7 @@ docs/milestone2_uart_capture.txt
 
 ## 8. Recommended implementation order
 
-### Phase 0: archive Milestone 1
+### Phase 0: archive Milestone 1 (should be completed, but you may verify)
 
 - Regenerate reports so the archived implemented I/O table matches the already validated corrected UART pins.
 - Save a short COM4 transcript if raw terminal evidence is desired.
