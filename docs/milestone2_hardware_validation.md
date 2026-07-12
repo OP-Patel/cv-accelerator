@@ -59,9 +59,9 @@ After these checks pass, add the captured UART lines below and mark physical Mil
 
 ## Physical results
 
-- [ ] Bitstream programmed successfully.
-- [ ] Heartbeat observed.
-- [ ] All six distinct built-in patterns reported the expected count and CRC.
-- [ ] `LD6` pass behavior confirmed.
-- [ ] Reset cleared sticky status.
-- [ ] UART capture saved under `docs/`.
+- [x] Bitstream programmed successfully.
+- [x] Heartbeat observed.
+- [x] All six distinct built-in patterns reported the expected count and CRC.
+- [x] `LD6` pass behavior confirmed.
+- [x] Reset cleared sticky status.
+- [x] UART capture saved under `docs/`.
