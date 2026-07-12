@@ -13,10 +13,10 @@ module arty_bringup_top #(
     output logic uart_tx,
     output logic [3:0] led
 );
-
+    // Dynamically calculate how many binary bits are needed to represent a count
     localparam integer STATUS_COUNTER_WIDTH =
         (STATUS_INTERVAL_CYCLES <= 1) ? 1 : $clog2(STATUS_INTERVAL_CYCLES);
-    localparam integer INPUT_SETTLE_CYCLES = DEBOUNCE_CYCLES + 3;
+    localparam integer INPUT_SETTLE_CYCLES = DEBOUNCE_CYCLES + 3; // +3 for synchronizer propagation delay
     localparam integer INPUT_SETTLE_COUNTER_WIDTH =
         (INPUT_SETTLE_CYCLES <= 1) ? 1 : $clog2(INPUT_SETTLE_CYCLES);
     localparam integer MESSAGE_LENGTH = 14;
@@ -55,7 +55,7 @@ module arty_bringup_top #(
     );
 
     genvar input_index;
-    generate
+    generate // Creates 3 button debounce instances, one for each button, and 4 switch debounce instances, one for each switch.
         for (input_index = 0; input_index < 3; input_index = input_index + 1) begin : g_btn_debounce
             debounce #(
                 .STABLE_CYCLES(DEBOUNCE_CYCLES)
