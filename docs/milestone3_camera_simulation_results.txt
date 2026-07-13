@@ -1,0 +1,83 @@
+Milestone 3 OV7670 simulation and synthesis evidence
+Date: 2026-07-13
+Tool: Vivado 2026.1 XSim / Vivado Synthesis and Implementation
+
+Commands:
+  vivado -mode batch -source create_project.tcl
+  vivado -mode batch -source run_m3_simulations.tcl
+  vivado -mode batch -source check_m3_synthesis.tcl
+  vivado -mode batch -source build_m3_bitstream.tcl
+
+Focused behavioral results:
+  PASS tb_camera_xclk
+    measured XCLK period: 41667 ps (24.000 MHz nominal)
+  PASS tb_sccb_master
+    write, two-phase read, ACK, NACK, stop, and timeout cases
+  PASS tb_camera_register_init
+    reset, 0x7670 identity, 59 configuration entries, restart, mismatch failure
+  PASS tb_dvp_rgb565_capture
+    normal and swapped byte order, exact raster coordinates, odd-byte detection
+  PASS tb_camera_stream_cdc
+    ordered asynchronous transfer plus explicit overflow/drop test
+  PASS tb_camera_pipeline
+    8x8 DVP -> async FIFO -> grayscale -> Sobel
+    input pixels: 64
+    Sobel outputs: 36
+    Sobel CRC-32: 0B70D7FD
+    Python model CRC-32: 0B70D7FD
+  PASS tb_camera_pipeline_320
+    320x240 DVP -> async FIFO -> grayscale -> Sobel
+    input pixels: 76,800
+    Sobel outputs: 75,684
+    Sobel CRC-32: 6C36985F
+    Python model CRC-32: 6C36985F
+  PASS tb_m3_uart_reporter
+    complete 119-byte fixed-width UART status line and CRLF
+
+Synthesis result:
+  arty_m3_camera_top synthesized successfully with:
+    0 errors
+    0 critical warnings
+    2 RAMB18E1 Sobel line buffers
+    1 RAMB36E1 asynchronous camera FIFO
+    1 MMCME2 and 1 ODDR camera clock path
+
+Synthesis warnings reviewed:
+  The synthesis phase reports 43 ordinary warnings and no critical warnings.
+  The full run log repeats 99 warning messages. They are XPM FIFO/memory ports
+  that are intentionally unused, XPM cleanup of unused internal registers, one
+  XPM reset-FSM safe-state advisory, and the existing unused Sobel center pixel.
+  No warning points to Milestone 3 source after the final cleanup pass.
+
+Archived report:
+  docs/utilization_milestone3_synthesis.rpt
+
+Implementation result:
+  arty_m3_camera_top routed and generated a bitstream with:
+    WNS: 1.007 ns
+    TNS: 0.000 ns
+    WHS: 0.097 ns
+    THS: 0.000 ns
+    0 failing setup or hold endpoints
+  The detailed CDC report identifies ten ASYNC_REG synchronizers and one
+  synchronized asynchronous reset. Its two critical entries are intentional
+  asynchronous reset assertions into reset_sync, not pixel or control data.
+  Bitstream SHA-256:
+    9B215E8CC63C33170FDADFD6427889647A0D1001F574C2613F4EEA2DAF315D0A
+
+Archived implementation artifacts:
+  docs/timing_summary_milestone3.rpt
+  docs/utilization_milestone3.rpt
+  docs/cdc_milestone3.rpt
+  vivado_project/arty_conv.runs/impl_1/arty_m3_camera_top.bit
+
+Expected startup-only XPM simulation note:
+  XPM reports an unknown wr_en at the first 7 ns camera-clock edge before the
+  capture block's synchronous reset assignment takes effect. The FIFO remains
+  in reset then; all post-reset transfer, ordering, and overflow checks pass.
+
+Not claimed by this evidence:
+  physical camera electrical safety
+  measured XCLK/PCLK
+  SCCB chip ID from hardware
+  frame timing or image CRC from hardware

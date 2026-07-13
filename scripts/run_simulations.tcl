@@ -13,6 +13,14 @@ foreach testbench {
     tb_conv_pipeline
     tb_conv_pipeline_320
     tb_arty_m2_sobel_top
+    tb_camera_xclk
+    tb_sccb_master
+    tb_camera_register_init
+    tb_dvp_rgb565_capture
+    tb_camera_stream_cdc
+    tb_camera_pipeline
+    tb_camera_pipeline_320
+    tb_m3_uart_reporter
 } {
     set_property top $testbench [get_filesets sim_1]
     update_compile_order -fileset sim_1

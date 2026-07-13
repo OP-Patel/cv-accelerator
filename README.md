@@ -1,6 +1,6 @@
 # Arty A7-100T Real-Time Streaming Convolution Accelerator
 
-This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 adds a one-pixel-per-clock grayscale Sobel pipeline and a deterministic FPGA checksum demo.
+This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 added the one-pixel-per-clock grayscale Sobel pipeline. Milestone 3 now contains a simulated, implemented, and pin-complete OV7670 front end; physical camera validation remains to be performed.
 
 ## Milestone 1 interface
 
@@ -33,6 +33,23 @@ vivado -mode batch -source run_simulations.tcl
 vivado -mode batch -source build_bitstream.tcl
 ```
 
+Run the Milestone 3 regression and synthesis-only check with:
+
+```text
+vivado -mode batch -source run_m3_simulations.tcl
+vivado -mode batch -source check_m3_synthesis.tcl
+```
+
+The photographed camera's reviewed pin assignment is enabled in
+`constraints/arty_a7_camera.xdc`. Build the camera top with:
+
+```text
+vivado -mode batch -source build_m3_bitstream.tcl
+```
+
+The camera build deliberately stops when that pin file is absent or implemented
+setup timing has negative slack.
+
 If Vivado reports a Tcl App Store/user-cache path error on Windows, set this for the current PowerShell before launching it:
 
 ```powershell
@@ -44,6 +61,9 @@ The build script writes:
 ```text
 docs/timing_summary_milestone2.rpt
 docs/utilization_milestone2.rpt
+docs/timing_summary_milestone3.rpt
+docs/utilization_milestone3.rpt
+docs/cdc_milestone3.rpt
 ```
 
 Generate or inspect the bit-exact software reference data with:
@@ -87,6 +107,17 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [x] 100 MHz implementation and bitstream: WNS 2.284 ns, WHS 0.093 ns
   - [x] Program the generated bitstream and capture PASS lines on the physical board
 - [ ] Milestone 3: Camera bring-up
+  - [x] 24 MHz MMCM/ODDR XCLK and startup controls
+  - [x] SCCB register read/write, ACK/NACK, timeout, and `0x7670` identity gate
+  - [x] Documented 320x240 RGB565 initialization table
+  - [x] DVP byte capture, coordinates, malformed-line detection, and byte-swap debug
+  - [x] XPM asynchronous FIFO, overflow reporting, grayscale, and Sobel integration
+  - [x] UART frame status, host validator, DVP model, focused tests, and top synthesis
+  - [x] Verify photographed connector orientation and Digilent package-pin map
+  - [x] Build the pin-complete bitstream; WNS 1.007 ns and WHS 0.097 ns
+  - [ ] Identify the unbranded module's schematic and prove its sensor-side I/O rail
+  - [ ] Program the bitstream and capture ILA/UART evidence
+  - [ ] Complete a sustained physical-camera run
 - [ ] Milestone 4: Ethernet bring-up
 - [ ] Milestone 5: Full integration
 
@@ -96,4 +127,4 @@ The completed-work handoff and detailed plan for a substantial streaming-convolu
 
 See `docs/milestone2_logic_walkthrough.md` for the implementation, `docs/milestone2_simulation_results.txt` for automated evidence, and `docs/milestone2_hardware_validation.md` for the final board procedure.
 
-The implementation and hardware plan for camera bring-up is in `docs/milestone3_camera_bringup_plan.md`.
+The camera implementation is explained in `docs/milestone3_camera_logic_walkthrough.md`. See `docs/milestone3_camera_hardware_contract.md` before wiring the module and `docs/milestone3_camera_hardware_validation.md` for the remaining physical procedure.

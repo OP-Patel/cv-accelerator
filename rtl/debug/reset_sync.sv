@@ -3,7 +3,7 @@ module reset_sync (
     input logic async_reset_in, 
     output logic sync_reset_out
 );
-    logic reset_ff1, reset_ff2;
+    (* ASYNC_REG = "TRUE" *) logic reset_ff1, reset_ff2;
 
     // Double FFs to reduce metastability, giving ff1 one cycle to settle before ff2 samples it
     always_ff @(posedge clk or posedge async_reset_in) begin

@@ -14,10 +14,23 @@ set_property board_part $board_part [current_project]
 add_files -norecurse {
     ../rtl/top/arty_bringup_top.sv
     ../rtl/top/arty_m2_sobel_top.sv
+    ../rtl/top/arty_m3_camera_top.sv
     ../rtl/debug/reset_sync.sv
     ../rtl/debug/uart_tx.sv
     ../rtl/debug/debounce.sv
     ../rtl/debug/m2_uart_reporter.sv
+    ../rtl/debug/m3_uart_reporter.sv
+}
+
+# --- Milestone 3 OV7670 camera front end ---
+add_files -norecurse {
+    ../rtl/camera/camera_xclk.sv
+    ../rtl/camera/sccb_master.sv
+    ../rtl/camera/camera_register_init.sv
+    ../rtl/camera/dvp_rgb565_capture.sv
+    ../rtl/camera/camera_stream_cdc.sv
+    ../rtl/camera/camera_stream_adapter.sv
+    ../rtl/camera/camera_debug_counters.sv
 }
 
 # --- Milestone 2 streaming convolution sources ---
@@ -42,6 +55,14 @@ add_files -fileset sim_1 -norecurse {
     ../sim/tb/tb_conv_pipeline.sv
     ../sim/tb/tb_conv_pipeline_320.sv
     ../sim/tb/tb_arty_m2_sobel_top.sv
+    ../sim/models/dvp_camera_model.sv
+    ../sim/tb/tb_camera_xclk.sv
+    ../sim/tb/tb_sccb_master.sv
+    ../sim/tb/tb_camera_register_init.sv
+    ../sim/tb/tb_dvp_rgb565_capture.sv
+    ../sim/tb/tb_camera_stream_cdc.sv
+    ../sim/tb/tb_camera_pipeline.sv
+    ../sim/tb/tb_m3_uart_reporter.sv
 }
 
 add_files -fileset constrs_1 -norecurse {

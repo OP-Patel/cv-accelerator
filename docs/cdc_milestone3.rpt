@@ -1,0 +1,61 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Mon Jul 13 19:36:51 2026
+| Host         : Om running 64-bit major release  (build 9200)
+| Command      : report_cdc -details -file ../docs/cdc_milestone3.rpt
+| Design       : arty_m3_camera_top
+| Device       : 7a100t-csg324
+| Speed File   : -1  PRODUCTION 1.23 2018-06-13
+| Design State : Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+CDC Report
+
+ID      Severity  Count  Description
+------  --------  -----  -------------------------------------------------------
+CDC-3   Info         10  1-bit synchronized with ASYNC_REG property
+CDC-9   Info          1  Asynchronous reset synchronized with ASYNC_REG property
+CDC-10  Critical      2  Combinational logic detected before a synchronizer
+
+Source Clock: input port clock
+Destination Clock: cam_pclk
+CDC Type: No Common Primary Clock
+
+Row  ID     Severity  Description                                              Depth  Exception   Source (From)  Destination (To)
+---  -----  --------  -------------------------------------------------------  -----  ----------  -------------  --------------------------------
+  1  CDC-9  Info      Asynchronous reset synchronized with ASYNC_REG property      2  False Path  reset_btn      u_camera_reset/reset_ff1_reg/PRE
+
+Source Clock: sys_clk_pin
+Destination Clock: cam_pclk
+CDC Type: No Common Primary Clock
+
+Row  ID      Severity  Description                                         Depth  Exception            Source (From)                                                                                        Destination (To)
+---  ------  --------  --------------------------------------------------  -----  -------------------  ---------------------------------------------------------------------------------------------------  ------------------------------------------------------------------------------------------------------------------
+  1  CDC-3   Info      1-bit synchronized with ASYNC_REG property              2  Asynch Clock Groups  g_switches[2].u_switch_debounce/g_filter.clean_out_reg/C                                             byte_swap_cam_sync_reg[0]/D
+  2  CDC-3   Info      1-bit synchronized with ASYNC_REG property              2  Asynch Clock Groups  u_clear_debounce/g_filter.clean_out_reg/C                                                            clear_cam_sync_reg[0]/D
+  3  CDC-3   Info      1-bit synchronized with ASYNC_REG property              2  Asynch Clock Groups  u_camera_init/init_done_reg/C                                                                        init_done_cam_sync_reg[0]/D
+  4  CDC-10  Critical  Combinational logic detected before a synchronizer      2  Asynch Clock Groups  u_camera_clock/clock_ready_reg/C                                                                     u_camera_reset/reset_ff1_reg/PRE
+  5  CDC-3   Info      1-bit synchronized with ASYNC_REG property              2  Asynch Clock Groups  u_cdc/u_fifo/gnuram_async_fifo.xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.fifo_rd_rst_ic_reg/C  u_cdc/u_fifo/gnuram_async_fifo.xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.rrst_wr_inst/syncstages_ff_reg[0]/D
+
+Source Clock: sys_clk_pin
+Destination Clock: clk_24mhz_mmcm
+CDC Type: User Ignored
+
+Row  ID      Severity  Description                                         Depth  Exception   Source (From)                   Destination (To)
+---  ------  --------  --------------------------------------------------  -----  ----------  ------------------------------  ---------------------------------------------
+  1  CDC-10  Critical  Combinational logic detected before a synchronizer      2  False Path  u_system_reset/reset_ff2_reg/C  u_camera_clock/u_xclk_reset/reset_ff1_reg/PRE
+
+Source Clock: cam_pclk
+Destination Clock: sys_clk_pin
+CDC Type: No Common Primary Clock
+
+Row  ID     Severity  Description                                 Depth  Exception            Source (From)                                                                                        Destination (To)
+---  -----  --------  ------------------------------------------  -----  -------------------  ---------------------------------------------------------------------------------------------------  ------------------------------------------------------------------------------------------------------------------
+  1  CDC-3  Info      1-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_capture/error_flags_reg[0]/C                                                                       g_error_sync[0].capture_flags_sync_reg[0][0]/D
+  2  CDC-3  Info      1-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_capture/error_flags_reg[1]/C                                                                       g_error_sync[1].capture_flags_sync_reg[1][0]/D
+  3  CDC-3  Info      1-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_capture/error_flags_reg[2]/C                                                                       g_error_sync[2].capture_flags_sync_reg[2][0]/D
+  4  CDC-3  Info      1-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_capture/error_flags_reg[3]/C                                                                       g_error_sync[3].capture_flags_sync_reg[3][0]/D
+  5  CDC-3  Info      1-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_cdc/overflow_sticky_reg/C                                                                          overflow_sync_reg[0]/D
+  6  CDC-3  Info      1-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_cdc/u_fifo/gnuram_async_fifo.xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.fifo_wr_rst_ic_reg/C  u_cdc/u_fifo/gnuram_async_fifo.xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.wrst_rd_inst/syncstages_ff_reg[0]/D
+
