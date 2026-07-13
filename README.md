@@ -76,7 +76,7 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [ ] Timing and utilization reports captured for this revision
   - [x] Bitstream programmed and LED/reset behavior observed on hardware
   - [x] Laptop-side UART text confirmed readable on COM4 at 115200 8N1
-- [ ] Milestone 2: Core convolution datapath
+- [x] Milestone 2: Core convolution datapath
   - [x] Stream, coordinate, valid-gap, reset, and cropped-border contract
   - [x] RGB565 grayscale conversion and exhaustive 8-bit saturation tests
   - [x] BRAM-backed line banks and proven 3x3 window alignment
@@ -85,7 +85,7 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [x] Reset, valid-gap, consecutive-frame, and complete 320x240 regressions
   - [x] Synthetic FPGA source, CRC-32 checker, LEDs, and UART PASS reporter
   - [x] 100 MHz implementation and bitstream: WNS 2.284 ns, WHS 0.093 ns
-  - [ ] Program the generated bitstream and capture PASS lines on the physical board
+  - [x] Program the generated bitstream and capture PASS lines on the physical board
 - [ ] Milestone 3: Camera bring-up
 - [ ] Milestone 4: Ethernet bring-up
 - [ ] Milestone 5: Full integration
@@ -95,3 +95,5 @@ Milestone 1 physical behavior has been validated. The final timing/utilization r
 The completed-work handoff and detailed plan for a substantial streaming-convolution Milestone 2 are in `docs/milestone1_handoff_and_milestone2_plan.md`.
 
 See `docs/milestone2_logic_walkthrough.md` for the implementation, `docs/milestone2_simulation_results.txt` for automated evidence, and `docs/milestone2_hardware_validation.md` for the final board procedure.
+
+The implementation and hardware plan for camera bring-up is in `docs/milestone3_camera_bringup_plan.md`.
