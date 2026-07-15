@@ -16,6 +16,7 @@ module tb_dvp_rgb565_capture;
     logic [15:0] pixel_rgb565;
     logic frame_start, frame_end, line_end, byte_seen, capture_error;
     logic [3:0] error_flags;
+    logic [15:0] observed_line_bytes, observed_frame_lines;
     integer received_pixels = 0;
     integer expected_x = 0;
     integer expected_y = 0;
@@ -53,9 +54,18 @@ module tb_dvp_rgb565_capture;
     initial begin
         repeat (4) @(posedge cam_pclk);
         reset = 1'b0;
+        camera.send_partial_line_before_sync(7);
+        if ((received_pixels != 0) || capture_error) begin
+            $fatal(1, "capture did not ignore data before the first VSYNC boundary");
+        end
         camera.send_frame(1'b0);
         if (received_pixels != WIDTH * HEIGHT || capture_error) begin
             $fatal(1, "normal frame failed pixels=%0d errors=%b", received_pixels, error_flags);
+        end
+        if ((observed_line_bytes != WIDTH * 2) ||
+            (observed_frame_lines != HEIGHT)) begin
+            $fatal(1, "raw timing mismatch bytes=%0d lines=%0d",
+                   observed_line_bytes, observed_frame_lines);
         end
 
         received_pixels = 0;

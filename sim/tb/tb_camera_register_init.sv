@@ -16,7 +16,7 @@ module tb_camera_register_init;
     logic init_busy, init_done, init_error;
     logic [15:0] completed_writes, nack_count;
     logic [7:0] product_id, version_id;
-    logic bad_id = 1'b0;
+    logic [7:0] version_response = 8'h70;
     integer command_count = 0;
 
     always #5 clk = ~clk;
@@ -33,7 +33,7 @@ module tb_camera_register_init;
             command_count <= command_count + 1;
             if (!command_write_enable) begin
                 if (command_register == 8'h0a) command_read_data <= 8'h76;
-                if (command_register == 8'h0b) command_read_data <= bad_id ? 8'h73 : 8'h70;
+                if (command_register == 8'h0b) command_read_data <= version_response;
             end
         end else if (command_busy) begin
             command_busy <= 1'b0;
@@ -55,20 +55,32 @@ module tb_camera_register_init;
         repeat (3) @(posedge clk);
         reset = 1'b0;
         request_initialization();
+        wait (init_busy);
         wait (init_done || init_error);
         @(posedge clk);
         if (!init_done || init_error || {product_id, version_id} != 16'h7670) begin
             $fatal(1, "successful initialization did not complete correctly");
         end
-        if (completed_writes != 60 || nack_count != 0) begin
+        if (completed_writes != 66 || nack_count != 0) begin
             $fatal(1, "unexpected write/NACK counts writes=%0d nacks=%0d",
                    completed_writes, nack_count);
         end
 
-        bad_id = 1'b1;
+        // The photographed physical module reports the later 0x7673 identity.
+        version_response = 8'h73;
         request_initialization();
+        wait (init_busy);
+        wait (init_done || init_error);
+        @(posedge clk);
+        if (!init_done || init_error || {product_id, version_id} != 16'h7673) begin
+            $fatal(1, "0x7673 revision was not accepted");
+        end
+
+        version_response = 8'h72;
+        request_initialization();
+        wait (init_busy);
         wait (init_error && !init_busy);
-        if ({product_id, version_id} != 16'h7673 || init_done) begin
+        if ({product_id, version_id} != 16'h7672 || init_done) begin
             $fatal(1, "ID mismatch was not reported correctly");
         end
         $display("PASS: tb_camera_register_init");

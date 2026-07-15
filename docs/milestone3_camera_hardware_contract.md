@@ -6,14 +6,17 @@
 |---|---|
 | Sensor interface | Direct 8-bit DVP; no AL422 FIFO controls |
 | SCCB address | 7-bit `0x21`; wire bytes `0x42` write and `0x43` read |
-| Accepted identity | `PID=0x76`, `VER=0x70` |
+| Accepted identity | `PID=0x76`, `VER=0x70` or `VER=0x73` |
 | Reference clock | 24 MHz from an Artix-7 MMCM and ODDR |
 | SCCB clock | Approximately 100 kHz |
 | Initial image mode | 320x240 RGB565, high byte first |
 | Sync convention | Active-high VSYNC frame blanking and active-high HREF line data |
 | Active data | 640 bytes per line, 320 pixels per line, 240 lines per frame |
 
-The identity value deliberately follows the supplied OV7670 datasheet version 1.01. Some later sensors and the current Linux driver use `0x7673`; that is not silently accepted because it may identify a different revision.
+The original `0x7670` identity follows the supplied OV7670 datasheet version
+1.01. The physical module was then measured over SCCB and repeatedly returned
+`PID=0x76`, `VER=0x73` with zero NACKs. Both observed OV7670 revisions are now
+accepted; other product or version values still stop initialization.
 
 ## Register-table sources
 
@@ -23,6 +26,9 @@ The identity value deliberately follows the supplied OV7670 datasheet version 1.
 - RGB mode and RGB565 selection come from Tables 2-1 and 6-5 of that guide and the version-1.01 sensor datasheet.
 - Gamma, AEC/AGC thresholds, and the RGB565 color matrix follow the Linux `ov7670.c` driver, which labels those groups and attributes its default values to OmniVision.
 - `COM10=0x00` fixes normal HREF/VSYNC polarity instead of hiding polarity inversions in capture RTL.
+- The QVGA window explicitly uses Linux's `hstart=168`, `hstop=24`,
+  `vstart=12`, and `vstop=492` values. Hardware measurement showed that the
+  `0x7673` sensor otherwise produced only 626 active bytes per line.
 - `COM17[3]` is the deterministic sensor color-bar control selected by `SW0` when initialization starts.
 
 Primary implementation references:

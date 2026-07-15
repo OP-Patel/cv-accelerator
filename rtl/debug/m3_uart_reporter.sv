@@ -13,13 +13,15 @@ module m3_uart_reporter (
     input  logic [31:0] gray_crc,
     input  logic [31:0] sobel_count,
     input  logic [31:0] sobel_crc,
+    input  logic [15:0] raw_line_bytes,
+    input  logic [15:0] raw_frame_lines,
     input  logic [15:0] error_flags,
     output logic [7:0]  uart_data,
     output logic        uart_send,
     input  logic        uart_busy,
     output logic        busy
 );
-    localparam integer MESSAGE_LENGTH = 119;
+    localparam integer MESSAGE_LENGTH = 139;
 
     typedef enum logic [1:0] {
         REPORT_IDLE,
@@ -29,8 +31,9 @@ module m3_uart_reporter (
     } report_state_t;
 
     report_state_t state;
-    logic [6:0] character_index;
+    logic [7:0] character_index;
     logic [15:0] saved_chip_id, saved_writes, saved_nacks, saved_lines, saved_errors;
+    logic [15:0] saved_raw_line_bytes, saved_raw_frame_lines;
     logic [31:0] saved_frame, saved_pixels, saved_gray_crc, saved_sobel_count, saved_sobel_crc;
     logic saved_pass;
 
@@ -61,7 +64,7 @@ module m3_uart_reporter (
 
     // Builds the fixed-width status line documented in the Milestone 3 walkthrough.
     function automatic logic [7:0] report_character(
-        input logic [6:0] index,
+        input logic [7:0] index,
         input logic [15:0] id_value,
         input logic pass_value,
         input logic [15:0] writes_value,
@@ -72,7 +75,9 @@ module m3_uart_reporter (
         input logic [31:0] gray_value,
         input logic [31:0] out_value,
         input logic [31:0] sobel_value,
-        input logic [15:0] errors_value
+        input logic [15:0] errors_value,
+        input logic [15:0] raw_bytes_value,
+        input logic [15:0] raw_lines_value
     );
         begin
             if ((index >= 6) && (index <= 9)) begin
@@ -95,6 +100,10 @@ module m3_uart_reporter (
                 report_character = hex32_digit(sobel_value, index - 100);
             end else if ((index >= 113) && (index <= 116)) begin
                 report_character = hex16_digit(errors_value, index - 113);
+            end else if ((index >= 123) && (index <= 126)) begin
+                report_character = hex16_digit(raw_bytes_value, index - 123);
+            end else if ((index >= 133) && (index <= 136)) begin
+                report_character = hex16_digit(raw_lines_value, index - 133);
             end else begin
                 case (index)
                     0: report_character = "M";
@@ -133,8 +142,15 @@ module m3_uart_reporter (
                     98: report_character = "B";
                     109: report_character = "E";
                     110, 111: report_character = "R";
-                    117: report_character = 8'h0d;
-                    118: report_character = 8'h0a;
+                    117, 127: report_character = " ";
+                    118, 128: report_character = "R";
+                    119, 129: report_character = "A";
+                    120, 130: report_character = "W";
+                    121: report_character = "B";
+                    122, 132: report_character = "=";
+                    131: report_character = "L";
+                    137: report_character = 8'h0d;
+                    138: report_character = 8'h0a;
                     default: report_character = " ";
                 endcase
             end
@@ -156,6 +172,8 @@ module m3_uart_reporter (
             saved_sobel_count <= '0;
             saved_sobel_crc   <= '0;
             saved_errors      <= '0;
+            saved_raw_line_bytes <= '0;
+            saved_raw_frame_lines <= '0;
             uart_data         <= '0;
             uart_send         <= 1'b0;
             busy              <= 1'b0;
@@ -176,11 +194,14 @@ module m3_uart_reporter (
                         saved_sobel_count <= sobel_count;
                         saved_sobel_crc   <= sobel_crc;
                         saved_errors      <= error_flags;
+                        saved_raw_line_bytes <= raw_line_bytes;
+                        saved_raw_frame_lines <= raw_frame_lines;
                         character_index   <= '0;
                         uart_data <= report_character(
                             0, chip_id, config_pass, completed_writes, nack_count,
                             frame_number, line_count, pixel_count, gray_crc,
-                            sobel_count, sobel_crc, error_flags
+                            sobel_count, sobel_crc, error_flags,
+                            raw_line_bytes, raw_frame_lines
                         );
                         busy  <= 1'b1;
                         state <= REPORT_SEND;
@@ -206,7 +227,8 @@ module m3_uart_reporter (
                                 character_index + 1'b1,
                                 saved_chip_id, saved_pass, saved_writes, saved_nacks,
                                 saved_frame, saved_lines, saved_pixels, saved_gray_crc,
-                                saved_sobel_count, saved_sobel_crc, saved_errors
+                                saved_sobel_count, saved_sobel_crc, saved_errors,
+                                saved_raw_line_bytes, saved_raw_frame_lines
                             );
                             state <= REPORT_SEND;
                         end

@@ -123,9 +123,18 @@ module camera_register_init #(
                 55: configuration_entry = 16'h4108; // Apply AWB gain.
                 56: configuration_entry = 16'h3dc0; // Gamma and UV saturation.
 
+                // Explicit Linux-driver QVGA window. The photographed 0x7673
+                // sensor otherwise retains a 626-byte-wide reset window.
+                57: configuration_entry = 16'h1715; // HSTART: 168 >> 3.
+                58: configuration_entry = 16'h1803; // HSTOP: 24 >> 3.
+                59: configuration_entry = 16'h3280; // HREF: low start/stop bits.
+                60: configuration_entry = 16'h1903; // VSTART: 12 >> 2.
+                61: configuration_entry = 16'h1a7b; // VSTOP: 492 >> 2.
+                62: configuration_entry = 16'h0300; // VREF: low start/stop bits.
+
                 // COM17 provides the first deterministic hardware test pattern.
-                57: configuration_entry = {8'h42, enable_test_pattern ? 8'h08 : 8'h00};
-                58: configuration_entry = 16'h1101; // Reapply CLKRC after RGB setup.
+                63: configuration_entry = {8'h42, enable_test_pattern ? 8'h08 : 8'h00};
+                64: configuration_entry = 16'h1101; // Reapply CLKRC after RGB setup.
                 default: configuration_entry = 16'hffff;
             endcase
         end
@@ -239,7 +248,11 @@ module camera_register_init #(
                             if (command_ack_error) nack_count <= nack_count + 1'b1;
                             init_error <= 1'b1;
                             state <= INIT_FINISHED;
-                        end else if ((product_id != 8'h76) || (command_read_data != 8'h70)) begin
+                        // OV7670 modules are found with VER=0x70 or VER=0x73.
+                        // PID must still be 0x76 so a different sensor is rejected.
+                        end else if ((product_id != 8'h76) ||
+                                     ((command_read_data != 8'h70) &&
+                                      (command_read_data != 8'h73))) begin
                             version_id <= command_read_data;
                             init_error <= 1'b1;
                             state <= INIT_FINISHED;

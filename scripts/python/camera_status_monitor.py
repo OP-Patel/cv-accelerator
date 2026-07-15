@@ -13,7 +13,8 @@ from pathlib import Path
 STATUS_PATTERN = re.compile(
     r"^M3 ID=([0-9A-F]{4}) CFG=([PF]) WR=([0-9A-F]{4}) NACK=([0-9A-F]{4}) "
     r"F=([0-9A-F]{8}) LINE=([0-9A-F]{4}) PIX=([0-9A-F]{8}) "
-    r"GRAY=([0-9A-F]{8}) OUT=([0-9A-F]{8}) SOB=([0-9A-F]{8}) ERR=([0-9A-F]{4})$"
+    r"GRAY=([0-9A-F]{8}) OUT=([0-9A-F]{8}) SOB=([0-9A-F]{8}) ERR=([0-9A-F]{4})"
+    r"(?: RAWB=([0-9A-F]{4}) RAWL=([0-9A-F]{4}))?$"
 )
 
 
@@ -46,12 +47,12 @@ def validate_status(text: str) -> tuple[bool, str]:
     if not match:
         return False, "FORMAT"
 
-    chip_id, config, writes, nacks, frame, lines, pixels, gray, outputs, sobel, errors = (
+    chip_id, config, writes, nacks, frame, lines, pixels, gray, outputs, sobel, errors, raw_bytes, raw_lines = (
         match.groups()
     )
-    del writes, frame, gray, sobel
+    del writes, frame, gray, sobel, raw_bytes, raw_lines
     checks = {
-        "ID": chip_id == "7670",
+        "ID": chip_id in ("7670", "7673"),
         "CFG": config == "P",
         "NACK": int(nacks, 16) == 0,
         "LINE": int(lines, 16) in (0, 240),

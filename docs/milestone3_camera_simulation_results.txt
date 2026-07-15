@@ -14,7 +14,7 @@ Focused behavioral results:
   PASS tb_sccb_master
     write, two-phase read, ACK, NACK, stop, and timeout cases
   PASS tb_camera_register_init
-    reset, 0x7670 identity, 59 configuration entries, restart, mismatch failure
+    reset, 0x7670/0x7673 identity, 65 configuration entries, restart, mismatch failure
   PASS tb_dvp_rgb565_capture
     normal and swapped byte order, exact raster coordinates, odd-byte detection
   PASS tb_camera_stream_cdc
@@ -54,16 +54,17 @@ Archived report:
 
 Implementation result:
   arty_m3_camera_top routed and generated a bitstream with:
-    WNS: 1.007 ns
+    WNS: 0.771 ns
     TNS: 0.000 ns
-    WHS: 0.097 ns
+    WHS: 0.070 ns
     THS: 0.000 ns
     0 failing setup or hold endpoints
   The detailed CDC report identifies ten ASYNC_REG synchronizers and one
   synchronized asynchronous reset. Its two critical entries are intentional
   asynchronous reset assertions into reset_sync, not pixel or control data.
+  Two multi-bit warnings are the stable, diagnostic-only RAWB/RAWL counters.
   Bitstream SHA-256:
-    9B215E8CC63C33170FDADFD6427889647A0D1001F574C2613F4EEA2DAF315D0A
+    1A01CAF894B718AF8ACB058CA6514F40ACB8E53C1965560DCD0FF2CF45E4B66D
 
 Archived implementation artifacts:
   docs/timing_summary_milestone3.rpt

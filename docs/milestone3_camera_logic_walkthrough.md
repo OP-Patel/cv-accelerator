@@ -26,7 +26,7 @@ Every block has one job. Complete pixels cross the clock boundary as one 36-bit 
 
 1. Write `COM7=0x80` for a soft reset.
 2. Wait at least one millisecond.
-3. Read `PID` and `VER`; require `0x76` and `0x70`.
+3. Read `PID` and `VER`; require `PID=0x76` and `VER=0x70` or `0x73`.
 4. Write 59 named configuration entries.
 5. Wait 300 ms for the image controls to settle.
 
@@ -68,10 +68,12 @@ Sticky flags distinguish odd active-byte count, wrong line length, wrong frame h
 UART lines use fixed-width hexadecimal fields:
 
 ```text
-M3 ID=7670 CFG=P WR=003C NACK=0000 F=0000002A LINE=00F0 PIX=00012C00 GRAY=12345678 OUT=000127A4 SOB=9ABCDEF0 ERR=0000
+M3 ID=7673 CFG=P WR=0042 NACK=0000 F=0000002A LINE=00F0 PIX=00012C00 GRAY=12345678 OUT=000127A4 SOB=9ABCDEF0 ERR=0000 RAWB=0280 RAWL=00F0
 ```
 
-`WR=003C` is 60 writes: one reset plus 59 table entries. `OUT` is the Sobel output count; `SOB` is its CRC.
+`WR=0042` is 66 writes: one reset plus 65 table entries. The six added
+entries explicitly set the QVGA hardware window observed to be necessary on
+the physical `0x7673` sensor. `OUT` is the Sobel output count; `SOB` is its CRC.
 
 For the deterministic software bars model, the expected 320x240 line is:
 

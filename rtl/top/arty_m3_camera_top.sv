@@ -49,6 +49,7 @@ module arty_m3_camera_top #(
     logic init_busy_delayed;
     logic [15:0] completed_writes, nack_count;
     logic [7:0] product_id, version_id;
+    logic camera_id_valid;
 
     (* ASYNC_REG = "TRUE" *) logic [1:0] init_done_cam_sync;
     (* ASYNC_REG = "TRUE" *) logic [1:0] clear_cam_sync;
@@ -60,6 +61,9 @@ module arty_m3_camera_top #(
     logic [15:0] cam_pixel_rgb565;
     logic cam_capture_error;
     logic [3:0] cam_capture_flags;
+    logic [15:0] observed_line_bytes_cam, observed_frame_lines_cam;
+    (* ASYNC_REG = "TRUE" *) logic [15:0] observed_line_bytes_sync [0:1];
+    (* ASYNC_REG = "TRUE" *) logic [15:0] observed_frame_lines_sync [0:1];
 
     logic fifo_valid, fifo_frame_start, fifo_frame_end, fifo_line_end;
     logic [X_W-1:0] fifo_x;
@@ -185,8 +189,19 @@ module arty_m3_camera_top #(
         .pixel_valid(cam_pixel_valid), .pixel_x(cam_pixel_x), .pixel_y(cam_pixel_y),
         .pixel_rgb565(cam_pixel_rgb565), .frame_start(cam_frame_start),
         .frame_end(cam_frame_end), .line_end(cam_line_end), .byte_seen(cam_byte_seen),
-        .capture_error(cam_capture_error), .error_flags(cam_capture_flags)
+        .capture_error(cam_capture_error), .error_flags(cam_capture_flags),
+        .observed_line_bytes(observed_line_bytes_cam),
+        .observed_frame_lines(observed_frame_lines_cam)
     );
+
+    // These values change only at line/frame boundaries and are diagnostic,
+    // not control signals. Two samples make them safe to print over UART.
+    always_ff @(posedge clk_100mhz) begin
+        observed_line_bytes_sync[0] <= observed_line_bytes_cam;
+        observed_line_bytes_sync[1] <= observed_line_bytes_sync[0];
+        observed_frame_lines_sync[0] <= observed_frame_lines_cam;
+        observed_frame_lines_sync[1] <= observed_frame_lines_sync[0];
+    end
 
     camera_stream_cdc #(.FIFO_DEPTH(FIFO_DEPTH), .X_W(X_W), .Y_W(Y_W)) u_cdc (
         .reset(reset_btn),
@@ -236,10 +251,13 @@ module arty_m3_camera_top #(
         end
     endgenerate
 
+    assign camera_id_valid = (product_id == 8'h76) &&
+                             ((version_id == 8'h70) || (version_id == 8'h73));
+
     always_comb begin
         live_error_flags = '0;
         live_error_flags[0] = init_error || command_ack_error || command_timeout_error;
-        live_error_flags[1] = init_error && ({product_id, version_id} != 16'h7670);
+        live_error_flags[1] = init_error && !camera_id_valid;
         live_error_flags[2] = capture_flags_sync[0][1];
         live_error_flags[3] = capture_flags_sync[1][1];
         live_error_flags[4] = capture_flags_sync[2][1];
@@ -277,6 +295,8 @@ module arty_m3_camera_top #(
         .frame_number(frame_number), .line_count(frame_line_count),
         .pixel_count(frame_pixel_count), .gray_crc(frame_gray_crc),
         .sobel_count(frame_sobel_count), .sobel_crc(frame_sobel_crc),
+        .raw_line_bytes(observed_line_bytes_sync[1]),
+        .raw_frame_lines(observed_frame_lines_sync[1]),
         .error_flags(frame_errors | live_error_flags),
         .uart_data(uart_data), .uart_send(uart_send), .uart_busy(uart_busy),
         .busy(reporter_busy)

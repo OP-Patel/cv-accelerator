@@ -11,7 +11,7 @@ module tb_m3_uart_reporter;
     logic start = 1'b0;
     logic [15:0] chip_id = 16'h7670;
     logic config_pass = 1'b1;
-    logic [15:0] completed_writes = 16'h003c;
+    logic [15:0] completed_writes = 16'h0042;
     logic [15:0] nack_count = 16'h0000;
     logic [31:0] frame_number = 32'h0000002a;
     logic [15:0] line_count = 16'h00f0;
@@ -19,11 +19,13 @@ module tb_m3_uart_reporter;
     logic [31:0] gray_crc = 32'h12345678;
     logic [31:0] sobel_count = 32'h000127a4;
     logic [31:0] sobel_crc = 32'h9abcdef0;
+    logic [15:0] raw_line_bytes = 16'h0280;
+    logic [15:0] raw_frame_lines = 16'h00f0;
     logic [15:0] error_flags = 16'h0000;
     logic [7:0] uart_data;
     logic uart_send, uart_busy, reporter_busy;
     logic uart_line;
-    logic [7:0] received [0:118];
+    logic [7:0] received [0:138];
 
     always #5 clk = ~clk;
 
@@ -74,13 +76,13 @@ module tb_m3_uart_reporter;
         @(negedge clk);
         start = 1'b0;
 
-        for (integer index = 0; index < 119; index = index + 1) begin
+        for (integer index = 0; index < 139; index = index + 1) begin
             receive_uart_byte(received[index]);
         end
 
         check_text(0, 10, "M3 ID=7670      ");
         check_text(11, 5, "CFG=P           ");
-        check_text(17, 7, "WR=003C         ");
+        check_text(17, 7, "WR=0042         ");
         check_text(25, 9, "NACK=0000       ");
         check_text(35, 10, "F=0000002A      ");
         check_text(46, 9, "LINE=00F0       ");
@@ -89,7 +91,9 @@ module tb_m3_uart_reporter;
         check_text(83, 12, "OUT=000127A4    ");
         check_text(96, 12, "SOB=9ABCDEF0    ");
         check_text(109, 8, "ERR=0000        ");
-        if (received[117] != 8'h0d || received[118] != 8'h0a) begin
+        check_text(118, 9, "RAWB=0280       ");
+        check_text(128, 9, "RAWL=00F0       ");
+        if (received[137] != 8'h0d || received[138] != 8'h0a) begin
             $fatal(1, "status line did not end in CRLF");
         end
         $display("PASS: tb_m3_uart_reporter");

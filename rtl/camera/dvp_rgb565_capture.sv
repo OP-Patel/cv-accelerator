@@ -21,21 +21,27 @@ module dvp_rgb565_capture #(
     output logic           line_end,
     output logic           byte_seen,
     output logic           capture_error,
-    output logic [3:0]     error_flags
+    output logic [3:0]     error_flags,
+    output logic [15:0]    observed_line_bytes,
+    output logic [15:0]    observed_frame_lines
 );
     localparam integer X_COUNT_W = $clog2(IMAGE_WIDTH + 2);
     localparam integer Y_COUNT_W = $clog2(IMAGE_HEIGHT + 2);
 
     logic in_frame;
+    logic frame_sync_seen;
     logic previous_href;
     logic have_first_byte;
     logic [7:0] first_byte;
     logic [X_COUNT_W-1:0] x_count;
     logic [Y_COUNT_W-1:0] y_count;
+    logic [15:0] raw_byte_count;
+    logic [15:0] raw_line_count;
 
     always_ff @(posedge cam_pclk) begin
         if (reset) begin
             in_frame       <= 1'b0;
+            frame_sync_seen <= 1'b0;
             previous_href  <= 1'b0;
             have_first_byte <= 1'b0;
             first_byte     <= '0;
@@ -50,6 +56,10 @@ module dvp_rgb565_capture #(
             line_end       <= 1'b0;
             byte_seen      <= 1'b0;
             error_flags    <= '0;
+            raw_byte_count <= '0;
+            raw_line_count <= '0;
+            observed_line_bytes <= '0;
+            observed_frame_lines <= '0;
         end else begin
             pixel_valid <= 1'b0;
             frame_start <= 1'b0;
@@ -64,25 +74,33 @@ module dvp_rgb565_capture #(
             // VSYNC is configured active high: high is frame blanking.
             if (cam_vsync) begin
                 if (in_frame) begin
+                    observed_frame_lines <= raw_line_count;
                     if ((y_count != IMAGE_HEIGHT) || previous_href || have_first_byte) begin
                         error_flags[2] <= 1'b1;
                     end
                 end
                 in_frame        <= 1'b0;
+                frame_sync_seen <= 1'b1;
                 previous_href   <= 1'b0;
                 have_first_byte <= 1'b0;
                 x_count         <= '0;
                 y_count         <= '0;
-            end else begin
+                raw_byte_count  <= '0;
+            end else if (frame_sync_seen) begin
                 if (!in_frame) begin
                     in_frame        <= 1'b1;
                     previous_href   <= 1'b0;
                     have_first_byte <= 1'b0;
                     x_count         <= '0;
                     y_count         <= '0;
+                    raw_byte_count  <= '0;
+                    raw_line_count  <= '0;
                 end
 
                 if (in_frame && previous_href && !cam_href) begin
+                    observed_line_bytes <= raw_byte_count;
+                    raw_line_count <= raw_line_count + 1'b1;
+                    raw_byte_count <= '0;
                     line_end <= 1'b1;
                     if (have_first_byte) begin
                         error_flags[0] <= 1'b1;
@@ -102,6 +120,9 @@ module dvp_rgb565_capture #(
                     if (!previous_href) begin
                         x_count         <= '0;
                         have_first_byte <= 1'b0;
+                        raw_byte_count  <= 16'd1;
+                    end else begin
+                        raw_byte_count <= raw_byte_count + 1'b1;
                     end
 
                     if (!have_first_byte) begin

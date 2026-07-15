@@ -108,13 +108,13 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [x] Program the generated bitstream and capture PASS lines on the physical board
 - [ ] Milestone 3: Camera bring-up
   - [x] 24 MHz MMCM/ODDR XCLK and startup controls
-  - [x] SCCB register read/write, ACK/NACK, timeout, and `0x7670` identity gate
+  - [x] SCCB register read/write, ACK/NACK, timeout, and `0x7670`/`0x7673` identity gate
   - [x] Documented 320x240 RGB565 initialization table
   - [x] DVP byte capture, coordinates, malformed-line detection, and byte-swap debug
   - [x] XPM asynchronous FIFO, overflow reporting, grayscale, and Sobel integration
   - [x] UART frame status, host validator, DVP model, focused tests, and top synthesis
   - [x] Verify photographed connector orientation and Digilent package-pin map
-  - [x] Build the pin-complete bitstream; WNS 1.007 ns and WHS 0.097 ns
+  - [x] Build the pin-complete bitstream; WNS 0.771 ns and WHS 0.070 ns
   - [ ] Identify the unbranded module's schematic and prove its sensor-side I/O rail
   - [ ] Program the bitstream and capture ILA/UART evidence
   - [ ] Complete a sustained physical-camera run

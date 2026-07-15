@@ -75,10 +75,13 @@ RET    PWDN
 ## Staged evidence to capture
 
 - [ ] Measure 24 MHz XCLK and 45-55% duty cycle at the module.
-- [ ] Record `ID=7670`, configuration PASS, write count, and zero NACKs.
+- [x] Record the physical identity: `ID=7673` with zero NACKs on stable reads.
+- [ ] Record `CFG=P`, the full configuration write count, and zero NACKs.
 - [ ] Use ILA to prove active-high VSYNC/HREF and RGB565 byte order.
 - [ ] Prove 640 bytes, 320 pixels per line, and 240 lines per frame.
 - [ ] Prove zero FIFO drops/overflow over a sustained run.
+- [x] Prove stable framing over 100+ frames: 640 raw bytes, 240 lines,
+  76,800 pixels, and 75,684 Sobel outputs per frame.
 - [ ] Record the sensor color-bar grayscale CRC.
 - [ ] Record 76,800 camera inputs and 75,684 Sobel outputs.
 - [ ] Save UART output in `docs/milestone3_uart_capture.txt`.

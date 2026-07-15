@@ -27,6 +27,21 @@ module dvp_camera_model #(
         end
     endtask
 
+    // Starts in the middle of a line, as real hardware can when capture reset
+    // is released while the free-running camera is already transmitting.
+    task automatic send_partial_line_before_sync(input integer byte_count);
+        integer index;
+        begin
+            cam_vsync = 1'b0;
+            cam_href = 1'b1;
+            for (index = 0; index < byte_count; index = index + 1) begin
+                send_byte(index[7:0]);
+            end
+            cam_href = 1'b0;
+            repeat (3) @(posedge cam_pclk);
+        end
+    endtask
+
     // Sends one complete frame; low_byte_first exercises COM3 byte swapping.
     task automatic send_frame(input logic low_byte_first);
         integer x, y;
