@@ -1,5 +1,5 @@
 Milestone 3 OV7670 simulation and synthesis evidence
-Date: 2026-07-13
+Date: 2026-07-14
 Tool: Vivado 2026.1 XSim / Vivado Synthesis and Implementation
 
 Commands:
@@ -16,7 +16,8 @@ Focused behavioral results:
   PASS tb_camera_register_init
     reset, 0x7670/0x7673 identity, 65 configuration entries, restart, mismatch failure
   PASS tb_dvp_rgb565_capture
-    normal and swapped byte order, exact raster coordinates, odd-byte detection
+    startup partial-frame rejection, normal and swapped byte order,
+    exact raster coordinates, odd-byte detection
   PASS tb_camera_stream_cdc
     ordered asynchronous transfer plus explicit overflow/drop test
   PASS tb_camera_pipeline
@@ -32,7 +33,7 @@ Focused behavioral results:
     Sobel CRC-32: 6C36985F
     Python model CRC-32: 6C36985F
   PASS tb_m3_uart_reporter
-    complete 119-byte fixed-width UART status line and CRLF
+    complete 139-byte fixed-width UART status line, RAWB/RAWL fields, and CRLF
 
 Synthesis result:
   arty_m3_camera_top synthesized successfully with:
@@ -64,7 +65,7 @@ Implementation result:
   asynchronous reset assertions into reset_sync, not pixel or control data.
   Two multi-bit warnings are the stable, diagnostic-only RAWB/RAWL counters.
   Bitstream SHA-256:
-    1A01CAF894B718AF8ACB058CA6514F40ACB8E53C1965560DCD0FF2CF45E4B66D
+    14B3C502EEBD432A32925B8987DE62A80433516F124264DA019BAD5A3222B446
 
 Archived implementation artifacts:
   docs/timing_summary_milestone3.rpt
@@ -77,8 +78,12 @@ Expected startup-only XPM simulation note:
   capture block's synchronous reset assignment takes effect. The FIFO remains
   in reset then; all post-reset transfer, ordering, and overflow checks pass.
 
-Not claimed by this evidence:
-  physical camera electrical safety
-  measured XCLK/PCLK
-  SCCB chip ID from hardware
-  frame timing or image CRC from hardware
+Physical validation is recorded separately in:
+  docs/milestone3_camera_hardware_validation.md
+  docs/milestone3_hardware_results.txt
+  docs/milestone3_uart_capture.txt
+
+Not established by simulation or the UART hardware run:
+  the unbranded module's internal I/O rail
+  oscilloscope measurements of XCLK/PCLK
+  an archived ILA trace

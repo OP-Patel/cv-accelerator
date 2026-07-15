@@ -1,0 +1,44 @@
+Milestone 3 OV7670 physical validation result
+Date: 2026-07-14
+Board: Digilent Arty A7-100T
+Camera: unbranded direct-DVP OV7670 breakout
+Tool: Vivado 2026.1
+
+Result: PASS
+
+Final sustained run:
+  SCCB identity:             0x7673
+  Configuration writes:     0x0042 (66)
+  SCCB NACK count:           0
+  Completed frames:          306
+  Raw bytes per line:        0x0280 (640)
+  Raw lines per frame:       0x00F0 (240)
+  Accepted pixels per frame: 0x00012C00 (76,800)
+  Sobel outputs per frame:   0x000127A4 (75,684)
+  Grayscale CRC-32:          0xB4784EF0
+  Sobel CRC-32:              0x6A41EC97
+  Error flags:               0x0000
+  Failure lines in final supplied capture: 0
+
+Representative final line:
+  [PASS:PASS] M3 ID=7673 CFG=P WR=0042 NACK=0000 F=00000132 LINE=00F0 PIX=00012C00 GRAY=B4784EF0 OUT=000127A4 SOB=6A41EC97 ERR=0000 RAWB=0280 RAWL=00F0
+
+Implementation:
+  WNS: 0.771 ns
+  TNS: 0.000 ns
+  WHS: 0.070 ns
+  THS: 0.000 ns
+  Bitstream SHA-256:
+    14B3C502EEBD432A32925B8987DE62A80433516F124264DA019BAD5A3222B446
+
+Detailed evidence:
+  docs/milestone3_uart_capture.txt
+  docs/milestone3_camera_hardware_validation.md
+  docs/milestone3_camera_debugging_postmortem.md
+  docs/timing_summary_milestone3.rpt
+  docs/utilization_milestone3.rpt
+  docs/cdc_milestone3.rpt
+
+Scope note:
+  This passes functional hardware validation. The unbranded module's internal
+  I/O rail, XCLK duty cycle, PCLK timing, and jumper-wire skew were not measured.

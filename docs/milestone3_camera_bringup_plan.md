@@ -1,5 +1,12 @@
 # Milestone 3 camera bring-up plan
 
+> **Completion note — July 14, 2026:** Functional hardware validation passed.
+> The final run processed 306 consecutive complete frames with stable CRCs and
+> `ERR=0000`. See `milestone3_camera_hardware_validation.md` for the acceptance
+> record, `milestone3_camera_debugging_postmortem.md` for the detailed bring-up
+> history, and `milestone3_handoff_and_milestone4_plan.md` for the next
+> milestone. This original plan is retained as the design rationale.
+
 ## Executive summary
 
 Milestone 3 will connect an **OV7670** parallel camera to the Arty A7 and convert its pixel timing into the raster stream already accepted by the Milestone 2 Sobel core. The initial target is 320x240 RGB565 from the sensor's 8-bit DVP interface using `PCLK`, `VSYNC`, `HREF`, `D[7:0]`, and the SCCB configuration port.

@@ -1,6 +1,6 @@
 # Arty A7-100T Real-Time Streaming Convolution Accelerator
 
-This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 added the one-pixel-per-clock grayscale Sobel pipeline. Milestone 3 now contains a simulated, implemented, and pin-complete OV7670 front end; physical camera validation remains to be performed.
+This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 added the one-pixel-per-clock grayscale Sobel pipeline. Milestone 3 connects a physical OV7670 camera to that pipeline and has passed a 306-frame sustained hardware run. Milestone 4 Ethernet bring-up is planned but not yet implemented.
 
 ## Milestone 1 interface
 
@@ -22,6 +22,15 @@ This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Mileston
 - `LD5` indicates running, `LD6` is sticky pass, and `LD7` is sticky error.
 - UART reports hexadecimal input/output counts, CRC-32, and PASS/FAIL at 115200 8N1.
 - UART baud is parameterized independently from the full-speed image pipeline for a later faster host link.
+
+## Milestone 3 interface
+
+- The photographed direct-DVP OV7670 module is wired across Pmod headers JB and JC as documented in `docs/milestone3_camera_hardware_contract.md`.
+- A 24 MHz forwarded XCLK, SCCB initialization, 8-bit DVP capture, asynchronous FIFO, RGB565 grayscale conversion, and the Milestone 2 Sobel pipeline form the complete data path.
+- `BTN1` restarts camera identification/configuration, `BTN2` clears sticky errors, and `BTN3` requests an immediate UART line.
+- `SW0` selects camera color bars for the next initialization, `SW1` selects the checksum stream, `SW2` swaps RGB565 bytes for diagnosis, and `SW3` freezes the completed-frame snapshot.
+- UART reports identity, configuration writes, NACKs, completed frames, raw width/height, input/output counts, CRC-32 values, and sticky errors at 115200 8N1.
+- The final hardware run reported `ID=7673`, `WR=0042`, 640 bytes by 240 lines, 76,800 input pixels, 75,684 Sobel outputs, stable CRCs, and `ERR=0000` through frame 306.
 
 ## Build and simulation
 
@@ -106,7 +115,7 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [x] Synthetic FPGA source, CRC-32 checker, LEDs, and UART PASS reporter
   - [x] 100 MHz implementation and bitstream: WNS 2.284 ns, WHS 0.093 ns
   - [x] Program the generated bitstream and capture PASS lines on the physical board
-- [ ] Milestone 3: Camera bring-up
+- [x] Milestone 3: Camera bring-up
   - [x] 24 MHz MMCM/ODDR XCLK and startup controls
   - [x] SCCB register read/write, ACK/NACK, timeout, and `0x7670`/`0x7673` identity gate
   - [x] Documented 320x240 RGB565 initialization table
@@ -115,10 +124,17 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [x] UART frame status, host validator, DVP model, focused tests, and top synthesis
   - [x] Verify photographed connector orientation and Digilent package-pin map
   - [x] Build the pin-complete bitstream; WNS 0.771 ns and WHS 0.070 ns
-  - [ ] Identify the unbranded module's schematic and prove its sensor-side I/O rail
-  - [ ] Program the bitstream and capture ILA/UART evidence
-  - [ ] Complete a sustained physical-camera run
+  - [x] Program the bitstream and capture UART evidence
+  - [x] Prove 640 raw bytes, 240 lines, 76,800 inputs, and 75,684 Sobel outputs per frame
+  - [x] Complete a 306-frame sustained physical-camera run with stable CRCs and zero reported errors
+  - [ ] Identify the unbranded module's schematic and prove its sensor-side I/O rail (electrical-characterization follow-up)
+  - [ ] Archive oscilloscope XCLK/PCLK measurements and an ILA trace (non-blocking characterization)
 - [ ] Milestone 4: Ethernet bring-up
+  - [ ] 25 MHz DP83848J reference clock, reset, and MDIO identity
+  - [ ] Link/speed/duplex reporting
+  - [ ] Deterministic raw Ethernet transmit and receive
+  - [ ] Fixed-address ARP and UDP echo
+  - [ ] Sustained bidirectional hardware validation
 - [ ] Milestone 5: Full integration
 
 Milestone 1 physical behavior has been validated. The final timing/utilization reports should still be regenerated after the corrected UART XDC mapping so the archived implementation artifacts match the validated source. See `docs/milestone1_logic_walkthrough.md` for a detailed implementation explanation and `docs/milestone1_hardware_validation.md` for the validation record.
@@ -127,4 +143,6 @@ The completed-work handoff and detailed plan for a substantial streaming-convolu
 
 See `docs/milestone2_logic_walkthrough.md` for the implementation, `docs/milestone2_simulation_results.txt` for automated evidence, and `docs/milestone2_hardware_validation.md` for the final board procedure.
 
-The camera implementation is explained in `docs/milestone3_camera_logic_walkthrough.md`. See `docs/milestone3_camera_hardware_contract.md` before wiring the module and `docs/milestone3_camera_hardware_validation.md` for the remaining physical procedure.
+The camera implementation is explained in `docs/milestone3_camera_logic_walkthrough.md`. See `docs/milestone3_camera_hardware_contract.md` before wiring the module, `docs/milestone3_camera_hardware_validation.md` for the final result and repeatable procedure, and `docs/milestone3_camera_debugging_postmortem.md` for the full failure-to-fix narrative.
+
+The completed-work handoff and staged Milestone 4 Ethernet plan are in `docs/milestone3_handoff_and_milestone4_plan.md`.
