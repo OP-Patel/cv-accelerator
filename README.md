@@ -1,6 +1,6 @@
 # Arty A7-100T Real-Time Streaming Convolution Accelerator
 
-This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 added the one-pixel-per-clock grayscale Sobel pipeline. Milestone 3 connects a physical OV7670 camera to that pipeline and has passed a 306-frame sustained hardware run. Milestone 4 Ethernet bring-up is planned but not yet implemented.
+This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 added the one-pixel-per-clock grayscale Sobel pipeline. Milestone 3 connects a physical OV7670 camera to that pipeline and has passed a 306-frame sustained hardware run. Milestone 4 now has a small 10/100 MII MAC, PHY discovery, raw frames, ARP, and fixed-address UDP echo; simulation/build and physical validation still remain before the milestone can be marked complete.
 
 ## Milestone 1 interface
 
@@ -47,6 +47,15 @@ Run the Milestone 3 regression and synthesis-only check with:
 ```text
 vivado -mode batch -source run_m3_simulations.tcl
 vivado -mode batch -source check_m3_synthesis.tcl
+```
+
+Run the Milestone 4 10/100 Ethernet regression, synthesis check, and bitstream
+build with:
+
+```text
+vivado -mode batch -source run_m4_simulations.tcl
+vivado -mode batch -source check_m4_synthesis.tcl
+vivado -mode batch -source build_m4_bitstream.tcl
 ```
 
 The photographed camera's reviewed pin assignment is enabled in
@@ -130,10 +139,13 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [ ] Identify the unbranded module's schematic and prove its sensor-side I/O rail (electrical-characterization follow-up)
   - [ ] Archive oscilloscope XCLK/PCLK measurements and an ILA trace (non-blocking characterization)
 - [ ] Milestone 4: Ethernet bring-up
-  - [ ] 25 MHz DP83848J reference clock, reset, and MDIO identity
-  - [ ] Link/speed/duplex reporting
-  - [ ] Deterministic raw Ethernet transmit and receive
-  - [ ] Fixed-address ARP and UDP echo
+  - [x] 25 MHz DP83848J reference clock, reset, and MDIO identity RTL
+  - [x] 10/100 link/speed/duplex UART reporting RTL
+  - [x] Deterministic raw Ethernet transmit/receive and error counters
+  - [x] Fixed-address ARP and UDP echo RTL
+  - [x] Ethernet constraints, regression targets, build scripts, and host tool
+  - [ ] Run and archive the Milestone 4 simulations
+  - [ ] Complete synthesis, implementation, timing, CDC, and DRC review
   - [ ] Sustained bidirectional hardware validation
 - [ ] Milestone 5: Full integration
 

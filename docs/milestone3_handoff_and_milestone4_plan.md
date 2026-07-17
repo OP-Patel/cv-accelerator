@@ -11,9 +11,10 @@ stable CRCs, and no reported error. The final evidence is recorded in:
 - `milestone3_camera_debugging_postmortem.md`;
 - `milestone3_uart_capture.txt`.
 
-Milestone 4 has not been implemented. The current checkout contains no
-Ethernet RTL, Ethernet constraints, Ethernet testbench, host packet tool, or
-Ethernet build target. This document is the starting contract for that work.
+Milestone 4 RTL has now been implemented from this contract. The checkout has
+the 10/100 MII MAC/PHY logic, constraints, focused testbenches, host packet
+tool, and build targets. Simulation, implementation, timing review, and
+physical hardware evidence are still required before Milestone 4 is complete.
 
 ## Milestone 4 objective
 
@@ -307,5 +308,4 @@ docs/milestone4_simulation_results.txt
 
 These belong to later integration or are unnecessary for proving the 10/100
 transport. The first Milestone 4 implementation step should be the 25 MHz
-clock, reset sequencer, and one readable MDIO register—not UDP and not camera
-data.
+clock, reset sequencer, and one readable MDIO register—not UDP and not camera data.

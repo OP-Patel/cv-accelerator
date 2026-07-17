@@ -1,0 +1,13 @@
+Milestone 4 simulation evidence
+===============================
+
+Implemented regression targets:
+- tb_mdio_master: Clause 22 read/write, turnaround ACK, and missing-PHY response
+- tb_mii_tx_rx: low/high nibble ordering and byte reconstruction
+- tb_ethernet_frames: padding/FCS acceptance and deliberate corruption
+- tb_arp_udp: ARP reply fields, UDP header fields, and payload echo indexing
+- tb_arty_m4_ethernet_top: modeled PHY discovery and complete MII frame loopback
+
+Current execution status: NOT RUN in this shell because Vivado/XSim is not on
+PATH. Replace this note with the archived run_m4_simulations.tcl transcript
+after executing from a Vivado command prompt.

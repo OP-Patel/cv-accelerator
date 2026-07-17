@@ -15,11 +15,29 @@ add_files -norecurse {
     ../rtl/top/arty_bringup_top.sv
     ../rtl/top/arty_m2_sobel_top.sv
     ../rtl/top/arty_m3_camera_top.sv
+    ../rtl/top/arty_m4_ethernet_top.sv
     ../rtl/debug/reset_sync.sv
     ../rtl/debug/uart_tx.sv
     ../rtl/debug/debounce.sv
     ../rtl/debug/m2_uart_reporter.sv
     ../rtl/debug/m3_uart_reporter.sv
+    ../rtl/debug/m4_uart_reporter.sv
+}
+
+# --- Milestone 4 DP83848 10/100 Ethernet MAC ---
+add_files -norecurse {
+    ../rtl/ethernet/ethernet_ref_clock.sv
+    ../rtl/ethernet/phy_reset.sv
+    ../rtl/ethernet/mdio_master.sv
+    ../rtl/ethernet/phy_bringup.sv
+    ../rtl/ethernet/mii_tx.sv
+    ../rtl/ethernet/mii_rx.sv
+    ../rtl/ethernet/ethernet_fcs.sv
+    ../rtl/ethernet/ethernet_async_fifo.sv
+    ../rtl/ethernet/ethernet_frame_tx.sv
+    ../rtl/ethernet/ethernet_frame_rx.sv
+    ../rtl/ethernet/arp_responder.sv
+    ../rtl/ethernet/udp_echo.sv
 }
 
 # --- Milestone 3 OV7670 camera front end ---
@@ -63,6 +81,12 @@ add_files -fileset sim_1 -norecurse {
     ../sim/tb/tb_camera_stream_cdc.sv
     ../sim/tb/tb_camera_pipeline.sv
     ../sim/tb/tb_m3_uart_reporter.sv
+    ../sim/tb/tb_mdio_master.sv
+    ../sim/tb/tb_mii_tx_rx.sv
+    ../sim/tb/tb_ethernet_frames.sv
+    ../sim/tb/tb_arp_udp.sv
+    ../sim/models/dp83848_mii_model.sv
+    ../sim/tb/tb_arty_m4_ethernet_top.sv
 }
 
 add_files -fileset constrs_1 -norecurse {
