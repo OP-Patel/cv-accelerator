@@ -5,6 +5,7 @@ module tb_ethernet_frames;
     logic [7:0] tx_source, tx_output;
     logic tx_valid, tx_last, tx_busy, tx_done, tx_len_error;
     logic [7:0] wire_bytes[0:80]; integer wire_count=0;
+    logic fcs_clear=0,fcs_enable=0; logic [7:0] fcs_data=0; logic [31:0] fcs_state,fcs_value;
     logic [7:0] rx_input, rx_read_data; logic rx_input_valid=0, rx_start=0, rx_end=0;
     logic [10:0] rx_read_address=0, rx_length;
     logic rx_done,rx_valid,ipv4_ok;
@@ -15,14 +16,16 @@ module tb_ethernet_frames;
     always_comb begin
         if(tx_index<6) tx_source=8'hFF;
         else if(tx_index<12) tx_source=tx_index;
-        else if(tx_index==12) tx_source=8'h88;
-        else if(tx_index==13) tx_source=8'hB5;
+        else if(tx_index==12) tx_source=8'h08;
+        else if(tx_index==13) tx_source=8'h00;
         else tx_source=tx_index^8'hA5;
     end
     ethernet_frame_tx u_tx(.clk(clk),.reset(reset),.start(tx_start),.frame_length(tx_length),
         .frame_data_index(tx_index),.frame_data(tx_source),.output_data(tx_output),
         .output_valid(tx_valid),.output_last(tx_last),.output_ready(tx_ready),
         .busy(tx_busy),.done(tx_done),.length_error(tx_len_error));
+    ethernet_fcs u_fcs(.clk(clk),.reset(reset),.clear(fcs_clear),.enable(fcs_enable),
+        .data(fcs_data),.crc_state(fcs_state),.fcs(fcs_value));
     always @(negedge clk) if(tx_valid&&tx_ready) begin wire_bytes[wire_count]=tx_output; wire_count=wire_count+1; end
     ethernet_frame_rx u_rx(.clk(clk),.reset(reset),.clear_errors(1'b0),.byte_data(rx_input),
         .byte_valid(rx_input_valid),.frame_start(rx_start),.frame_end(rx_end),
@@ -47,11 +50,19 @@ module tb_ethernet_frames;
         end
     endtask
     initial begin
+        logic [71:0] known_vector; integer vector_index;
         repeat(4) @(posedge clk); reset=0;
+        known_vector=72'h313233343536373839;
+        @(negedge clk); fcs_clear=1; @(negedge clk); fcs_clear=0;
+        for(vector_index=0;vector_index<9;vector_index=vector_index+1) begin
+            fcs_data=known_vector[71-(vector_index*8) -: 8]; fcs_enable=1; @(negedge clk);
+        end
+        fcs_enable=0; #1;
+        if(fcs_value!=32'hCBF43926) $fatal(1,"CRC-32 known vector failed: %h",fcs_value);
         @(negedge clk); tx_start=1; @(negedge clk); tx_start=0; wait(tx_done); @(negedge clk);
         if(wire_count!=72 || tx_len_error) $fatal(1,"encoded frame length=%0d",wire_count);
         replay(0);
-        if(!rx_valid || rx_length!=60 || etype!=16'h88B5 || good!=1) $fatal(1,"valid frame rejected");
+        if(!rx_valid || rx_length!=60 || etype!=16'h0800 || good!=1) $fatal(1,"valid frame rejected");
         replay(1);
         if(rx_valid || badfcs!=1 || good!=1) $fatal(1,"corrupted FCS classification failed");
         $display("PASS: tb_ethernet_frames"); $finish;

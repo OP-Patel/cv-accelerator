@@ -8,6 +8,11 @@ Implemented regression targets:
 - tb_arp_udp: ARP reply fields, UDP header fields, and payload echo indexing
 - tb_arty_m4_ethernet_top: modeled PHY discovery and complete MII frame loopback
 
-Current execution status: NOT RUN in this shell because Vivado/XSim is not on
-PATH. Replace this note with the archived run_m4_simulations.tcl transcript
-after executing from a Vivado command prompt.
+Static verification in this shell: PASS. All 20 new Ethernet RTL/model/testbench
+files parsed, and the complete 24-tree design elaborated with temporary UNISIM
+primitive stubs with no reported errors.
+
+Dynamic execution status: NOT RUN because Vivado/XSim is not on PATH. Static
+elaboration is not a substitute for the self-checking simulations. Replace this
+note with the archived run_m4_simulations.tcl transcript after executing from a
+Vivado command prompt.

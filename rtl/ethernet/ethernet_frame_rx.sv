@@ -42,7 +42,7 @@ module ethernet_frame_rx #(
     logic in_payload, overflow_seen;
     logic [31:0] crc_state;
     logic [31:0] ip_checksum_sum;
-    logic [31:0] payload_crc;
+    logic [31:0] raw_payload_crc, raw_received_crc;
     logic [31:0] raw_sequence, previous_raw_sequence;
     logic seen_raw_sequence, raw_format_ok;
     integer checksum_index;
@@ -73,6 +73,8 @@ module ethernet_frame_rx #(
             oversize_frames <= '0; rx_error_frames <= '0;
             protocol_error_frames <= '0; sequence_gap_frames <= '0;
             previous_raw_sequence <= '0; seen_raw_sequence <= 1'b0;
+            raw_sequence <= '0; raw_payload_crc <= 32'hFFFF_FFFF;
+            raw_received_crc <= '0; raw_format_ok <= 1'b1;
         end else begin
             frame_done <= 1'b0;
             if (clear_errors) begin
@@ -84,6 +86,8 @@ module ethernet_frame_rx #(
             if (frame_start) begin
                 stored_count <= '0; preamble_count <= '0; in_payload <= 1'b0;
                 overflow_seen <= 1'b0; crc_state <= 32'hFFFF_FFFF;
+                raw_sequence <= '0; raw_payload_crc <= 32'hFFFF_FFFF;
+                raw_received_crc <= '0; raw_format_ok <= 1'b1;
             end
             if (byte_valid) begin
                 if (!in_payload) begin
@@ -94,6 +98,26 @@ module ethernet_frame_rx #(
                     crc_state <= next_crc32(crc_state, byte_data);
                     if (stored_count < MAX_FRAME_BYTES + 4) begin
                         memory[stored_count] <= byte_data;
+                        if (stored_count >= 14 && stored_count < 56)
+                            raw_payload_crc <= next_crc32(raw_payload_crc, byte_data);
+                        case (stored_count)
+                            14: if (byte_data != "M") raw_format_ok <= 1'b0;
+                            15: if (byte_data != "4") raw_format_ok <= 1'b0;
+                            16: if (byte_data != "T") raw_format_ok <= 1'b0;
+                            17: if (byte_data != "E") raw_format_ok <= 1'b0;
+                            18: if (byte_data != "S") raw_format_ok <= 1'b0;
+                            19: if (byte_data != "T") raw_format_ok <= 1'b0;
+                            20,21,22,23: raw_sequence[31-((stored_count-20)*8) -: 8] <= byte_data;
+                            24: if (byte_data != 8'h00) raw_format_ok <= 1'b0;
+                            25: if (byte_data != 8'd30) raw_format_ok <= 1'b0;
+                            56: raw_received_crc[7:0] <= byte_data;
+                            57: raw_received_crc[15:8] <= byte_data;
+                            58: raw_received_crc[23:16] <= byte_data;
+                            59: raw_received_crc[31:24] <= byte_data;
+                            default: if (stored_count >= 26 && stored_count < 56 &&
+                                         byte_data != ((stored_count-26)^raw_sequence[7:0]))
+                                         raw_format_ok <= 1'b0;
+                        endcase
                         stored_count <= stored_count + 1'b1;
                     end else overflow_seen <= 1'b1;
                 end
@@ -133,19 +157,9 @@ module ethernet_frame_rx #(
                     ip_checksum_sum = (ip_checksum_sum & 16'hFFFF) + (ip_checksum_sum >> 16);
                     ipv4_checksum_valid <= (ip_checksum_sum[15:0] == 16'hFFFF) && (memory[14] == 8'h45);
                     if ({memory[12],memory[13]} == 16'h88B5) begin
-                        raw_sequence = {memory[20],memory[21],memory[22],memory[23]};
-                        raw_format_ok = (memory[14]=="M") && (memory[15]=="4") &&
-                            (memory[16]=="T") && (memory[17]=="E") &&
-                            (memory[18]=="S") && (memory[19]=="T") &&
-                            ({memory[24],memory[25]}==16'd30) && (stored_count-4==60);
-                        for (checksum_index=26; checksum_index<56; checksum_index=checksum_index+1)
-                            if (memory[checksum_index] != ((checksum_index-26)^raw_sequence[7:0])) raw_format_ok = 1'b0;
-                        payload_crc = 32'hFFFF_FFFF;
-                        for (checksum_index=14; checksum_index<56; checksum_index=checksum_index+1)
-                            payload_crc = next_crc32(payload_crc,memory[checksum_index]);
-                        payload_crc = ~payload_crc;
-                        if ({memory[59],memory[58],memory[57],memory[56]} != payload_crc) raw_format_ok = 1'b0;
-                        if (!raw_format_ok) protocol_error_frames <= protocol_error_frames + 1'b1;
+                        if (!raw_format_ok || (stored_count-4!=60) ||
+                            (raw_received_crc != ~raw_payload_crc))
+                            protocol_error_frames <= protocol_error_frames + 1'b1;
                         else begin
                             if (seen_raw_sequence && raw_sequence != previous_raw_sequence + 1'b1)
                                 sequence_gap_frames <= sequence_gap_frames + 1'b1;
