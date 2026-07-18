@@ -1,0 +1,676 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 04-jul-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Fri Jul 17 20:23:47 2026
+# Process ID         : 20892
+# Current directory  : C:/Users/Om Patel/Desktop/arty-conv-accelerator/vivado_project_m4/arty_conv_m4.runs/synth_1
+# Command line       : vivado.exe -log arty_m4_ethernet_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source arty_m4_ethernet_top.tcl
+# Log file           : C:/Users/Om Patel/Desktop/arty-conv-accelerator/vivado_project_m4/arty_conv_m4.runs/synth_1/arty_m4_ethernet_top.vds
+# Journal file       : C:/Users/Om Patel/Desktop/arty-conv-accelerator/vivado_project_m4/arty_conv_m4.runs/synth_1\vivado.jou
+# Running On         : Om
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) Ultra 9 185H
+# CPU Frequency      : 3072 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 22
+# Host memory        : 33945 MB
+# Swap memory        : 6710 MB
+# Total Virtual      : 40656 MB
+# Available Virtual  : 19812 MB
+#-----------------------------------------------------------
+INFO: [Common 17-1239] XILINX_LOCAL_USER_DATA is set to 'NO'.
+source arty_m4_ethernet_top.tcl -notrace
+create_project: Time (s): cpu = 00:00:11 ; elapsed = 00:00:09 . Memory (MB): peak = 618.641 ; gain = 306.629
+Command: synth_design -top arty_m4_ethernet_top -part xc7a100tcsg324-1
+Starting synth_design
+Attempting to get a license for feature 'Vivado_Synthesis' and/or device 'xc7a100t'
+INFO: [Common 17-349] Got license for feature 'Vivado_Synthesis' and/or device 'xc7a100t'
+INFO: [Device 21-403] Loading part xc7a100tcsg324-1
+INFO: [Designutils 20-5008] Incremental synthesis strategy default
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 31624
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 1391.410 ; gain = 575.242
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'arty_m4_ethernet_top' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/top/arty_m4_ethernet_top.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'debounce' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/debug/debounce.sv:1]
+	Parameter STABLE_CYCLES bound to: 1000000 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'debounce' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/debug/debounce.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'reset_sync' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/debug/reset_sync.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'reset_sync' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/debug/reset_sync.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'ethernet_ref_clock' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_ref_clock.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'MMCME2_BASE' [C:/AMDDesignTools/2026.1/Vivado/scripts/rt/data/unisim_comp.v:95844]
+	Parameter BANDWIDTH bound to: OPTIMIZED - type: string 
+	Parameter CLKFBOUT_MULT_F bound to: 8.000000e+00 - type: double 
+	Parameter CLKIN1_PERIOD bound to: 1.000000e+01 - type: double 
+	Parameter CLKOUT0_DIVIDE_F bound to: 3.200000e+01 - type: double 
+	Parameter DIVCLK_DIVIDE bound to: 1 - type: integer 
+	Parameter STARTUP_WAIT bound to: FALSE - type: string 
+INFO: [Synth 8-6155] done synthesizing module 'MMCME2_BASE' (0#1) [C:/AMDDesignTools/2026.1/Vivado/scripts/rt/data/unisim_comp.v:95844]
+INFO: [Synth 8-6157] synthesizing module 'BUFG' [C:/AMDDesignTools/2026.1/Vivado/scripts/rt/data/unisim_comp.v:2678]
+INFO: [Synth 8-6155] done synthesizing module 'BUFG' (0#1) [C:/AMDDesignTools/2026.1/Vivado/scripts/rt/data/unisim_comp.v:2678]
+INFO: [Synth 8-6157] synthesizing module 'ODDR' [C:/AMDDesignTools/2026.1/Vivado/scripts/rt/data/unisim_comp.v:117076]
+	Parameter DDR_CLK_EDGE bound to: SAME_EDGE - type: string 
+INFO: [Synth 8-6155] done synthesizing module 'ODDR' (0#1) [C:/AMDDesignTools/2026.1/Vivado/scripts/rt/data/unisim_comp.v:117076]
+INFO: [Synth 8-6155] done synthesizing module 'ethernet_ref_clock' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_ref_clock.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'phy_reset' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/phy_reset.sv:2]
+	Parameter CLOCK_HZ bound to: 100000000 - type: integer 
+	Parameter RESET_US bound to: 10000 - type: integer 
+	Parameter STARTUP_US bound to: 10000 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'phy_reset' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/phy_reset.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'mdio_master' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/mdio_master.sv:2]
+	Parameter CLOCK_HZ bound to: 100000000 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'mdio_master' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/mdio_master.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'phy_bringup' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/phy_bringup.sv:2]
+	Parameter CLOCK_HZ bound to: 100000000 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'phy_bringup' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/phy_bringup.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'mii_rx' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/mii_rx.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'mii_rx' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/mii_rx.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'ethernet_frame_rx' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'ethernet_frame_rx' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'arp_responder' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/arp_responder.sv:2]
+	Parameter FPGA_MAC bound to: 48'b000000100000000000000000000000000000000000000001 
+	Parameter FPGA_IP bound to: -1062729214 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'arp_responder' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/arp_responder.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'udp_echo' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/udp_echo.sv:2]
+	Parameter FPGA_MAC bound to: 48'b000000100000000000000000000000000000000000000001 
+	Parameter FPGA_IP bound to: -1062729214 - type: integer 
+	Parameter UDP_PORT bound to: 16'b0000111110100000 
+INFO: [Synth 8-6155] done synthesizing module 'udp_echo' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/udp_echo.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'ethernet_frame_tx' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_tx.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'ethernet_frame_tx' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_tx.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'ethernet_async_fifo' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_async_fifo.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'ethernet_async_fifo' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_async_fifo.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'mii_tx' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/mii_tx.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'mii_tx' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/mii_tx.sv:2]
+INFO: [Synth 8-6157] synthesizing module 'uart_tx' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/debug/uart_tx.sv:1]
+	Parameter CLOCK_HZ bound to: 100000000 - type: integer 
+	Parameter BAUD_RATE bound to: 115200 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'uart_tx' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/debug/uart_tx.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'm4_uart_reporter' [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/debug/m4_uart_reporter.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'm4_uart_reporter' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/debug/m4_uart_reporter.sv:2]
+INFO: [Synth 8-6155] done synthesizing module 'arty_m4_ethernet_top' (0#1) [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/top/arty_m4_ethernet_top.sv:2]
+WARNING: [Synth 8-6014] Unused sequential element ip_checksum_sum_reg was removed.  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:153]
+WARNING: [Synth 8-7137] Register memory_reg[0] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[1] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[2] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[3] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[4] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[5] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[6] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[7] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[8] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[9] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[10] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[11] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[12] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[13] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[14] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[15] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[16] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[17] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[18] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[19] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[20] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[21] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[22] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[23] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[24] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[25] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[26] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[27] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[28] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[29] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[30] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[31] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[32] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[33] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[34] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[35] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[36] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[37] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[38] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[39] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[40] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[41] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[42] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[43] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[44] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[45] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[46] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[47] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[48] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[49] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[50] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[51] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[52] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[53] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[54] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[55] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[56] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[57] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[58] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[59] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[60] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[61] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[62] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[63] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[64] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[65] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[66] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[67] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[68] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[69] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[70] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[71] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[72] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[73] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[74] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[75] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[76] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[77] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[78] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[79] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[80] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[81] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[82] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[83] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[84] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[85] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[86] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[87] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[88] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[89] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[90] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[91] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[92] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[93] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[94] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[95] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[96] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[97] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[98] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+WARNING: [Synth 8-7137] Register memory_reg[99] in module ethernet_frame_rx has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/ethernet_frame_rx.sv:60]
+INFO: [Common 17-14] Message 'Synth 8-7137' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+WARNING: [Synth 8-3936] Found unconnected internal register 'sum_reg' and it is trimmed from '32' to '16' bits. [C:/Users/Om Patel/Desktop/arty-conv-accelerator/rtl/ethernet/udp_echo.sv:21]
+WARNING: [Synth 8-7129] Port uart_rx in module arty_m4_ethernet_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port eth_crs in module arty_m4_ethernet_top is either unconnected or has no load
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:12 ; elapsed = 00:00:15 . Memory (MB): peak = 1980.625 ; gain = 1164.457
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:13 ; elapsed = 00:00:15 . Memory (MB): peak = 1980.625 ; gain = 1164.457
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:13 ; elapsed = 00:00:15 . Memory (MB): peak = 1980.625 ; gain = 1164.457
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.237 . Memory (MB): peak = 1980.625 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 2 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [C:/Users/Om Patel/Desktop/arty-conv-accelerator/constraints/arty_a7_ethernet.xdc]
+Finished Parsing XDC File [C:/Users/Om Patel/Desktop/arty-conv-accelerator/constraints/arty_a7_ethernet.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/Om Patel/Desktop/arty-conv-accelerator/constraints/arty_a7_ethernet.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/arty_m4_ethernet_top_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/arty_m4_ethernet_top_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+INFO: [Timing 38-2] Deriving generated clocks
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.013 . Memory (MB): peak = 2080.246 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 1 instances were transformed.
+  MMCME2_BASE => MMCME2_ADV: 1 instance 
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.202 . Memory (MB): peak = 2080.449 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 2080.449 ; gain = 1264.281
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7a100tcsg324-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 2080.449 ; gain = 1264.281
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 2080.449 ; gain = 1264.281
+---------------------------------------------------------------------------------
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'phy_reset'
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'ethernet_frame_tx'
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'm4_uart_reporter'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+              HOLD_RESET |                              001 |                               00
+            WAIT_STARTUP |                              010 |                               01
+                  iSTATE |                              100 |                               10
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'phy_reset'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                  iSTATE |                              000 |                              000
+                 iSTATE0 |                              001 |                              001
+                 iSTATE1 |                              010 |                              010
+                 iSTATE3 |                              011 |                              011
+                 iSTATE2 |                              100 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'ethernet_frame_tx'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                    IDLE |                              000 |                              000
+                    LOAD |                              001 |                              001
+                    SEND |                              010 |                              010
+               WAIT_BUSY |                              011 |                              011
+               WAIT_DONE |                              100 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'm4_uart_reporter'
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:39 ; elapsed = 00:00:47 . Memory (MB): peak = 2080.449 ; gain = 1264.281
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input   33 Bit       Adders := 1     
+	   2 Input   32 Bit       Adders := 17    
+	   5 Input   32 Bit       Adders := 2     
+	   2 Input   25 Bit       Adders := 1     
+	  10 Input   20 Bit       Adders := 1     
+	   2 Input   20 Bit       Adders := 1     
+	   4 Input   19 Bit       Adders := 1     
+	   2 Input   16 Bit       Adders := 5     
+	   2 Input   12 Bit       Adders := 3     
+	   2 Input   11 Bit       Adders := 4     
+	   2 Input   10 Bit       Adders := 1     
+	   2 Input    8 Bit       Adders := 2     
+	   2 Input    7 Bit       Adders := 44    
+	   2 Input    6 Bit       Adders := 2     
+	   2 Input    5 Bit       Adders := 1     
+	   2 Input    4 Bit       Adders := 3     
+	   2 Input    3 Bit       Adders := 1     
+	   2 Input    2 Bit       Adders := 1     
++---XORs : 
+	   2 Input     32 Bit         XORs := 321   
+	   2 Input     12 Bit         XORs := 2     
+	   2 Input      8 Bit         XORs := 30    
+	   2 Input      1 Bit         XORs := 296   
++---Registers : 
+	              162 Bit    Registers := 2     
+	               48 Bit    Registers := 3     
+	               32 Bit    Registers := 18    
+	               25 Bit    Registers := 1     
+	               20 Bit    Registers := 1     
+	               16 Bit    Registers := 14    
+	               15 Bit    Registers := 1     
+	               12 Bit    Registers := 6     
+	               11 Bit    Registers := 4     
+	               10 Bit    Registers := 2     
+	                8 Bit    Registers := 1531  
+	                6 Bit    Registers := 1     
+	                5 Bit    Registers := 4     
+	                4 Bit    Registers := 7     
+	                3 Bit    Registers := 1     
+	                2 Bit    Registers := 16    
+	                1 Bit    Registers := 60    
++---RAMs : 
+	              18K Bit	(2048 X 9 bit)          RAMs := 1     
++---Muxes : 
+	   2 Input   32 Bit        Muxes := 49    
+	   5 Input   32 Bit        Muxes := 3     
+	   4 Input   32 Bit        Muxes := 1     
+	   2 Input   31 Bit        Muxes := 2     
+	  15 Input   25 Bit        Muxes := 1     
+	   2 Input   22 Bit        Muxes := 1     
+	   3 Input   20 Bit        Muxes := 1     
+	   2 Input   16 Bit        Muxes := 5     
+	   2 Input   15 Bit        Muxes := 1     
+	   2 Input   11 Bit        Muxes := 6     
+	   3 Input   11 Bit        Muxes := 1     
+	   2 Input   10 Bit        Muxes := 1     
+	   2 Input    8 Bit        Muxes := 12    
+	   4 Input    8 Bit        Muxes := 1     
+	   5 Input    8 Bit        Muxes := 3     
+	   3 Input    8 Bit        Muxes := 1     
+	   2 Input    7 Bit        Muxes := 46    
+	   6 Input    7 Bit        Muxes := 1     
+	   2 Input    6 Bit        Muxes := 1     
+	   2 Input    5 Bit        Muxes := 1     
+	  15 Input    5 Bit        Muxes := 1     
+	   2 Input    4 Bit        Muxes := 7     
+	   3 Input    4 Bit        Muxes := 1     
+	  15 Input    4 Bit        Muxes := 2     
+	   5 Input    3 Bit        Muxes := 2     
+	   2 Input    3 Bit        Muxes := 2     
+	   5 Input    2 Bit        Muxes := 1     
+	   3 Input    2 Bit        Muxes := 1     
+	   2 Input    1 Bit        Muxes := 146   
+	   5 Input    1 Bit        Muxes := 17    
+	   4 Input    1 Bit        Muxes := 1     
+	   3 Input    1 Bit        Muxes := 4     
+	  15 Input    1 Bit        Muxes := 11    
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 240 (col length:80)
+BRAMs: 270 (col length: RAMB18 80 RAMB36 40)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7129] Port uart_rx in module arty_m4_ethernet_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port eth_crs in module arty_m4_ethernet_top is either unconnected or has no load
+INFO: [Synth 8-5546] ROM "frame_tx_data" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-5546] ROM "frame_tx_data" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[887]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[7]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[15]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[23]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[31]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[39]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[47]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[55]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[63]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[71]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[79]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[87]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[95]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[103]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[111]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[119]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[127]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[135]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[143]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[151]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[159]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[167]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[175]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[183]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[191]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[199]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[207]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[215]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[223]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[231]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[239]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[247]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[255]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[263]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[271]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[279]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[287]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[295]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[303]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[311]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[319]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[327]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[335]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[343]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[351]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[359]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[367]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[375]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[383]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[391]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[399]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[407]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[415]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[423]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[431]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[439]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[447]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[455]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[463]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[471]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[479]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[487]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[495]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[503]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[511]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[519]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[527]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[535]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[543]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[551]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[559]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[567]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[575]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[583]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[591]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[599]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[607]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[615]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[623]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[631]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[639]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[647]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[655]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[663]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[671]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[679]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[687]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[695]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[703]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[711]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[719]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[727]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[735]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[743]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[751]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[759]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[767]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[775]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[783]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Synth 8-3886] merging instance 'u_reporter/message_reg[791]' (FDRE) to 'u_reporter/message_reg[885]'
+INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_reporter/\message_reg[872] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_bringup/\command_write_data_reg[0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_mdio/\saved_phy_reg[1] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (u_uart/\frame_reg[9] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_reporter/\uart_data_reg[7] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_mdio/\saved_write_data_reg[0] )
+WARNING: [Synth 8-3332] Sequential element (FSM_onehot_state_reg[2]) is unused and will be removed from module phy_reset.
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:56 ; elapsed = 00:01:14 . Memory (MB): peak = 2080.449 ; gain = 1264.281
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Distributed RAM: Preliminary Mapping Report (see note below)
++------------+------------+-----------+----------------------+--------------+
+|Module Name | RTL Object | Inference | Size (Depth x Width) | Primitives   | 
++------------+------------+-----------+----------------------+--------------+
+|u_tx_fifo   | memory_reg | Implied   | 2 K x 9              | RAM64M x 96  | 
++------------+------------+-----------+----------------------+--------------+
+
+Note: The table above is a preliminary report that shows the Distributed RAMs at the current stage of the synthesis flow. Some Distributed RAMs may be reimplemented as non Distributed RAM primitives later in the synthesis flow. Multiple instantiated RAMs are reported only once.
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:01 ; elapsed = 00:01:20 . Memory (MB): peak = 2080.449 ; gain = 1264.281
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+      : i_0/i_6/fifo_full
+      : i_0/u_tx_fifo/full
+      : i_0/u_tx_fifo/i_2/full
+      : i_0/u_tx_fifo/i_2/write_enable
+      : i_0/u_tx_fifo/write_enable
+      : i_0/i_6/write_enable0
+      : i_0/u_tx_fifo/i_2/write_enable
+      : i_0/u_tx_fifo/write_enable
+      : i_0/i_6/write_enable0
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:01:03 ; elapsed = 00:01:23 . Memory (MB): peak = 2080.449 ; gain = 1264.281
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Distributed RAM: Final Mapping Report
++------------+------------+-----------+----------------------+--------------+
+|Module Name | RTL Object | Inference | Size (Depth x Width) | Primitives   | 
++------------+------------+-----------+----------------------+--------------+
+|u_tx_fifo   | memory_reg | Implied   | 2 K x 9              | RAM64M x 96  | 
++------------+------------+-----------+----------------------+--------------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:01:05 ; elapsed = 00:01:26 . Memory (MB): peak = 2080.449 ; gain = 1264.281
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+INFO: [Synth 8-4163] Replicating register \u_mii_tx/eth_tx_en_reg  to handle IOB=TRUE attribute
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:01:12 ; elapsed = 00:01:33 . Memory (MB): peak = 2161.262 ; gain = 1345.094
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:12 ; elapsed = 00:01:33 . Memory (MB): peak = 2161.262 ; gain = 1345.094
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \write_gray_reg[3]_i_2 /O[3]'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \write_gray_reg[11]_i_3 /O[3]'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \write_gray_reg[11]_i_3 /O[1]'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \write_gray_reg[11]_i_3 /O[0]'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \write_gray_reg[11]_i_2 /O[3]'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \write_gray_reg[11]_i_2 /O[2]'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \write_gray_reg[11]_i_2 /O[1]'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \write_gray_reg[11]_i_2 /O[0]'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \crc_state[31]_i_10 /O'
+WARNING: [Synth 8-326] inferred exception to break timing loop: 'set_false_path -through \crc_state[31]_i_11 /O'
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:14 ; elapsed = 00:01:35 . Memory (MB): peak = 2161.262 ; gain = 1345.094
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:14 ; elapsed = 00:01:35 . Memory (MB): peak = 2161.262 ; gain = 1345.094
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:14 ; elapsed = 00:01:36 . Memory (MB): peak = 2161.262 ; gain = 1345.094
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:14 ; elapsed = 00:01:36 . Memory (MB): peak = 2161.262 ; gain = 1345.094
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++-+--------------+----------+
+| |BlackBox name |Instances |
++-+--------------+----------+
++-+--------------+----------+
+
+Report Cell Usage: 
++------+------------+------+
+|      |Cell        |Count |
++------+------------+------+
+|1     |BUFG        |     4|
+|2     |CARRY4      |   277|
+|3     |LUT1        |    56|
+|4     |LUT2        |   292|
+|5     |LUT3        |   640|
+|6     |LUT4        |   880|
+|7     |LUT5        |   887|
+|8     |LUT6        |  5039|
+|9     |MMCME2_BASE |     1|
+|10    |MUXF7       |  1717|
+|11    |MUXF8       |   813|
+|12    |ODDR        |     1|
+|13    |RAM64M      |    96|
+|14    |FDCE        |  1087|
+|15    |FDPE        |    73|
+|16    |FDRE        | 13328|
+|17    |FDSE        |    41|
+|18    |IBUF        |    18|
+|19    |IOBUF       |     1|
+|20    |OBUF        |    13|
++------+------------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:14 ; elapsed = 00:01:36 . Memory (MB): peak = 2161.262 ; gain = 1345.094
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 13 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:55 ; elapsed = 00:01:30 . Memory (MB): peak = 2161.262 ; gain = 1245.270
+Synthesis Optimization Complete : Time (s): cpu = 00:01:14 ; elapsed = 00:01:36 . Memory (MB): peak = 2178.383 ; gain = 1345.094
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.130 . Memory (MB): peak = 2187.434 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 2906 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+WARNING: [Netlist 29-101] Netlist 'arty_m4_ethernet_top' is not ideal for floorplanning, since the cellview 'ethernet_frame_rx' contains a large number of primitives.  Please consider enabling hierarchy in synthesis if you want to do floorplanning.
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 2195.090 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 98 instances were transformed.
+  IOBUF => IOBUF (IBUF, OBUFT): 1 instance 
+  MMCME2_BASE => MMCME2_ADV: 1 instance 
+  RAM64M => RAM64M (RAMD64E(x4)): 96 instances
+
+Synth Design complete | Checksum: c0de9584
+INFO: [Common 17-83] Releasing license: Vivado_Synthesis
+175 Infos, 118 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:01:21 ; elapsed = 00:01:46 . Memory (MB): peak = 2195.129 ; gain = 1576.488
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.054 . Memory (MB): peak = 2195.129 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/Om Patel/Desktop/arty-conv-accelerator/vivado_project_m4/arty_conv_m4.runs/synth_1/arty_m4_ethernet_top.dcp' has been generated.
+INFO: [Vivado 12-24828] Executing command : report_utilization -file arty_m4_ethernet_top_utilization_synth.rpt -pb arty_m4_ethernet_top_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Fri Jul 17 20:25:47 2026...

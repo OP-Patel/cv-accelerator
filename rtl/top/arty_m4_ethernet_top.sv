@@ -48,7 +48,7 @@ module arty_m4_ethernet_top #(
     logic [3:0] phy_errors;
 
     (* ASYNC_REG = "TRUE" *) logic [1:0] rx_reset_sync, tx_reset_sync;
-    (* ASYNC_REG = "TRUE" *) logic [1:0] clear_rx_sync, test_toggle_sync;
+    (* ASYNC_REG = "TRUE" *) logic [1:0] clear_rx_sync, test_toggle_sync, continuous_sync;
     logic rx_reset, tx_reset, seen_test_toggle;
     logic [7:0] rx_byte;
     logic rx_byte_valid, rx_frame_start, rx_frame_end, rx_error, rx_odd;
@@ -87,7 +87,13 @@ module arty_m4_ethernet_top #(
     logic report_pending, report_start, reporter_busy, uart_send, uart_busy;
     logic [7:0] uart_data;
     logic [15:0] combined_errors;
-    logic [31:0] bad_count, drop_count;
+    logic [31:0] bad_count, bad_count_rx, drop_count;
+    logic [31:0] report_tx_count, report_rx_count, report_bad_count;
+    logic [31:0] report_dropped_count, report_sequence_gap_count;
+    logic report_frame_length_error, report_fifo_overflow;
+    logic report_fifo_underflow, report_mii_underrun;
+    (* ASYNC_REG = "TRUE" *) logic [161:0] rx_status_meta, rx_status_sync;
+    (* ASYNC_REG = "TRUE" *) logic [1:0] tx_status_meta, tx_status_sync;
 
     reset_sync u_reset (.clk(clk_100mhz), .async_reset_in(reset_btn), .sync_reset_out(reset));
     ethernet_ref_clock u_ref_clock (
@@ -141,11 +147,12 @@ module arty_m4_ethernet_top #(
     );
 
     always_ff @(posedge eth_rx_clk or posedge reset_btn) begin
-        if (reset_btn) begin rx_reset_sync <= 2'b11; clear_rx_sync <= '0; test_toggle_sync <= '0; end
+        if (reset_btn) begin rx_reset_sync <= 2'b11; clear_rx_sync <= '0; test_toggle_sync <= '0; continuous_sync <= '0; end
         else begin
             rx_reset_sync <= {rx_reset_sync[0], reset || !phy_ready};
             clear_rx_sync <= {clear_rx_sync[0], clear_level};
             test_toggle_sync <= {test_toggle_sync[0], test_toggle};
+            continuous_sync <= {continuous_sync[0], sw_clean[0]};
         end
     end
     always_ff @(posedge eth_tx_clk or posedge reset_btn) begin
@@ -229,9 +236,9 @@ module arty_m4_ethernet_top #(
         .length_error(frame_tx_length_error)
     );
     ethernet_async_fifo u_tx_fifo (
-        .reset(reset_btn || !phy_ready), .write_clk(eth_rx_clk), .write_enable(encoded_valid && !fifo_full),
+        .write_reset(rx_reset), .write_clk(eth_rx_clk), .write_enable(encoded_valid && !fifo_full),
         .write_data({encoded_last,encoded_data}), .full(fifo_full), .overflow(fifo_overflow),
-        .read_clk(eth_tx_clk), .read_enable(fifo_read), .read_data(fifo_output),
+        .read_clk(eth_tx_clk), .read_reset(tx_reset), .read_enable(fifo_read), .read_data(fifo_output),
         .empty(fifo_empty), .underflow(fifo_underflow)
     );
     assign fifo_read = !fifo_empty && mii_byte_ready;
@@ -247,7 +254,9 @@ module arty_m4_ethernet_top #(
             saved_source_ip<='0; saved_source_port<='0; saved_udp_length<='0;
             seen_test_toggle<=1'b0; test_sequence<='0; tx_frames<='0;
             dropped_frames<='0; continuous_count<='0;
+            bad_count_rx<='0;
         end else begin
+            bad_count_rx<=bad_count;
             frame_tx_start<=1'b0;
             if (clear_rx_sync[1]) begin tx_frames<='0; dropped_frames<='0; end
             if (frame_tx_done) tx_frames<=tx_frames+1'b1;
@@ -264,7 +273,7 @@ module arty_m4_ethernet_top #(
                     active_source<=SOURCE_UDP; saved_source_mac<=rx_source_mac;
                     saved_source_ip<=rx_source_ip; saved_source_port<=rx_udp_source_port;
                     saved_udp_length<=rx_udp_length; frame_tx_start<=1'b1;
-                end else if ((test_toggle_sync[1]!=seen_test_toggle) || (sw_clean[0] && continuous_count==0)) begin
+                end else if ((test_toggle_sync[1]!=seen_test_toggle) || (continuous_sync[1] && continuous_count==0)) begin
                     seen_test_toggle<=test_toggle_sync[1]; active_source<=SOURCE_TEST;
                     test_sequence<=test_sequence+1'b1; frame_tx_start<=1'b1;
                 end
@@ -273,12 +282,17 @@ module arty_m4_ethernet_top #(
     end
 
     assign bad_count = bad_fcs_frames+runt_frames+oversize_frames+rx_error_frames+protocol_error_frames;
-    assign drop_count = dropped_frames+sequence_gap_frames+fifo_overflow+fifo_underflow+mii_underrun;
+    assign {report_frame_length_error, report_fifo_overflow, report_dropped_count,
+            report_sequence_gap_count, report_bad_count, report_rx_count,
+            report_tx_count} = rx_status_sync;
+    assign {report_fifo_underflow, report_mii_underrun} = tx_status_sync;
+    assign drop_count = report_dropped_count+report_sequence_gap_count+
+                        report_fifo_overflow+report_fifo_underflow+report_mii_underrun;
     always_comb begin
         combined_errors='0; combined_errors[3:0]=phy_errors;
-        combined_errors[4]=frame_tx_length_error; combined_errors[5]=fifo_overflow;
-        combined_errors[6]=fifo_underflow; combined_errors[7]=mii_underrun;
-        combined_errors[8]=(bad_count!=0); combined_errors[9]=(dropped_frames!=0);
+        combined_errors[4]=report_frame_length_error; combined_errors[5]=report_fifo_overflow;
+        combined_errors[6]=report_fifo_underflow; combined_errors[7]=report_mii_underrun;
+        combined_errors[8]=(report_bad_count!=0); combined_errors[9]=(report_dropped_count!=0);
         combined_errors[10]=eth_col; combined_errors[11]=1'b0;
     end
     uart_tx #(.CLOCK_HZ(CLOCK_HZ),.BAUD_RATE(UART_BAUD)) u_uart (
@@ -289,7 +303,7 @@ module arty_m4_ethernet_top #(
         .phy_pass(identity_valid && discovery_done && !(|phy_errors)),
         .packet_pass(combined_errors[11:4]==0),.phy_id1(phy_id1),.phy_id2(phy_id2),
         .link_up(link_up),.speed_100(speed_100),.full_duplex(full_duplex),
-        .tx_count(tx_frames),.rx_count(good_frames),.bad_count(bad_count),
+        .tx_count(report_tx_count),.rx_count(report_rx_count),.bad_count(report_bad_count),
         .drop_count(drop_count),.error_flags(combined_errors),
         .uart_data(uart_data),.uart_send(uart_send),.uart_busy(uart_busy),.busy(reporter_busy)
     );
@@ -299,7 +313,14 @@ module arty_m4_ethernet_top #(
             heartbeat<='0; btn_delayed<='0; phy_ready_delayed<=1'b0;
             discovery_delayed<=1'b0; link_delayed<=1'b0;
             test_toggle<=1'b0; report_pending<=1'b0; report_start<=1'b0;
+            rx_status_meta<='0; rx_status_sync<='0;
+            tx_status_meta<='0; tx_status_sync<='0;
         end else begin
+            rx_status_meta<={frame_tx_length_error, fifo_overflow, dropped_frames,
+                             sequence_gap_frames, bad_count_rx, good_frames, tx_frames};
+            rx_status_sync<=rx_status_meta;
+            tx_status_meta<={fifo_underflow, mii_underrun};
+            tx_status_sync<=tx_status_meta;
             heartbeat<=heartbeat+1'b1; btn_delayed<=btn_clean;
             phy_ready_delayed<=phy_ready; discovery_delayed<=discovery_done;
             link_delayed<=link_up; report_start<=1'b0;
@@ -309,7 +330,7 @@ module arty_m4_ethernet_top #(
             else if (report_pending && !reporter_busy) begin report_pending<=1'b0; report_start<=1'b1; end
         end
     end
-    assign led = reset ? 4'b0 : {|combined_errors, (tx_frames!=0)||(good_frames!=0), identity_valid&&link_up, heartbeat[26]};
+    assign led = reset ? 4'b0 : {|combined_errors, (report_tx_count!=0)||(report_rx_count!=0), identity_valid&&link_up, heartbeat[26]};
     logic unused;
     assign unused = uart_rx ^ bmsr[0] ^ physts[15] ^ rx_destination_mac[0] ^
                     rx_frame_length[0] ^ eth_crs;

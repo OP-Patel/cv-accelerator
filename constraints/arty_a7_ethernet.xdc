@@ -54,3 +54,6 @@ set_output_delay -clock eth_tx_clk_in -clock_fall -max 9.700 [get_ports {eth_txd
 set_output_delay -clock eth_tx_clk_in -clock_fall -min 0.000 [get_ports {eth_txd[*] eth_tx_en}]
 
 set_clock_groups -asynchronous -group [get_clocks sys_clk] -group [get_clocks eth_rx_clk_in] -group [get_clocks eth_tx_clk_in]
+# Arty A7 configuration bank is powered at 3.3 V.
+set_property CFGBVS VCCO [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]

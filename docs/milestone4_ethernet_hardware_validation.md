@@ -24,7 +24,15 @@ python scripts/python/ethernet_test.py interfaces
 ## Procedure
 
 1. Run the Milestone 4 simulations, synthesis check, and bitstream build.
-2. Program `vivado_project/arty_conv.runs/impl_1/arty_m4_ethernet_top.bit`.
+2. Open the dedicated Milestone 4 project from PowerShell:
+
+   ```powershell
+   & "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat" `
+     "C:\Users\Om Patel\Desktop\arty-conv-accelerator\vivado_project_m4\arty_conv_m4.xpr"
+   ```
+
+   The older `vivado_project\arty_conv.xpr` path is not present. Program
+   `vivado_project_m4/arty_conv_m4.runs/impl_1/arty_m4_ethernet_top.bit`.
 3. Capture UART at 115200 8N1. With no cable, confirm the PHY identity and
    `LINK=0`. Connect the cable and wait for `LINK=1`.
 4. Confirm `SPD=100` on a 100 Mb/s partner. With a deliberate 10 Mb/s partner,
@@ -32,14 +40,14 @@ python scripts/python/ethernet_test.py interfaces
 5. Start raw capture, then press `BTN3`:
 
    ```text
-   python scripts/python/ethernet_test.py raw-listen --interface "INTERFACE" --count 1
+   python scripts/python/ethernet_test.py raw-listen --interface "Ethernet 2" --count 1
    ```
 
 6. Send 100 raw frames into the FPGA and confirm UART RX increases with zero
    `BAD` and `DROP`:
 
    ```text
-   python scripts/python/ethernet_test.py raw-send --interface "INTERFACE" --count 100
+   python scripts/python/ethernet_test.py raw-send --interface "Ethernet 2" --count 100
    ```
 
 7. Clear the host ARP cache, start UDP traffic, and confirm Wireshark shows an

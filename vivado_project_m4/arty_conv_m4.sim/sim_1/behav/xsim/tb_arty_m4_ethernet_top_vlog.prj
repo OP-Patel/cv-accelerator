@@ -1,0 +1,26 @@
+# compile verilog/system verilog design source files
+sv xil_defaultlib  --include "../../../../../../../../../AMDDesignTools/2026.1/Vivado/data/rsb/busdef" \
+"../../../../../rtl/ethernet/arp_responder.sv" \
+"../../../../../rtl/top/arty_m4_ethernet_top.sv" \
+"../../../../../rtl/debug/debounce.sv" \
+"../../../../../sim/models/dp83848_mii_model.sv" \
+"../../../../../rtl/ethernet/ethernet_async_fifo.sv" \
+"../../../../../rtl/ethernet/ethernet_frame_rx.sv" \
+"../../../../../rtl/ethernet/ethernet_frame_tx.sv" \
+"../../../../../rtl/ethernet/ethernet_ref_clock.sv" \
+"../../../../../rtl/debug/m4_uart_reporter.sv" \
+"../../../../../rtl/ethernet/mdio_master.sv" \
+"../../../../../rtl/ethernet/mii_rx.sv" \
+"../../../../../rtl/ethernet/mii_tx.sv" \
+"../../../../../rtl/ethernet/phy_bringup.sv" \
+"../../../../../rtl/ethernet/phy_reset.sv" \
+"../../../../../rtl/debug/reset_sync.sv" \
+"../../../../../rtl/debug/uart_tx.sv" \
+"../../../../../rtl/ethernet/udp_echo.sv" \
+"../../../../../sim/tb/tb_arty_m4_ethernet_top.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

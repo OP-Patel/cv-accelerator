@@ -100,3 +100,15 @@ vivado -mode batch -source build_m4_bitstream.tcl
 The bitstream target writes timing, utilization, CDC, DRC, and SHA-256 files
 under `docs/`. Passing implementation is not physical Ethernet validation;
 use the separate hardware procedure and archive its evidence.
+
+To inspect the implemented design or program the board in the Vivado GUI, open
+the dedicated Milestone 4 project from PowerShell:
+
+```powershell
+& "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat" `
+  "C:\Users\Om Patel\Desktop\arty-conv-accelerator\vivado_project_m4\arty_conv_m4.xpr"
+```
+
+Do not use the obsolete `vivado_project\arty_conv.xpr` path. The verified M4
+bitstream is under
+`vivado_project_m4/arty_conv_m4.runs/impl_1/arty_m4_ethernet_top.bit`.

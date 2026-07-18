@@ -58,6 +58,21 @@ vivado -mode batch -source check_m4_synthesis.tcl
 vivado -mode batch -source build_m4_bitstream.tcl
 ```
 
+The Milestone 4 build uses a dedicated Vivado project. Open it from PowerShell
+with:
+
+```powershell
+& "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat" `
+  "C:\Users\Om Patel\Desktop\arty-conv-accelerator\vivado_project_m4\arty_conv_m4.xpr"
+```
+
+The older `vivado_project\arty_conv.xpr` path is not present in this checkout.
+The generated Ethernet bitstream is:
+
+```text
+vivado_project_m4/arty_conv_m4.runs/impl_1/arty_m4_ethernet_top.bit
+```
+
 The photographed camera's reviewed pin assignment is enabled in
 `constraints/arty_a7_camera.xdc`. Build the camera top with:
 

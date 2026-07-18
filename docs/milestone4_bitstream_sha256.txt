@@ -1,0 +1,3 @@
+SHA256 hash of ../vivado_project_m4/arty_conv_m4.runs/impl_1/arty_m4_ethernet_top.bit:
+90895b8f519ab28e7e73f63ffed21c17be36246ec6b75978ea941413b596da5e
+CertUtil: -hashfile command completed successfully.

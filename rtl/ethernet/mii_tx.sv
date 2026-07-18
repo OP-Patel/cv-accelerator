@@ -6,25 +6,33 @@ module mii_tx (
     input  logic       byte_valid,
     input  logic       byte_last,
     output logic       byte_ready,
-    output logic [3:0] eth_txd,
-    output logic       eth_tx_en,
+    (* IOB = "TRUE" *) output logic [3:0] eth_txd,
+    (* IOB = "TRUE" *) output logic       eth_tx_en,
     output logic       underrun
 );
     logic high_nibble;
+    logic finishing;
     logic [7:0] saved_byte;
     logic saved_last;
 
-    assign byte_ready = !high_nibble;
+    assign byte_ready = !high_nibble && !finishing;
 
     // DP83848 samples TXD/TX_EN on TX_CLK falling edges, so drive on rising edges.
     always_ff @(posedge tx_clk) begin
         if (reset) begin
             high_nibble <= 1'b0;
+            finishing <= 1'b0;
             saved_byte <= '0;
             saved_last <= 1'b0;
             eth_txd <= '0;
             eth_tx_en <= 1'b0;
             underrun <= 1'b0;
+        end else if (finishing) begin
+            // Keep TX_EN asserted through the falling edge that samples the
+            // final high nibble, then end the frame on this following edge.
+            finishing <= 1'b0;
+            eth_txd <= '0;
+            eth_tx_en <= 1'b0;
         end else if (!high_nibble) begin
             if (byte_valid) begin
                 saved_byte <= byte_data;
@@ -40,7 +48,7 @@ module mii_tx (
         end else begin
             eth_txd <= saved_byte[7:4];
             high_nibble <= 1'b0;
-            if (saved_last) eth_tx_en <= 1'b0;
+            if (saved_last) finishing <= 1'b1;
         end
     end
 endmodule

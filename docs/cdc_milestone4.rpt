@@ -1,0 +1,211 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Fri Jul 17 20:29:06 2026
+| Host         : Om running 64-bit major release  (build 9200)
+| Command      : report_cdc -details -file ../docs/cdc_milestone4.rpt
+| Design       : arty_m4_ethernet_top
+| Device       : 7a100t-csg324
+| Speed File   : -1  PRODUCTION 1.23 2018-06-13
+| Design State : Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+CDC Report
+
+ID      Severity  Count  Description
+------  --------  -----  --------------------------------------------------
+CDC-1   Critical      4  1-bit unknown CDC circuitry
+CDC-3   Info        133  1-bit synchronized with ASYNC_REG property
+CDC-6   Warning       3  Multi-bit synchronized with ASYNC_REG property
+CDC-10  Critical      2  Combinational logic detected before a synchronizer
+CDC-15  Warning       5  Clock enable controlled CDC structure detected
+
+Source Clock: eth_tx_clk_in
+Destination Clock: eth_rx_clk_in
+CDC Type: No Common Primary Clock
+
+Row  ID     Severity  Description                                     Depth  Exception            Source (From)                    Destination (To)
+---  -----  --------  ----------------------------------------------  -----  -------------------  -------------------------------  -------------------------------------
+  1  CDC-6  Warning   Multi-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_tx_fifo/read_gray_reg[11:0]/C  u_tx_fifo/read_gray_sync1_reg[11:0]/D
+
+Source Clock: sys_clk
+Destination Clock: eth_rx_clk_in
+CDC Type: No Common Primary Clock
+
+Row  ID      Severity  Description                                         Depth  Exception            Source (From)                                    Destination (To)
+---  ------  --------  --------------------------------------------------  -----  -------------------  -----------------------------------------------  -------------------------
+  1  CDC-3   Info      1-bit synchronized with ASYNC_REG property              2  Asynch Clock Groups  g_buttons[1].u_button/g_filter.clean_out_reg/C   clear_rx_sync_reg[0]/D
+  2  CDC-3   Info      1-bit synchronized with ASYNC_REG property              2  Asynch Clock Groups  g_switches[0].u_switch/g_filter.clean_out_reg/C  continuous_sync_reg[0]/D
+  3  CDC-10  Critical  Combinational logic detected before a synchronizer      2  Asynch Clock Groups  u_reset/reset_ff2_reg/C                          rx_reset_sync_reg[0]/D
+  4  CDC-3   Info      1-bit synchronized with ASYNC_REG property              2  Asynch Clock Groups  test_toggle_reg/C                                test_toggle_sync_reg[0]/D
+
+Source Clock: eth_rx_clk_in
+Destination Clock: eth_tx_clk_in
+CDC Type: No Common Primary Clock
+
+Row  ID      Severity  Description                                     Depth  Exception            Source (From)                                Destination (To)
+---  ------  --------  ----------------------------------------------  -----  -------------------  -------------------------------------------  --------------------------------------
+  1  CDC-1   Critical  1-bit unknown CDC circuitry                         0  Asynch Clock Groups  u_tx_fifo/memory_reg_1472_1535_0_2/RAMA/CLK  u_mii_tx/eth_txd_reg[0]/D
+  2  CDC-1   Critical  1-bit unknown CDC circuitry                         0  Asynch Clock Groups  u_tx_fifo/memory_reg_576_639_0_2/RAMB/CLK    u_mii_tx/eth_txd_reg[1]/D
+  3  CDC-1   Critical  1-bit unknown CDC circuitry                         0  Asynch Clock Groups  u_tx_fifo/memory_reg_0_63_0_2/RAMC/CLK       u_mii_tx/eth_txd_reg[2]/D
+  4  CDC-1   Critical  1-bit unknown CDC circuitry                         0  Asynch Clock Groups  u_tx_fifo/memory_reg_384_447_3_5/RAMA/CLK    u_mii_tx/eth_txd_reg[3]/D
+  5  CDC-15  Warning   Clock enable controlled CDC structure detected      0  Asynch Clock Groups  u_tx_fifo/memory_reg_1856_1919_3_5/RAMB/CLK  u_mii_tx/saved_byte_reg[4]/D
+  6  CDC-15  Warning   Clock enable controlled CDC structure detected      0  Asynch Clock Groups  u_tx_fifo/memory_reg_1408_1471_3_5/RAMC/CLK  u_mii_tx/saved_byte_reg[5]/D
+  7  CDC-15  Warning   Clock enable controlled CDC structure detected      0  Asynch Clock Groups  u_tx_fifo/memory_reg_640_703_6_8/RAMA/CLK    u_mii_tx/saved_byte_reg[6]/D
+  8  CDC-15  Warning   Clock enable controlled CDC structure detected      0  Asynch Clock Groups  u_tx_fifo/memory_reg_960_1023_6_8/RAMB/CLK   u_mii_tx/saved_byte_reg[7]/D
+  9  CDC-15  Warning   Clock enable controlled CDC structure detected      0  Asynch Clock Groups  u_tx_fifo/memory_reg_1792_1855_6_8/RAMC/CLK  u_mii_tx/saved_last_reg/D
+ 10  CDC-6   Warning   Multi-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_tx_fifo/write_gray_reg[11:0]/C             u_tx_fifo/write_gray_sync1_reg[11:0]/D
+
+Source Clock: sys_clk
+Destination Clock: eth_tx_clk_in
+CDC Type: No Common Primary Clock
+
+Row  ID      Severity  Description                                         Depth  Exception            Source (From)            Destination (To)
+---  ------  --------  --------------------------------------------------  -----  -------------------  -----------------------  ----------------------
+  1  CDC-10  Critical  Combinational logic detected before a synchronizer      2  Asynch Clock Groups  u_reset/reset_ff2_reg/C  tx_reset_sync_reg[0]/D
+
+Source Clock: eth_rx_clk_in
+Destination Clock: sys_clk
+CDC Type: No Common Primary Clock
+
+Row  ID     Severity  Description                                     Depth  Exception            Source (From)                             Destination (To)
+---  -----  --------  ----------------------------------------------  -----  -------------------  ----------------------------------------  --------------------------
+  1  CDC-6  Warning   Multi-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  tx_frames_reg[31:0]/C                     rx_status_meta_reg[31:0]/D
+  2  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[0]/C           rx_status_meta_reg[32]/D
+  3  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[1]/C           rx_status_meta_reg[33]/D
+  4  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[2]/C           rx_status_meta_reg[34]/D
+  5  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[3]/C           rx_status_meta_reg[35]/D
+  6  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[4]/C           rx_status_meta_reg[36]/D
+  7  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[5]/C           rx_status_meta_reg[37]/D
+  8  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[6]/C           rx_status_meta_reg[38]/D
+  9  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[7]/C           rx_status_meta_reg[39]/D
+ 10  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[8]/C           rx_status_meta_reg[40]/D
+ 11  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[9]/C           rx_status_meta_reg[41]/D
+ 12  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[10]/C          rx_status_meta_reg[42]/D
+ 13  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[11]/C          rx_status_meta_reg[43]/D
+ 14  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[12]/C          rx_status_meta_reg[44]/D
+ 15  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[13]/C          rx_status_meta_reg[45]/D
+ 16  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[14]/C          rx_status_meta_reg[46]/D
+ 17  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[15]/C          rx_status_meta_reg[47]/D
+ 18  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[16]/C          rx_status_meta_reg[48]/D
+ 19  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[17]/C          rx_status_meta_reg[49]/D
+ 20  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[18]/C          rx_status_meta_reg[50]/D
+ 21  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[19]/C          rx_status_meta_reg[51]/D
+ 22  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[20]/C          rx_status_meta_reg[52]/D
+ 23  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[21]/C          rx_status_meta_reg[53]/D
+ 24  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[22]/C          rx_status_meta_reg[54]/D
+ 25  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[23]/C          rx_status_meta_reg[55]/D
+ 26  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[24]/C          rx_status_meta_reg[56]/D
+ 27  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[25]/C          rx_status_meta_reg[57]/D
+ 28  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[26]/C          rx_status_meta_reg[58]/D
+ 29  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[27]/C          rx_status_meta_reg[59]/D
+ 30  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[28]/C          rx_status_meta_reg[60]/D
+ 31  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[29]/C          rx_status_meta_reg[61]/D
+ 32  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[30]/C          rx_status_meta_reg[62]/D
+ 33  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/good_frames_reg[31]/C          rx_status_meta_reg[63]/D
+ 34  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[0]/C                     rx_status_meta_reg[64]/D
+ 35  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[1]/C                     rx_status_meta_reg[65]/D
+ 36  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[2]/C                     rx_status_meta_reg[66]/D
+ 37  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[3]/C                     rx_status_meta_reg[67]/D
+ 38  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[4]/C                     rx_status_meta_reg[68]/D
+ 39  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[5]/C                     rx_status_meta_reg[69]/D
+ 40  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[6]/C                     rx_status_meta_reg[70]/D
+ 41  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[7]/C                     rx_status_meta_reg[71]/D
+ 42  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[8]/C                     rx_status_meta_reg[72]/D
+ 43  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[9]/C                     rx_status_meta_reg[73]/D
+ 44  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[10]/C                    rx_status_meta_reg[74]/D
+ 45  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[11]/C                    rx_status_meta_reg[75]/D
+ 46  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[12]/C                    rx_status_meta_reg[76]/D
+ 47  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[13]/C                    rx_status_meta_reg[77]/D
+ 48  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[14]/C                    rx_status_meta_reg[78]/D
+ 49  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[15]/C                    rx_status_meta_reg[79]/D
+ 50  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[16]/C                    rx_status_meta_reg[80]/D
+ 51  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[17]/C                    rx_status_meta_reg[81]/D
+ 52  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[18]/C                    rx_status_meta_reg[82]/D
+ 53  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[19]/C                    rx_status_meta_reg[83]/D
+ 54  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[20]/C                    rx_status_meta_reg[84]/D
+ 55  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[21]/C                    rx_status_meta_reg[85]/D
+ 56  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[22]/C                    rx_status_meta_reg[86]/D
+ 57  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[23]/C                    rx_status_meta_reg[87]/D
+ 58  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[24]/C                    rx_status_meta_reg[88]/D
+ 59  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[25]/C                    rx_status_meta_reg[89]/D
+ 60  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[26]/C                    rx_status_meta_reg[90]/D
+ 61  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[27]/C                    rx_status_meta_reg[91]/D
+ 62  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[28]/C                    rx_status_meta_reg[92]/D
+ 63  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[29]/C                    rx_status_meta_reg[93]/D
+ 64  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[30]/C                    rx_status_meta_reg[94]/D
+ 65  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  bad_count_rx_reg[31]/C                    rx_status_meta_reg[95]/D
+ 66  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[0]/C   rx_status_meta_reg[96]/D
+ 67  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[1]/C   rx_status_meta_reg[97]/D
+ 68  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[2]/C   rx_status_meta_reg[98]/D
+ 69  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[3]/C   rx_status_meta_reg[99]/D
+ 70  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[4]/C   rx_status_meta_reg[100]/D
+ 71  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[5]/C   rx_status_meta_reg[101]/D
+ 72  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[6]/C   rx_status_meta_reg[102]/D
+ 73  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[7]/C   rx_status_meta_reg[103]/D
+ 74  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[8]/C   rx_status_meta_reg[104]/D
+ 75  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[9]/C   rx_status_meta_reg[105]/D
+ 76  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[10]/C  rx_status_meta_reg[106]/D
+ 77  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[11]/C  rx_status_meta_reg[107]/D
+ 78  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[12]/C  rx_status_meta_reg[108]/D
+ 79  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[13]/C  rx_status_meta_reg[109]/D
+ 80  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[14]/C  rx_status_meta_reg[110]/D
+ 81  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[15]/C  rx_status_meta_reg[111]/D
+ 82  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[16]/C  rx_status_meta_reg[112]/D
+ 83  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[17]/C  rx_status_meta_reg[113]/D
+ 84  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[18]/C  rx_status_meta_reg[114]/D
+ 85  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[19]/C  rx_status_meta_reg[115]/D
+ 86  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[20]/C  rx_status_meta_reg[116]/D
+ 87  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[21]/C  rx_status_meta_reg[117]/D
+ 88  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[22]/C  rx_status_meta_reg[118]/D
+ 89  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[23]/C  rx_status_meta_reg[119]/D
+ 90  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[24]/C  rx_status_meta_reg[120]/D
+ 91  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[25]/C  rx_status_meta_reg[121]/D
+ 92  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[26]/C  rx_status_meta_reg[122]/D
+ 93  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[27]/C  rx_status_meta_reg[123]/D
+ 94  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[28]/C  rx_status_meta_reg[124]/D
+ 95  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[29]/C  rx_status_meta_reg[125]/D
+ 96  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[30]/C  rx_status_meta_reg[126]/D
+ 97  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_rx/sequence_gap_frames_reg[31]/C  rx_status_meta_reg[127]/D
+ 98  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[0]/C                   rx_status_meta_reg[128]/D
+ 99  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[1]/C                   rx_status_meta_reg[129]/D
+100  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[2]/C                   rx_status_meta_reg[130]/D
+101  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[3]/C                   rx_status_meta_reg[131]/D
+102  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[4]/C                   rx_status_meta_reg[132]/D
+103  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[5]/C                   rx_status_meta_reg[133]/D
+104  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[6]/C                   rx_status_meta_reg[134]/D
+105  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[7]/C                   rx_status_meta_reg[135]/D
+106  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[8]/C                   rx_status_meta_reg[136]/D
+107  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[9]/C                   rx_status_meta_reg[137]/D
+108  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[10]/C                  rx_status_meta_reg[138]/D
+109  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[11]/C                  rx_status_meta_reg[139]/D
+110  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[12]/C                  rx_status_meta_reg[140]/D
+111  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[13]/C                  rx_status_meta_reg[141]/D
+112  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[14]/C                  rx_status_meta_reg[142]/D
+113  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[15]/C                  rx_status_meta_reg[143]/D
+114  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[16]/C                  rx_status_meta_reg[144]/D
+115  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[17]/C                  rx_status_meta_reg[145]/D
+116  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[18]/C                  rx_status_meta_reg[146]/D
+117  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[19]/C                  rx_status_meta_reg[147]/D
+118  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[20]/C                  rx_status_meta_reg[148]/D
+119  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[21]/C                  rx_status_meta_reg[149]/D
+120  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[22]/C                  rx_status_meta_reg[150]/D
+121  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[23]/C                  rx_status_meta_reg[151]/D
+122  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[24]/C                  rx_status_meta_reg[152]/D
+123  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[25]/C                  rx_status_meta_reg[153]/D
+124  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[26]/C                  rx_status_meta_reg[154]/D
+125  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[27]/C                  rx_status_meta_reg[155]/D
+126  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[28]/C                  rx_status_meta_reg[156]/D
+127  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[29]/C                  rx_status_meta_reg[157]/D
+128  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[30]/C                  rx_status_meta_reg[158]/D
+129  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  dropped_frames_reg[31]/C                  rx_status_meta_reg[159]/D
+130  CDC-3  Info      1-bit synchronized with ASYNC_REG property          2  Asynch Clock Groups  u_frame_tx/length_error_reg/C             rx_status_meta_reg[161]/D
+
+Source Clock: eth_tx_clk_in
+Destination Clock: sys_clk
+CDC Type: No Common Primary Clock
+
+Row  ID     Severity  Description                                 Depth  Exception            Source (From)            Destination (To)
+---  -----  --------  ------------------------------------------  -----  -------------------  -----------------------  -----------------------
+  1  CDC-3  Info      1-bit synchronized with ASYNC_REG property      2  Asynch Clock Groups  u_mii_tx/underrun_reg/C  tx_status_meta_reg[0]/D
+

@@ -3,13 +3,14 @@ module ethernet_async_fifo #(
     parameter integer WIDTH = 9,
     parameter integer DEPTH = 2048
 ) (
-    input  logic             reset,
+    input  logic             write_reset,
     input  logic             write_clk,
     input  logic             write_enable,
     input  logic [WIDTH-1:0] write_data,
     output logic             full,
     output logic             overflow,
     input  logic             read_clk,
+    input  logic             read_reset,
     input  logic             read_enable,
     output logic [WIDTH-1:0] read_data,
     output logic             empty,
@@ -34,8 +35,8 @@ module ethernet_async_fifo #(
         if ((1 << ADDR_W) != DEPTH) $error("ethernet_async_fifo DEPTH must be a power of two");
     end
 
-    always_ff @(posedge write_clk or posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge write_clk) begin
+        if (write_reset) begin
             write_binary <= '0; write_gray <= '0;
             read_gray_sync1 <= '0; read_gray_sync2 <= '0; overflow <= 1'b0;
         end else begin
@@ -47,8 +48,8 @@ module ethernet_async_fifo #(
         end
     end
 
-    always_ff @(posedge read_clk or posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge read_clk) begin
+        if (read_reset) begin
             read_binary <= '0; read_gray <= '0;
             write_gray_sync1 <= '0; write_gray_sync2 <= '0; underflow <= 1'b0;
         end else begin
