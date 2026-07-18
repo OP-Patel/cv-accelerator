@@ -1,6 +1,6 @@
 # Arty A7-100T Real-Time Streaming Convolution Accelerator
 
-This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 added the one-pixel-per-clock grayscale Sobel pipeline. Milestone 3 connects a physical OV7670 camera to that pipeline and has passed a 306-frame sustained hardware run. Milestone 4 now has a small 10/100 MII MAC, PHY discovery, raw frames, ARP, and fixed-address UDP echo; simulation/build and physical validation still remain before the milestone can be marked complete.
+This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 added the one-pixel-per-clock grayscale Sobel pipeline. Milestone 3 connected a physical OV7670 camera to that pipeline and passed a 306-frame sustained hardware run. Milestone 4 added a small 10/100 MII MAC, PHY discovery, raw frames, ARP, and fixed-address UDP echo and passed sustained physical testing on July 17, 2026. Milestone 5 is the camera/Sobel-to-Ethernet integration.
 
 ## Milestone 1 interface
 
@@ -31,6 +31,15 @@ This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Mileston
 - `SW0` selects camera color bars for the next initialization, `SW1` selects the checksum stream, `SW2` swaps RGB565 bytes for diagnosis, and `SW3` freezes the completed-frame snapshot.
 - UART reports identity, configuration writes, NACKs, completed frames, raw width/height, input/output counts, CRC-32 values, and sticky errors at 115200 8N1.
 - The final hardware run reported `ID=7673`, `WR=0042`, 640 bytes by 240 lines, 76,800 input pixels, 75,684 Sobel outputs, stable CRCs, and `ERR=0000` through frame 306.
+
+## Milestone 4 interface
+
+- The onboard DP83848J runs in 4-bit MII mode with FPGA MAC `02:00:00:00:00:01`, IPv4 `192.168.10.2`, and UDP port 4000.
+- `BTN1` restarts PHY discovery, `BTN2` clears counters/errors, and `BTN3` sends one deterministic raw frame and requests UART status.
+- `SW0` enables continuous raw frames and `SW1` selects PHY internal loopback; `SW2` and `SW3` are reserved.
+- The Windows host adapter used for validation was `Ethernet 2`, configured as `192.168.10.1/24` with no gateway.
+- Raw Ethernet passed in both directions, ARP resolved the FPGA, and 10,000 UDP echo exchanges completed at 100 Mb/s full duplex.
+- Final UART status was `TX=00002714 RX=00002957 BAD=00000000 DROP=00000000 ERR=0000`.
 
 ## Build and simulation
 
@@ -153,16 +162,27 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [x] Complete a 306-frame sustained physical-camera run with stable CRCs and zero reported errors
   - [ ] Identify the unbranded module's schematic and prove its sensor-side I/O rail (electrical-characterization follow-up)
   - [ ] Archive oscilloscope XCLK/PCLK measurements and an ILA trace (non-blocking characterization)
-- [ ] Milestone 4: Ethernet bring-up
+- [x] Milestone 4: Ethernet bring-up
   - [x] 25 MHz DP83848J reference clock, reset, and MDIO identity RTL
   - [x] 10/100 link/speed/duplex UART reporting RTL
   - [x] Deterministic raw Ethernet transmit/receive and error counters
   - [x] Fixed-address ARP and UDP echo RTL
   - [x] Ethernet constraints, regression targets, build scripts, and host tool
-  - [ ] Run and archive the Milestone 4 simulations
-  - [ ] Complete synthesis, implementation, timing, CDC, and DRC review
-  - [ ] Sustained bidirectional hardware validation
-- [ ] Milestone 5: Full integration
+  - [x] Run and archive all five Milestone 4 XSim targets
+  - [x] Complete synthesis and implementation; routed WNS 1.477 ns and WHS 0.057 ns
+  - [x] Complete routed DRC review with zero findings
+  - [x] Validate raw Ethernet transmit and receive on hardware
+  - [x] Validate ARP and sustained 10,000-packet UDP echo at 100 Mb/s full duplex
+  - [x] Finish with `BAD=0`, `DROP=0`, and `ERR=0`
+  - [ ] Classify/clean the remaining CDC report findings before M5 uses those crossings
+  - [ ] Repeat at 10 Mb/s if a deliberate 10 Mb/s link partner becomes available
+- [ ] Milestone 5: Camera/Sobel over Ethernet integration
+  - [ ] Learn the host endpoint from a UDP control session
+  - [ ] Packetize 318x238 Sobel frames without IPv4 fragmentation
+  - [ ] Reconstruct and validate frames with a Python host receiver
+  - [ ] Preserve standalone M3 camera and M4 ARP/UDP regressions
+  - [ ] Pass integrated simulation, timing, DRC, and CDC review
+  - [ ] Sustain at least 300 live reconstructed frames with zero drops/errors
 
 Milestone 1 physical behavior has been validated. The final timing/utilization reports should still be regenerated after the corrected UART XDC mapping so the archived implementation artifacts match the validated source. See `docs/milestone1_logic_walkthrough.md` for a detailed implementation explanation and `docs/milestone1_hardware_validation.md` for the validation record.
 
@@ -172,4 +192,4 @@ See `docs/milestone2_logic_walkthrough.md` for the implementation, `docs/milesto
 
 The camera implementation is explained in `docs/milestone3_camera_logic_walkthrough.md`. See `docs/milestone3_camera_hardware_contract.md` before wiring the module, `docs/milestone3_camera_hardware_validation.md` for the final result and repeatable procedure, and `docs/milestone3_camera_debugging_postmortem.md` for the full failure-to-fix narrative.
 
-The completed-work handoff and staged Milestone 4 Ethernet plan are in `docs/milestone3_handoff_and_milestone4_plan.md`.
+The historical staged Milestone 4 plan is in `docs/milestone3_handoff_and_milestone4_plan.md`. The completed physical result, troubleshooting record, and next integration contract are in `docs/milestone4_ethernet_hardware_validation.md`, `docs/milestone4_ethernet_debugging_postmortem.md`, and `docs/milestone4_handoff_and_milestone5_plan.md`.

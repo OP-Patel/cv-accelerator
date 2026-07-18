@@ -98,8 +98,9 @@ vivado -mode batch -source build_m4_bitstream.tcl
 ```
 
 The bitstream target writes timing, utilization, CDC, DRC, and SHA-256 files
-under `docs/`. Passing implementation is not physical Ethernet validation;
-use the separate hardware procedure and archive its evidence.
+under `docs/`. Physical validation passed on July 17, 2026; the repeatable
+procedure, final UART counters, Wireshark filter, and remaining CDC review are
+recorded in `milestone4_ethernet_hardware_validation.md`.
 
 To inspect the implemented design or program the board in the Vivado GUI, open
 the dedicated Milestone 4 project from PowerShell:

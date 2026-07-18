@@ -1,5 +1,10 @@
 # Milestone 3 handoff and Milestone 4 Ethernet bring-up plan
 
+> Historical plan status: Milestone 4 was implemented and passed functional
+> hardware validation on July 17, 2026. Continue from
+> `milestone4_handoff_and_milestone5_plan.md`; do not use the pending-status
+> statements below as the current project state.
+
 ## Handoff status
 
 Milestone 3 is functionally complete. The physical OV7670 path configured and

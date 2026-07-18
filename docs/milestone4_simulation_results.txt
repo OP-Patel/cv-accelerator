@@ -1,18 +1,29 @@
 Milestone 4 simulation evidence
 ===============================
 
-Implemented regression targets:
+Status: PASS on July 17, 2026 with Vivado 2026.1 XSim.
+
+Command (run from scripts/):
+
+  $env:XILINX_LOCAL_USER_DATA = "NO"
+  & "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat" -mode batch -source run_m4_simulations.tcl -notrace
+
+Self-checking results:
+
+  PASS: tb_mdio_master
+  PASS: tb_mii_tx_rx
+  PASS: tb_ethernet_frames
+  PASS: tb_arp_udp
+  PASS: tb_arty_m4_ethernet_top
+
+Coverage represented by those targets:
+
 - tb_mdio_master: Clause 22 read/write, turnaround ACK, and missing-PHY response
 - tb_mii_tx_rx: low/high nibble ordering and byte reconstruction
 - tb_ethernet_frames: padding/FCS acceptance and deliberate corruption
 - tb_arp_udp: ARP reply fields, UDP header fields, and payload echo indexing
 - tb_arty_m4_ethernet_top: modeled PHY discovery and complete MII frame loopback
 
-Static verification in this shell: PASS. All 20 new Ethernet RTL/model/testbench
-files parsed, and the complete 24-tree design elaborated with temporary UNISIM
-primitive stubs with no reported errors.
-
-Dynamic execution status: NOT RUN because Vivado/XSim is not on PATH. Static
-elaboration is not a substitute for the self-checking simulations. Replace this
-note with the archived run_m4_simulations.tcl transcript after executing from a
-Vivado command prompt.
+run_m4_simulations.tcl checks each generated XSim log for its exact PASS marker
+and stops with an error if any target does not report PASS. The final target
+completed at 20:57:44 local time.

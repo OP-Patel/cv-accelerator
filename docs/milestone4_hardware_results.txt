@@ -1,0 +1,79 @@
+Milestone 4 physical Ethernet results
+=====================================
+
+Date: 2026-07-17
+Board: Digilent Arty A7-100T
+PHY: TI DP83848J, MII, PHY address 1
+Bitstream SHA-256: 90895b8f519ab28e7e73f63ffed21c17be36246ec6b75978ea941413b596da5e
+Host interface: Ethernet 2 (ASIX AX88179 USB 3.0 to Gigabit Ethernet Adapter)
+Host IPv4: 192.168.10.1/24
+FPGA IPv4: 192.168.10.2
+FPGA MAC: 02:00:00:00:00:01
+UDP port: 4000
+
+Raw FPGA-to-host command and result
+-----------------------------------
+
+python scripts/python/ethernet_test.py raw-listen --interface "Ethernet 2" --count 1
+PASS raw-listen valid=1 bad=0 gaps=0
+
+Raw host-to-FPGA command and result
+-----------------------------------
+
+python scripts/python/ethernet_test.py raw-send --interface "Ethernet 2" --count 100 --start 1
+PASS raw-send frames=100 first=1 last=100
+
+Clean UART baseline
+-------------------
+
+[2026-07-17 20:41:54] [PASS:PASS] M4 PHY=2000:5C90 LINK=1 SPD=100 DUP=F TX=00000000 RX=00000000 BAD=00000000 DROP=00000000 ERR=0000
+
+Raw receive UART result
+-----------------------
+
+[2026-07-17 20:42:20] [PASS:PASS] M4 PHY=2000:5C90 LINK=1 SPD=100 DUP=F TX=00000000 RX=00000073 BAD=00000000 DROP=00000000 ERR=0000
+
+RX=0x73 is 115 valid Ethernet frames. The requested 100 raw frames were
+received; the extra frames were valid Windows background traffic.
+
+Wireshark filter and observed exchange
+--------------------------------------
+
+Display filter:
+
+arp || udp.port == 4000
+
+Observed:
+
+- 192.168.10.1 broadcast: Who has 192.168.10.2? Tell 192.168.10.1
+- 02:00:00:00:00:01 reply: 192.168.10.2 is at 02:00:00:00:00:01
+- 192.168.10.1:<ephemeral> -> 192.168.10.2:4000, UDP Len=46
+- 192.168.10.2:4000 -> 192.168.10.1:<ephemeral>, UDP Len=46
+- Sustained capture showed alternating request/reply pairs through the end of
+  the 10,000-packet run.
+
+Sustained command
+-----------------
+
+python scripts/python/ethernet_test.py udp --count 10000 --interval 0.001
+
+The operator confirmed successful completion. The exact final Python summary
+was not copied into this record; the FPGA counters and Wireshark pairs below
+are the durable evidence supplied from the run.
+
+Final UART result
+-----------------
+
+[2026-07-17 20:51:38] [PASS:PASS] M4 PHY=2000:5C90 LINK=1 SPD=100 DUP=F TX=00002714 RX=00002957 BAD=00000000 DROP=00000000 ERR=0000
+
+Interpretation:
+
+- PHY identity: PASS (2000:5C90)
+- Link: PASS (100 Mb/s full duplex)
+- TX: 0x2714 = 10,004 valid frames
+- RX: 0x2957 = 10,583 valid frames including background Ethernet traffic
+- Bad frames: 0
+- Dropped/sequence/FIFO errors: 0
+- Sticky error summary: 0
+
+Functional result: PASS.
