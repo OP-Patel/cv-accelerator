@@ -32,6 +32,8 @@ usage_statistics_webtalk.html
 # Generated camera captures; retain concise validation evidence in docs instead
 docs/m5_frames/
 docs/m6_snapshots/
+docs/m7_captures/
+artifacts/m7_runs/
 
 # OS junk
 .DS_Store

@@ -23,6 +23,7 @@ output plumbing around that compute core.
 | M4 100 Mb/s Ethernet, ARP, UDP echo | Complete, 10,000-echo hardware run |
 | M5 camera/Sobel over UDP | Complete, 216 consecutive reconstructed frames |
 | M6 live laptop viewer and OpenCV benchmark | Complete, 300-frame display and final physical benchmark passed |
+| M7 optimized application/dashboard | Planned: beat equivalent OpenCV, raise FPS, refine edges, and add a Streamlit activity-monitor dashboard |
 
 The tested M5 bitstream also preserves M4 UDP echo on port 4000. M6 reuses the
 same bitstream: it adds laptop display and measurement, not a new FPGA data
@@ -268,6 +269,8 @@ docs/              contracts, evidence, handoffs, and reports
 - M5 completion and M6 plan:
   `docs/milestone5_handoff_and_milestone6_plan.md`
 - final M6 viewer/benchmark result: `docs/milestone6_benchmark_results.md`
+- M6 handoff and detailed M7 plan:
+  `docs/milestone6_handoff_and_milestone7_plan.md`
 
 The M6 plan defines live-view acceptance, exact OpenCV equivalence, benchmark
 methodology, result files, and the distinction between compute throughput and

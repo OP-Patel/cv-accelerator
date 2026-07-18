@@ -152,3 +152,7 @@ Machine-readable final results are stored in:
 docs/m6_benchmark_results.json
 docs/m6_benchmark_results.csv
 ```
+
+The completed M6 system, known limits, and detailed higher-FPS/refinement plan
+are handed to Milestone 7 in
+`milestone6_handoff_and_milestone7_plan.md`.
