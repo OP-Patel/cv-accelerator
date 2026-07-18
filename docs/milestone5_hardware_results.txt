@@ -1,0 +1,25 @@
+Milestone 5 physical hardware result
+====================================
+
+Status: PASS, accepted by the user on July 18, 2026.
+
+Integrated bitstream SHA-256:
+  8c9577a1ff240642bf1aef7a37178feb910d6b0b2e218a7052d94dc535e7bc00
+
+Observed local Sobel frame archive:
+  first sequence:    0
+  last sequence:     215
+  consecutive files: 216
+  dimensions:        318x238
+  pixels per frame:  75,684
+  PGM bytes/file:    75,699 (15-byte header plus pixels)
+
+The M5 receiver emits a PGM only after complete packet assembly and header,
+length, placement, and CRC-32 validation. File names were consecutive with no
+missing sequence in the retained archive.
+
+The user separately confirmed that the integrated bitstream preserves the M4
+UDP echo path on port 4000.
+
+The original 300-frame target was not retained in this archive. The user
+accepted the observed 216-frame physical run as the Milestone 5 pass.

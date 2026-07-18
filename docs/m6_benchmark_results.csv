@@ -1,0 +1,56 @@
+metric,value
+generated_utc,2026-07-18T16:29:42.653419+00:00
+benchmark_mode,live_fpga_and_cpu
+system.platform,Windows-11-10.0.26200-SP0
+system.processor,"Intel64 Family 6 Model 170 Stepping 4, GenuineIntel"
+system.python,3.13.7
+system.opencv,5.0.0
+system.numpy,2.4.3
+system.opencv_threads,1
+method.input,320x240 8-bit grayscale
+method.output,318x238 cropped Sobel
+method.operator,saturating abs(Gx) + abs(Gy)
+method.note,FPGA compute time is an RTL-throughput estimate; stream FPS is measured.
+cpu_synthetic_kernel.samples,1000.0
+cpu_synthetic_kernel.mean_ms,0.6286511
+cpu_synthetic_kernel.median_ms,0.5043
+cpu_synthetic_kernel.p95_ms,1.1156
+cpu_synthetic_kernel.min_ms,0.2198
+cpu_synthetic_kernel.max_ms,50.0621
+cpu_synthetic_kernel.mean_fps,1590.7074687374284
+fpga_rtl_throughput_estimate.clock_hz,100000000
+fpga_rtl_throughput_estimate.accepted_pixels_per_clock,1
+fpga_rtl_throughput_estimate.frame_compute_ms,0.768
+fpga_rtl_throughput_estimate.frame_compute_fps,1302.0833333333333
+fpga_rtl_throughput_estimate.cpu_time_as_fraction_of_fpga_estimate,0.8185561197916666
+fpga_rtl_throughput_estimate.cpu_to_fpga_estimated_throughput_ratio,1.221663335990345
+fpga_sobel_stream.frames,300
+fpga_sobel_stream.time_to_first_frame_ms,196.84859999688342
+fpga_sobel_stream.session_seconds,40.04791110003134
+fpga_sobel_stream.interframe_fps,7.503136555739646
+fpga_sobel_stream.integrity.missing_packets,0
+fpga_sobel_stream.integrity.duplicate_packets,0
+fpga_sobel_stream.integrity.reordered_packets,0
+fpga_sobel_stream.integrity.malformed_packets,0
+fpga_sobel_stream.integrity.crc_mismatches,0
+fpga_sobel_stream.integrity.frame_sequence_gaps,0
+fpga_sobel_stream.integrity.discontinuity_frames,1
+cpu_live_stream.frames,300
+cpu_live_stream.time_to_first_frame_ms,132.21370003884658
+cpu_live_stream.session_seconds,39.983110500033945
+cpu_live_stream.interframe_fps,7.503107673022511
+cpu_live_stream.integrity.missing_packets,0
+cpu_live_stream.integrity.duplicate_packets,0
+cpu_live_stream.integrity.reordered_packets,0
+cpu_live_stream.integrity.malformed_packets,0
+cpu_live_stream.integrity.crc_mismatches,0
+cpu_live_stream.integrity.frame_sequence_gaps,0
+cpu_live_stream.integrity.discontinuity_frames,1
+cpu_live_stream.opencv_kernel.samples,300.0
+cpu_live_stream.opencv_kernel.mean_ms,1.3712706666666665
+cpu_live_stream.opencv_kernel.median_ms,1.32225
+cpu_live_stream.opencv_kernel.p95_ms,2.1402
+cpu_live_stream.opencv_kernel.min_ms,0.4768
+cpu_live_stream.opencv_kernel.max_ms,5.7424
+cpu_live_stream.opencv_kernel.mean_fps,729.2506317741307
+end_to_end_fpga_to_cpu_fps_ratio,1.0000038494339138

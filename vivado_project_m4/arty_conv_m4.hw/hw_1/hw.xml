@@ -10,7 +10,7 @@
     <Object name="xc7a100t_0" gui_info="">
       <Properties Property="FULL_PROBES.FILE" value=""/>
       <Properties Property="PROBES.FILE" value=""/>
-      <Properties Property="PROGRAM.HW_BITSTREAM" value="$_project_name_.runs/impl_1/arty_m4_ethernet_top.bit"/>
+      <Properties Property="PROGRAM.HW_BITSTREAM" value="C:/Users/Om Patel/Desktop/arty-conv-accelerator/vivado_project_m5/arty_conv_m5.runs/impl_1/arty_m5_camera_ethernet_top.bit"/>
       <Properties Property="SLR.COUNT" value="1"/>
     </Object>
   </ObjectList>

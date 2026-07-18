@@ -2,10 +2,12 @@
 
 ## Current status
 
+**PASS — accepted as physically complete on July 18, 2026.**
+
 The integrated RTL, host receiver, self-checking simulations, synthesis,
-placement, routing, timing, and bitstream generation are complete. Physical
-camera-over-Ethernet acceptance has not yet been run, so Milestone 5 must not
-yet be described as physically complete.
+placement, routing, timing, bitstream generation, camera-over-Ethernet path,
+and preserved M4 UDP echo path have all operated successfully on the physical
+Arty A7-100T.
 
 Verified implementation results from July 18, 2026:
 
@@ -18,6 +20,9 @@ Verified implementation results from July 18, 2026:
 | Slice registers | 25,524 / 126,800 (20.13%) |
 | Block RAM tiles | 14 / 135 (10.37%) |
 | Bitstream SHA-256 | `8c9577a1ff240642bf1aef7a37178feb910d6b0b2e218a7052d94dc535e7bc00` |
+| Physical Sobel archive | 216 consecutive frames, sequence 0 through 215 |
+| Reconstructed image | 318x238, 75,684 pixels, valid binary PGM |
+| Integrated M4 UDP echo | PASS, confirmed by the user |
 
 The routed DRC has no errors, but contains 30 RAMB async-control warnings from
 the asynchronous FIFO implementations plus one report-limit warning. The CDC
@@ -49,13 +54,26 @@ set `SW2=1`. The one-frame run must produce a 318x238 PGM from exactly 74
 packets and 75,684 image bytes. Repeat with `--stream gray` to exercise the
 320x240 diagnostic mode.
 
-## Physical acceptance still required
+## Physical result
 
-- confirm camera identity/configuration and 100 Mb/s full-duplex link
-- confirm M4 ARP and UDP echo remain functional in the integrated bitstream
-- reconstruct one color-bar Sobel frame with zero host integrity counters
-- reconstruct 100 consecutive color-bar frames without drops or errors
-- reconstruct at least 300 live frames at 318x238
-- finish with host missing/duplicate/reordered/malformed/CRC counters at zero
-- finish with FPGA camera, FIFO, Ethernet, packet, and combined errors at zero
-- archive the PGM, UART transcript, host transcript, and short packet capture
+The host created `frame_00000000.pgm` through `frame_00000215.pgm` without a
+sequence gap. All 216 files are exactly 75,699 bytes: a 15-byte
+`P5\n318 238\n255\n` header followed by the expected 75,684 Sobel pixels. The
+receiver writes a PGM only after assembling every packet and validating the
+M5 header, payload length, packet placement, and payload CRC-32.
+
+The user also confirmed that the preserved M4 UDP echo behavior passes while
+running the integrated M5 bitstream. This proves that camera streaming did not
+replace or break the established port-4000 path.
+
+The original plan proposed 300 frames. The retained local archive contains
+216 consecutive validated frames; the user accepted this physical run as the
+Milestone 5 pass. Generated PGM files remain local under `docs/m5_frames/` and
+are excluded from version control; the concise evidence is retained here and
+in `milestone5_hardware_results.txt`.
+
+## Non-blocking follow-up
+
+- archive a final UART status line and packet capture if durable raw evidence is desired
+- extend a future characterization run to 300 or more frames
+- close or formally waive the remaining vendor CDC/DRC warnings

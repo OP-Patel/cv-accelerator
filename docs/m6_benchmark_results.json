@@ -1,0 +1,75 @@
+{
+  "generated_utc": "2026-07-18T16:29:42.653419+00:00",
+  "benchmark_mode": "live_fpga_and_cpu",
+  "system": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "python": "3.13.7",
+    "opencv": "5.0.0",
+    "numpy": "2.4.3",
+    "opencv_threads": 1
+  },
+  "method": {
+    "input": "320x240 8-bit grayscale",
+    "output": "318x238 cropped Sobel",
+    "operator": "saturating abs(Gx) + abs(Gy)",
+    "note": "FPGA compute time is an RTL-throughput estimate; stream FPS is measured."
+  },
+  "cpu_synthetic_kernel": {
+    "samples": 1000.0,
+    "mean_ms": 0.6286511,
+    "median_ms": 0.5043,
+    "p95_ms": 1.1156,
+    "min_ms": 0.2198,
+    "max_ms": 50.0621,
+    "mean_fps": 1590.7074687374284
+  },
+  "fpga_rtl_throughput_estimate": {
+    "clock_hz": 100000000,
+    "accepted_pixels_per_clock": 1,
+    "frame_compute_ms": 0.768,
+    "frame_compute_fps": 1302.0833333333333,
+    "cpu_time_as_fraction_of_fpga_estimate": 0.8185561197916666,
+    "cpu_to_fpga_estimated_throughput_ratio": 1.221663335990345
+  },
+  "fpga_sobel_stream": {
+    "frames": 300,
+    "time_to_first_frame_ms": 196.84859999688342,
+    "session_seconds": 40.04791110003134,
+    "interframe_fps": 7.503136555739646,
+    "integrity": {
+      "missing_packets": 0,
+      "duplicate_packets": 0,
+      "reordered_packets": 0,
+      "malformed_packets": 0,
+      "crc_mismatches": 0,
+      "frame_sequence_gaps": 0,
+      "discontinuity_frames": 1
+    }
+  },
+  "cpu_live_stream": {
+    "frames": 300,
+    "time_to_first_frame_ms": 132.21370003884658,
+    "session_seconds": 39.983110500033945,
+    "interframe_fps": 7.503107673022511,
+    "integrity": {
+      "missing_packets": 0,
+      "duplicate_packets": 0,
+      "reordered_packets": 0,
+      "malformed_packets": 0,
+      "crc_mismatches": 0,
+      "frame_sequence_gaps": 0,
+      "discontinuity_frames": 1
+    },
+    "opencv_kernel": {
+      "samples": 300.0,
+      "mean_ms": 1.3712706666666665,
+      "median_ms": 1.32225,
+      "p95_ms": 2.1402,
+      "min_ms": 0.4768,
+      "max_ms": 5.7424,
+      "mean_fps": 729.2506317741307
+    }
+  },
+  "end_to_end_fpga_to_cpu_fps_ratio": 1.0000038494339138
+}
