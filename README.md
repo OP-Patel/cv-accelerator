@@ -2,6 +2,10 @@
 
 This repository targets the Digilent Arty A7-100T (`xc7a100tcsg324-1`). Milestone 1 established the board-debug foundation. Milestone 2 added the one-pixel-per-clock grayscale Sobel pipeline. Milestone 3 connected a physical OV7670 camera to that pipeline and passed a 306-frame sustained hardware run. Milestone 4 added a small 10/100 MII MAC, PHY discovery, raw frames, ARP, and fixed-address UDP echo and passed sustained physical testing on July 17, 2026. Milestone 5 is the camera/Sobel-to-Ethernet integration.
 
+The Milestone 5 RTL, host receiver, four self-checking simulations, routed
+implementation, and bitstream are complete. Physical one-frame and sustained
+300-frame camera-over-Ethernet validation remain to be run.
+
 ## Milestone 1 interface
 
 - `BTN0` is an asynchronous, active-high reset input with asynchronous assertion and two-clock synchronous release.
@@ -65,6 +69,21 @@ build with:
 vivado -mode batch -source run_m4_simulations.tcl
 vivado -mode batch -source check_m4_synthesis.tcl
 vivado -mode batch -source build_m4_bitstream.tcl
+```
+
+Run the integrated Milestone 5 regression, synthesis check, and bitstream
+build with:
+
+```text
+vivado -mode batch -source run_m5_simulations.tcl
+vivado -mode batch -source check_m5_synthesis.tcl
+vivado -mode batch -source build_m5_bitstream.tcl
+```
+
+The generated integrated bitstream is:
+
+```text
+vivado_project_m5/arty_conv_m5.runs/impl_1/arty_m5_camera_ethernet_top.bit
 ```
 
 The Milestone 4 build uses a dedicated Vivado project. Open it from PowerShell
@@ -177,11 +196,14 @@ The monitor requires `pyserial` (`python -m pip install pyserial`). Replace `COM
   - [ ] Classify/clean the remaining CDC report findings before M5 uses those crossings
   - [ ] Repeat at 10 Mb/s if a deliberate 10 Mb/s link partner becomes available
 - [ ] Milestone 5: Camera/Sobel over Ethernet integration
-  - [ ] Learn the host endpoint from a UDP control session
-  - [ ] Packetize 318x238 Sobel frames without IPv4 fragmentation
-  - [ ] Reconstruct and validate frames with a Python host receiver
-  - [ ] Preserve standalone M3 camera and M4 ARP/UDP regressions
-  - [ ] Pass integrated simulation, timing, DRC, and CDC review
+  - [x] Learn the host endpoint from a UDP control session
+  - [x] Packetize 318x238 Sobel frames without IPv4 fragmentation
+  - [x] Reconstruct and validate frames with a Python host receiver
+  - [x] Preserve separate standalone M3 camera and M4 Ethernet build paths
+  - [x] Pass all four integrated M5 self-checking simulations
+  - [x] Complete routed implementation and timing; WNS 0.634 ns, WHS 0.036 ns
+  - [ ] Close or formally classify the remaining routed CDC/DRC warnings
+  - [ ] Re-run the standalone M3 and M4 regressions on this revision
   - [ ] Sustain at least 300 live reconstructed frames with zero drops/errors
 
 Milestone 1 physical behavior has been validated. The final timing/utilization reports should still be regenerated after the corrected UART XDC mapping so the archived implementation artifacts match the validated source. See `docs/milestone1_logic_walkthrough.md` for a detailed implementation explanation and `docs/milestone1_hardware_validation.md` for the validation record.
@@ -193,3 +215,9 @@ See `docs/milestone2_logic_walkthrough.md` for the implementation, `docs/milesto
 The camera implementation is explained in `docs/milestone3_camera_logic_walkthrough.md`. See `docs/milestone3_camera_hardware_contract.md` before wiring the module, `docs/milestone3_camera_hardware_validation.md` for the final result and repeatable procedure, and `docs/milestone3_camera_debugging_postmortem.md` for the full failure-to-fix narrative.
 
 The historical staged Milestone 4 plan is in `docs/milestone3_handoff_and_milestone4_plan.md`. The completed physical result, troubleshooting record, and next integration contract are in `docs/milestone4_ethernet_hardware_validation.md`, `docs/milestone4_ethernet_debugging_postmortem.md`, and `docs/milestone4_handoff_and_milestone5_plan.md`.
+
+The implemented M5 protocol and architecture are in
+`docs/milestone5_camera_ethernet_contract.md` and
+`docs/milestone5_camera_ethernet_logic_walkthrough.md`. Automated evidence is
+in `docs/milestone5_simulation_results.txt`; use
+`docs/milestone5_hardware_validation.md` for the remaining board procedure.

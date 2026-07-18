@@ -1,0 +1,45 @@
+# Shared Milestone 5 source inventory for simulation, synthesis, and bitstream builds.
+set m5_design_sources {
+    ../rtl/top/arty_m5_camera_ethernet_top.sv
+    ../rtl/debug/reset_sync.sv
+    ../rtl/debug/uart_tx.sv
+    ../rtl/debug/debounce.sv
+    ../rtl/debug/m5_uart_reporter.sv
+    ../rtl/camera/camera_xclk.sv
+    ../rtl/camera/sccb_master.sv
+    ../rtl/camera/camera_register_init.sv
+    ../rtl/camera/dvp_rgb565_capture.sv
+    ../rtl/camera/camera_stream_cdc.sv
+    ../rtl/camera/camera_stream_adapter.sv
+    ../rtl/conv/saturate_u8.sv
+    ../rtl/conv/grayscale_rgb565.sv
+    ../rtl/conv/line_buffer_3x3.sv
+    ../rtl/conv/window_3x3.sv
+    ../rtl/conv/sobel3x3.sv
+    ../rtl/conv/stream_checksum.sv
+    ../rtl/conv/conv_pipeline_top.sv
+    ../rtl/ethernet/ethernet_ref_clock.sv
+    ../rtl/ethernet/phy_reset.sv
+    ../rtl/ethernet/mdio_master.sv
+    ../rtl/ethernet/phy_bringup.sv
+    ../rtl/ethernet/mii_tx.sv
+    ../rtl/ethernet/mii_rx.sv
+    ../rtl/ethernet/ethernet_async_fifo.sv
+    ../rtl/ethernet/ethernet_frame_tx.sv
+    ../rtl/ethernet/ethernet_frame_rx.sv
+    ../rtl/ethernet/arp_responder.sv
+    ../rtl/ethernet/udp_echo.sv
+    ../rtl/integration/m5_control_receiver.sv
+    ../rtl/integration/m5_control_ack.sv
+    ../rtl/integration/m5_stream_fifo.sv
+    ../rtl/integration/m5_stream_packetizer.sv
+    ../rtl/integration/m5_tx_scheduler.sv
+    ../rtl/integration/m5_status_snapshot.sv
+}
+
+set m5_sim_sources {
+    ../sim/tb/tb_m5_control_receiver.sv
+    ../sim/tb/tb_m5_tx_scheduler.sv
+    ../sim/tb/tb_m5_stream_packetizer.sv
+    ../sim/tb/tb_m5_camera_udp.sv
+}

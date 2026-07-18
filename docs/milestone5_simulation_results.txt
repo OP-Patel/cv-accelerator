@@ -1,0 +1,27 @@
+Milestone 5 simulation evidence
+===============================
+
+Status: PASS on July 18, 2026 with Vivado 2026.1 XSim.
+
+Command (run from scripts/):
+
+  $env:XILINX_LOCAL_USER_DATA = "NO"
+  & "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat" -mode batch -source run_m5_simulations.tcl -notrace
+
+Self-checking results:
+
+  PASS: tb_m5_control_receiver
+  PASS: tb_m5_tx_scheduler
+  PASS: tb_m5_stream_packetizer
+  PASS: tb_m5_camera_udp
+
+Coverage represented by those targets:
+
+- exact START/STOP/PING validation and learned session descriptor
+- fixed-priority, non-preemptive transmit scheduling
+- full 318x238 Sobel frame: 75,684 bytes, 74 packets, 932-byte tail
+- M5 header fields, offsets, flags, byte order, and payload CRC-32
+- deterministic camera-style raster through Sobel, async FIFO, and UDP chunks
+
+The Tcl runner checks each generated log for its exact PASS marker and exits
+with an error if any target fails.
