@@ -28,6 +28,7 @@ set m7_testbenches {
     tb_m7_threshold_sobel
     tb_m7_core_metrics
     tb_m7_accelerated_core
+    tb_m7_control_ack
     tb_m7_control_receiver
     tb_conv_pipeline_320
 }

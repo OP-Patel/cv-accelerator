@@ -25,13 +25,16 @@ shape validation, activity monitor, protocol, and result-schema tests:
 
 ```text
 python scripts/python/run_m7_host_tests.py
-Ran 10 tests ... OK
+Ran 12 tests ... OK
 ```
 
-The equivalent OpenCV operation is single-threaded, uses the same deterministic
-320x240 coordinate pattern, crops to 318x238, and reports CRC agreement. The
-full five-run/1,000-sample comparison is intentionally not claimed until the
-board is attached.
+The equivalent OpenCV operation is single-threaded and processes the same two
+deterministic 320x240 inputs used by the FPGA batch (`lane0` and
+`lane0 ^ 0xA5`). Both results use the same 318x238 crop. The comparison checks
+the combined CRC `lane0_crc ^ rotate_left(lane1_crc, 1)`, so synthesis cannot
+silently merge or remove either hardware lane. The board has qualified all
+three physical camera profiles, but the final five-run/1,000-sample
+FPGA-versus-OpenCV comparison is not yet claimed against the newest bitstream.
 
 ## RTL evidence
 
@@ -42,15 +45,21 @@ The relevant self-checking benches are:
 - `tb_conv_pipeline_320`: full 320x240 reference Sobel regression and CRC;
 - `tb_m7_core_metrics`: frame interval, latency, accepted/produced totals, and
   valid-gap accounting;
-- `tb_m7_accelerated_core`: sustained no-gap two-frame core-domain regression.
+- `tb_m7_accelerated_core`: four requested frames through two independent
+  parallel lanes, exact combined CRC, a 96-cycle aggregate interval at 16x12,
+  no live-input overflow during synthetic ownership, and frame-boundary resume.
 
-The M7 build uses `m7_accelerated_pipeline` only for the M7 top. M5 remains the
-default (`M7_ENABLE=0`) and retains the proven 100 MHz pipeline and v1 host
+The M7 build uses `m7_accelerated_pipeline` only for the M7 top. Its synthetic
+benchmark feeds two independent Sobel pipelines at 200 MHz and reports an
+aggregate per-frame interval of 38,400 cycles (0.192 ms, 5,208.33 frames/s).
+This is controlled compute throughput for two independent frames; live camera
+streaming remains one lane at the selected 7.5/15/30 FPS sensor rate. M5 remains
+the default (`M7_ENABLE=0`) and retains the proven 100 MHz pipeline and v1 host
 protocol behavior.
 
 ## Not yet measured
 
-No camera corpus, image-quality comparison, routed timing, FPGA resource delta
-against M6, or hardware CRC/throughput result is recorded here. Those require
-the Arty A7, OV7670, and Ethernet adapter and belong in the hardware and
-benchmark records after physical qualification.
+The final routed build and camera-rate matrix are recorded in
+`docs/milestone7_hardware_validation.md`. A camera corpus, image-quality
+comparison, threshold-mode hardware CRC, and controlled FPGA-versus-OpenCV
+compute result are still pending and belong in the benchmark record.

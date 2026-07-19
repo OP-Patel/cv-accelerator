@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-07-19T20:14:47.935917+00:00",
+  "benchmark_kind": "full",
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "python": "3.13.7",
+    "opencv": "5.0.0",
+    "numpy": "2.4.3",
+    "opencv_threads": 1,
+    "cpu_count": 22
+  },
+  "method": {
+    "input": "320x240 deterministic 8-bit coordinate pattern",
+    "output": "318x238 cropped saturating abs(Gx)+abs(Gy)",
+    "warmup": 20,
+    "samples_per_run": 1000,
+    "independent_runs": 5,
+    "separation": "core, CPU kernel, transport, and live FPS are distinct"
+  },
+  "opencv_runs": [
+    {
+      "run": 1,
+      "samples": 1000,
+      "mean_ms": 0.47800220000000004,
+      "median_ms": 0.4403,
+      "p95_ms": 0.8775,
+      "min_ms": 0.1959,
+      "max_ms": 6.5579,
+      "stdev_ms": 0.37610063873272004,
+      "mean_fps": 2092.0405805663654,
+      "output_crc32": 1531346825
+    },
+    {
+      "run": 2,
+      "samples": 1000,
+      "mean_ms": 0.360344,
+      "median_ms": 0.3161,
+      "p95_ms": 0.6276,
+      "min_ms": 0.1953,
+      "max_ms": 3.1443,
+      "stdev_ms": 0.22096694450528115,
+      "mean_fps": 2775.1259907199787,
+      "output_crc32": 1531346825
+    },
+    {
+      "run": 3,
+      "samples": 1000,
+      "mean_ms": 0.405462,
+      "median_ms": 0.2835,
+      "p95_ms": 0.4975,
+      "min_ms": 0.1955,
+      "max_ms": 55.4214,
+      "stdev_ms": 1.832856921954357,
+      "mean_fps": 2466.322368064085,
+      "output_crc32": 1531346825
+    },
+    {
+      "run": 4,
+      "samples": 1000,
+      "mean_ms": 0.3156425,
+      "median_ms": 0.2314,
+      "p95_ms": 0.5064,
+      "min_ms": 0.1955,
+      "max_ms": 5.9326,
+      "stdev_ms": 0.2989958036223084,
+      "mean_fps": 3168.141172370641,
+      "output_crc32": 1531346825
+    },
+    {
+      "run": 5,
+      "samples": 1000,
+      "mean_ms": 0.3132011,
+      "median_ms": 0.23085,
+      "p95_ms": 0.5134,
+      "min_ms": 0.1954,
+      "max_ms": 6.5075,
+      "stdev_ms": 0.30436706837105426,
+      "mean_fps": 3192.8368067672814,
+      "output_crc32": 1531346825
+    }
+  ],
+  "fpga_compute_runs": [
+    {
+      "run": 1,
+      "frames": 1000,
+      "core_clock_hz": 200000000,
+      "frame_interval_cycles": 76800,
+      "sustained_frame_ms": 0.384,
+      "sustained_fps": 2604.1666666666665,
+      "first_input_to_last_output_cycles": 76807,
+      "accepted_pixels": 76800,
+      "produced_pixels": 75684,
+      "valid_gap_cycles": 0,
+      "output_crc32": 1531346825
+    },
+    {
+      "run": 2,
+      "frames": 1000,
+      "core_clock_hz": 200000000,
+      "frame_interval_cycles": 76800,
+      "sustained_frame_ms": 0.384,
+      "sustained_fps": 2604.1666666666665,
+      "first_input_to_last_output_cycles": 76807,
+      "accepted_pixels": 76800,
+      "produced_pixels": 75684,
+      "valid_gap_cycles": 0,
+      "output_crc32": 1531346825
+    },
+    {
+      "run": 3,
+      "frames": 1000,
+      "core_clock_hz": 200000000,
+      "frame_interval_cycles": 76800,
+      "sustained_frame_ms": 0.384,
+      "sustained_fps": 2604.1666666666665,
+      "first_input_to_last_output_cycles": 76807,
+      "accepted_pixels": 76800,
+      "produced_pixels": 75684,
+      "valid_gap_cycles": 0,
+      "output_crc32": 1531346825
+    },
+    {
+      "run": 4,
+      "frames": 1000,
+      "core_clock_hz": 200000000,
+      "frame_interval_cycles": 76800,
+      "sustained_frame_ms": 0.384,
+      "sustained_fps": 2604.1666666666665,
+      "first_input_to_last_output_cycles": 76807,
+      "accepted_pixels": 76800,
+      "produced_pixels": 75684,
+      "valid_gap_cycles": 0,
+      "output_crc32": 1531346825
+    },
+    {
+      "run": 5,
+      "frames": 1000,
+      "core_clock_hz": 200000000,
+      "frame_interval_cycles": 76800,
+      "sustained_frame_ms": 0.384,
+      "sustained_fps": 2604.1666666666665,
+      "first_input_to_last_output_cycles": 76807,
+      "accepted_pixels": 76800,
+      "produced_pixels": 75684,
+      "valid_gap_cycles": 0,
+      "output_crc32": 1531346825
+    }
+  ],
+  "comparison": {
+    "opencv_median_ms": 0.2835,
+    "fpga_median_frame_ms": 0.384,
+    "throughput_ratio": 0.7382812499999999,
+    "required_ratio": 1.05,
+    "bit_exact_crc_match": true
+  },
+  "live_sessions": []
+}

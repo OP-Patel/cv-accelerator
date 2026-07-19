@@ -118,14 +118,19 @@ class M7StreamClient(M6StreamClient):
             raise ValueError("stream_id must be 0 (Sobel) or 1 (grayscale)")
         if frame_count < 0:
             raise ValueError("frame_count must be zero or greater")
-        status, _ = self._exchange(OPCODE_START, stream_id, frame_count)
-        if status:
-            raise RuntimeError(f"START failed with FPGA status {status}")
+
+        # Reset the receiver before START.  The FPGA may begin sending video
+        # before its START acknowledgement reaches the host, and _exchange()
+        # deliberately assembles those early packets.  Clearing this state
+        # after _exchange() would discard an early frame from a bounded run.
         self._stream_id = stream_id
         self._assembly = None
         self._last_completed_sequence = None
         self._pending_frames.clear()
         self.counters = IntegrityCounters()
+        status, _ = self._exchange(OPCODE_START, stream_id, frame_count)
+        if status:
+            raise RuntimeError(f"START failed with FPGA status {status}")
 
     def stop(self) -> None:
         if self.socket is None:

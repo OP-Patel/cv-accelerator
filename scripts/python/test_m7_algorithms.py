@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import unittest
+import binascii
 
 import numpy as np
 
+from benchmark_m7 import combined_crc, exact_opencv_sobel, synthetic_inputs
 from m7_algorithms import sobel_l1, threshold_sobel
 
 
@@ -31,6 +33,21 @@ class M7AlgorithmTests(unittest.TestCase):
         self.assertEqual(sobel_l1(np.zeros((240, 320), dtype=np.uint8)).shape, (238, 318))
         with self.assertRaises(ValueError):
             threshold_sobel(np.zeros((2, 2), dtype=np.uint8), 256)
+
+    def test_dual_lane_patterns_and_combined_crc(self) -> None:
+        import cv2
+
+        first, second = synthetic_inputs(np)
+        self.assertFalse(np.array_equal(first, second))
+        first_crc = binascii.crc32(
+            exact_opencv_sobel(first, cv2, np).tobytes()
+        ) & 0xFFFFFFFF
+        second_crc = binascii.crc32(
+            exact_opencv_sobel(second, cv2, np).tobytes()
+        ) & 0xFFFFFFFF
+        self.assertEqual(first_crc, 0x5B467F89)
+        self.assertEqual(second_crc, 0x26F0AB1D)
+        self.assertEqual(combined_crc(first_crc, second_crc), 0x16A729B3)
 
 
 if __name__ == "__main__":

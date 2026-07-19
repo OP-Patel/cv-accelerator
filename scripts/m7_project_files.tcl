@@ -10,6 +10,7 @@ set m7_sim_sources [concat $m5_sim_sources {
     ../sim/tb/tb_m7_threshold_sobel.sv
     ../sim/tb/tb_m7_core_metrics.sv
     ../sim/tb/tb_m7_accelerated_core.sv
+    ../sim/tb/tb_m7_control_ack.sv
     ../sim/tb/tb_m7_control_receiver.sv
     ../sim/tb/tb_conv_pipeline_320.sv
 }]

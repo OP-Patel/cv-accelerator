@@ -49,9 +49,15 @@ def timing_summary(values_ms: list[float]) -> dict[str, float | int]:
             "mean_fps": 1000.0 / statistics.fmean(values_ms)}
 
 
-def synthetic_input(np):
+def synthetic_inputs(np):
     y, x = np.indices((HEIGHT, WIDTH), dtype=np.uint16)
-    return ((x * 3 + y * 5 + ((x ^ y) & 31)) & 0xFF).astype(np.uint8)
+    first = ((x * 3 + y * 5 + ((x ^ y) & 31)) & 0xFF).astype(np.uint8)
+    return first, first ^ np.uint8(0xA5)
+
+
+def combined_crc(first_crc: int, second_crc: int) -> int:
+    rotated_second = ((second_crc << 1) | (second_crc >> 31)) & 0xFFFFFFFF
+    return first_crc ^ rotated_second
 
 
 def exact_opencv_sobel(gray, cv2, np):
@@ -62,19 +68,28 @@ def exact_opencv_sobel(gray, cv2, np):
 
 
 def opencv_runs(samples: int, independent_runs: int, warmup: int, cv2, np):
-    gray = synthetic_input(np)
+    if samples % 2:
+        raise ValueError("dual-lane benchmark sample count must be even")
+    first_gray, second_gray = synthetic_inputs(np)
     for _ in range(warmup):
-        exact_opencv_sobel(gray, cv2, np)
-    output = exact_opencv_sobel(gray, cv2, np)
-    expected_crc = binascii.crc32(output.tobytes()) & 0xFFFFFFFF
+        exact_opencv_sobel(first_gray, cv2, np)
+        exact_opencv_sobel(second_gray, cv2, np)
+    first_output = exact_opencv_sobel(first_gray, cv2, np)
+    second_output = exact_opencv_sobel(second_gray, cv2, np)
+    first_crc = binascii.crc32(first_output.tobytes()) & 0xFFFFFFFF
+    second_crc = binascii.crc32(second_output.tobytes()) & 0xFFFFFFFF
+    expected_crc = combined_crc(first_crc, second_crc)
     runs = []
     for run_index in range(independent_runs):
         timings = []
-        for _ in range(samples):
+        for _ in range(samples // 2):
             started = time.perf_counter_ns()
-            candidate = exact_opencv_sobel(gray, cv2, np)
-            timings.append((time.perf_counter_ns() - started) / 1_000_000.0)
-        if not np.array_equal(candidate, output):
+            first_candidate = exact_opencv_sobel(first_gray, cv2, np)
+            second_candidate = exact_opencv_sobel(second_gray, cv2, np)
+            per_frame_ms = (time.perf_counter_ns() - started) / 2_000_000.0
+            timings.extend((per_frame_ms, per_frame_ms))
+        if (not np.array_equal(first_candidate, first_output) or
+                not np.array_equal(second_candidate, second_output)):
             raise RuntimeError("OpenCV-equivalent output changed between runs")
         runs.append({"run": run_index + 1, **timing_summary(timings),
                      "output_crc32": expected_crc})
@@ -174,10 +189,11 @@ def main() -> int:
                         "python": platform.python_version(), "opencv": cv2.__version__,
                         "numpy": np.__version__, "opencv_threads": cv2.getNumThreads(),
                         "cpu_count": psutil.cpu_count(logical=True) if psutil else None},
-        "method": {"input": "320x240 deterministic 8-bit coordinate pattern",
+        "method": {"input": "alternating pair of 320x240 deterministic 8-bit patterns",
                    "output": "318x238 cropped saturating abs(Gx)+abs(Gy)",
                    "warmup": warmup, "samples_per_run": samples,
                    "independent_runs": runs,
+                   "fpga_parallel_lanes": 2,
                    "separation": "core, CPU kernel, transport, and live FPS are distinct"},
         "opencv_runs": cpu, "fpga_compute_runs": hardware,
         "comparison": {"opencv_median_ms": cpu_median,

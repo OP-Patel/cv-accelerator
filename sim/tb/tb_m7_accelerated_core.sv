@@ -1,10 +1,11 @@
 `timescale 1ns/1ps
-// Exercises the real CDC-wrapped M7 core with a two-frame synthetic source.
+// Exercises the real CDC-wrapped M7 core with a four-frame dual-lane source.
 module tb_m7_accelerated_core;
     localparam integer WIDTH=16, HEIGHT=12, X_W=4, Y_W=4;
     logic system_clk=0, reset=1, clear_metrics=0, metrics_request=0;
     logic synthetic_start=0;
-    logic [15:0] synthetic_frames=2;
+    logic [15:0] synthetic_frames=4;
+    logic live_resume=0;
     logic in_valid=0;
     logic [X_W-1:0] in_x=0;
     logic [Y_W-1:0] in_y=0;
@@ -25,7 +26,8 @@ module tb_m7_accelerated_core;
     ) u_dut (
         .system_clk(system_clk), .reset(reset), .clear_metrics(clear_metrics),
         .metrics_request(metrics_request), .synthetic_start(synthetic_start),
-        .synthetic_frames(synthetic_frames), .in_valid(in_valid), .in_x(in_x),
+        .synthetic_frames(synthetic_frames), .live_resume(live_resume),
+        .in_valid(in_valid), .in_x(in_x),
         .in_y(in_y), .in_gray(in_gray), .out_valid(out_valid), .out_x(out_x),
         .out_y(out_y), .out_pixel(out_pixel), .core_locked(core_locked),
         .input_overflow_sticky(input_overflow),
@@ -49,12 +51,14 @@ module tb_m7_accelerated_core;
             end
             $fatal(1,"M7 core clock did not lock in simulation");
         end
-        @(negedge system_clk); synthetic_start=1;
+        // Keep a live source asserted during the synthetic run. Arbitration
+        // must drop it intentionally instead of overflowing the input FIFO.
+        @(negedge system_clk); in_valid=1; synthetic_start=1;
         @(negedge system_clk); synthetic_start=0;
         begin : wait_for_synthetic
             repeat(2000) begin
                 @(posedge system_clk);
-                if (synthetic_completed_frames==2 && !synthetic_busy)
+                if (synthetic_completed_frames==4 && !synthetic_busy)
                     disable wait_for_synthetic;
             end
             $fatal(1,"synthetic M7 benchmark did not complete");
@@ -65,11 +69,18 @@ module tb_m7_accelerated_core;
         @(negedge system_clk); metrics_request=0;
         wait(metrics_valid);
         if(input_overflow || output_overflow || accepted!=WIDTH*HEIGHT ||
-           produced!=(WIDTH-2)*(HEIGHT-2) || completed<2 || gaps!=0 ||
-           latency==0 || interval==0 || crc==0)
+           produced!=(WIDTH-2)*(HEIGHT-2) || completed!=4 || gaps!=0 ||
+           latency==0 || interval!=WIDTH*HEIGHT/2 || crc!=32'h14407397)
             $fatal(1,"core metrics overflow=%0d/%0d in=%0d out=%0d frames=%0d gaps=%0d latency=%0d interval=%0d crc=%08h",
                    input_overflow,output_overflow,accepted,produced,completed,
                    gaps,latency,interval,crc);
+        if(!u_dut.synthetic_input_blocked)
+            $fatal(1,"live input resumed before an explicit host action");
+        @(negedge system_clk); live_resume=1;
+        @(negedge system_clk); live_resume=0; in_valid=0;
+        repeat(4) @(posedge system_clk);
+        if(u_dut.synthetic_input_blocked || input_overflow)
+            $fatal(1,"live input did not resume cleanly on the frame boundary");
         $display("PASS: tb_m7_accelerated_core interval=%0d latency=%0d",interval,latency);
         $finish;
     end

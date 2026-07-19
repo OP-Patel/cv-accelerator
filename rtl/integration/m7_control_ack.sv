@@ -16,12 +16,17 @@ module m7_control_ack #(
     output logic [10:0] frame_length,
     output logic [7:0]  frame_data
 );
+    logic [31:0] checksum_sum;
     logic [15:0] ip_checksum;
     assign frame_length = 54;
-    assign ip_checksum = 16'hb11a + FPGA_IP[31:16] + FPGA_IP[15:0] +
-                         destination_ip[31:16] + destination_ip[15:0];
 
     always_comb begin
+        checksum_sum = 16'h4500 + 16'd40 + 16'h0000 + 16'h4000 + 16'h4011 +
+                       FPGA_IP[31:16] + FPGA_IP[15:0] +
+                       destination_ip[31:16] + destination_ip[15:0];
+        checksum_sum = (checksum_sum & 16'hFFFF) + (checksum_sum >> 16);
+        checksum_sum = (checksum_sum & 16'hFFFF) + (checksum_sum >> 16);
+        ip_checksum = ~checksum_sum[15:0];
         frame_data = 0;
         if (frame_index < 6)
             frame_data = destination_mac[47-(frame_index*8) -: 8];

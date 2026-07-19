@@ -6,7 +6,7 @@ from __future__ import annotations
 import struct
 import unittest
 
-from m6_stream_client import CONTROL_FORMAT
+from m6_stream_client import CONTROL_FORMAT, STREAM_GRAYSCALE
 from m7_protocol import BUILD_ID, M7StreamClient, m7_control_payload
 
 
@@ -20,11 +20,19 @@ class FakeStatusClient(M7StreamClient):
                            4: 153_600, 5: (240 << 16) | 800,
                            6: (12 << 16) | 25, 7: 76_810, 8: 76_800,
                            9: 76_800, 10: 75_684, 11: 0, 12: 10,
-                           13: 0x01041911, 14: 0xF0,
+                           13: 0x01041911, 14: 0xF1,
                            16: (1 << 31) | 5, 17: 0x12345678})
 
     def read_status_page(self, page: int) -> int:
         return self.pages[page]
+
+
+class EarlyFrameClient(M7StreamClient):
+    """Model a complete video frame arriving before the START ACK."""
+
+    def _exchange(self, opcode: int, stream_id: int, value: int) -> tuple[int, int]:
+        self._pending_frames.append("early frame")
+        return 0, value
 
 
 class M7ProtocolTests(unittest.TestCase):
@@ -40,8 +48,14 @@ class M7ProtocolTests(unittest.TestCase):
         self.assertEqual(status.threshold, 96)
         self.assertEqual(status.active_lines, 240)
         self.assertEqual(status.core_frame_interval_cycles, 76_800)
-        self.assertEqual(status.timing_readback, 0x01041911F0)
+        self.assertEqual(status.timing_readback, 0x01041911F1)
         self.assertEqual(status.core_output_crc32, 0x12345678)
+
+    def test_start_preserves_frame_received_before_ack(self) -> None:
+        client = EarlyFrameClient()
+        client._pending_frames.append("stale frame")
+        client.start(STREAM_GRAYSCALE, 1000)
+        self.assertEqual(client._pending_frames, ["early frame"])
 
 
 if __name__ == "__main__":

@@ -89,7 +89,13 @@ def main() -> int:
             print("PASS: M7 control START/STOP")
         print(f"PASS: M7 build=0x{status.build_id:08x} profile={PROFILE_NAMES[status.profile]} "
               f"link={int(status.link_up)} core_lock={int(status.core_locked)}")
-        return 0 if status.link_up and status.core_locked and not status.error_flags else 1
+        if status.error_flags:
+            print(f"FAIL: M7 status reports FPGA error flags 0x{status.error_flags:04x}")
+            if status.error_flags & 0x0001:
+                print("DETAIL: bit 0 is a camera initialization/SCCB acknowledgement or timeout error")
+            print("FIX: verify the OV7670 wiring and power, then press BTN1 and rerun this check")
+            return 1
+        return 0
     except (OSError, TimeoutError, RuntimeError) as error:
         print(f"FAIL: board health check: {error}")
         print("FIX: program the M7 bitstream, set SW2=1, verify Ethernet 2, then press BTN1")

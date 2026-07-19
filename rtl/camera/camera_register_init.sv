@@ -58,6 +58,18 @@ module camera_register_init #(
     logic [2:0] readback_index;
     logic [15:0] current_entry;
 
+    // Select only the sensor input-clock divider here.  The QVGA scaler's
+    // COM14/SCALING_PCLK_DIV pair must stay matched at 0x19/0xf1.
+    function automatic logic [7:0] profile_clkrc(input logic [1:0] profile);
+        begin
+            case (profile)
+                2'd1: profile_clkrc = 8'h00; // Medium: sensor divide by two.
+                2'd2: profile_clkrc = 8'h40; // Fast: use the external clock directly.
+                default: profile_clkrc = 8'h01; // Safe: sensor divide by four.
+            endcase
+        end
+    endfunction
+
     // Returns a compact table composed from OmniVision's guide and Linux OV7670 driver.
     function automatic logic [15:0] configuration_entry(
         input logic [7:0] index,
@@ -67,14 +79,14 @@ module camera_register_init #(
         begin
             case (index)
                 // 24 MHz clock, QVGA RGB, active-high VSYNC/HREF, normal byte order.
-                0:  configuration_entry = {8'h11, (profile == 2) ? 8'h00 : 8'h01};
+                0:  configuration_entry = {8'h11, profile_clkrc(profile)};
                 1:  configuration_entry = 16'h1214; // COM7: QVGA plus RGB output.
                 2:  configuration_entry = 16'h0c04; // COM3: downsample/crop enable.
                 3:  configuration_entry = 16'h3e19; // COM14: QVGA DCW and PCLK divide.
                 4:  configuration_entry = 16'h703a; // Horizontal scaling factor.
                 5:  configuration_entry = 16'h7135; // Vertical scaling factor.
                 6:  configuration_entry = 16'h7211; // Downsample by two.
-                7:  configuration_entry = {8'h73, (profile == 0) ? 8'hf1 : 8'hf0};
+                7:  configuration_entry = 16'h73f1; // QVGA scaler PCLK divide by two.
                 8:  configuration_entry = 16'ha202; // Pixel-clock delay.
                 9:  configuration_entry = 16'h1500; // COM10: documented normal polarities.
 
@@ -144,7 +156,7 @@ module camera_register_init #(
 
                 // COM17 provides the first deterministic hardware test pattern.
                 63: configuration_entry = {8'h42, enable_test_pattern ? 8'h08 : 8'h00};
-                64: configuration_entry = {8'h11, (profile == 2) ? 8'h00 : 8'h01};
+                64: configuration_entry = {8'h11, profile_clkrc(profile)};
                 default: configuration_entry = 16'hffff;
             endcase
         end

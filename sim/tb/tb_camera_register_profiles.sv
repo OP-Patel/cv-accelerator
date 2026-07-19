@@ -48,8 +48,8 @@ module tb_camera_register_profiles;
     initial begin
         repeat(3)@(posedge clk);reset=0;
         run_profile(0,8'h01,8'hf1);
-        run_profile(1,8'h01,8'hf0);
-        run_profile(2,8'h00,8'hf0);
+        run_profile(1,8'h00,8'hf1);
+        run_profile(2,8'h40,8'hf1);
         $display("PASS: tb_camera_register_profiles");
         $finish;
     end

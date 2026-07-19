@@ -468,7 +468,7 @@ The board-independent implementation for this plan is now checked in:
   readback and camera PCLK/frame instrumentation;
 - v2 control/status is additive to the v1 M5/M6 protocol, and configuration is
   rejected while a stream session is active;
-- `scripts/python/run_m7_host_tests.py` passes the 10 board-independent host
+- `scripts/python/run_m7_host_tests.py` passes the 12 board-independent host
   tests; the Vivado simulation list contains the preserved M5 benches plus the
   camera/profile/timing, threshold, metrics, accelerated-core, and v2-control
   benches;
@@ -476,16 +476,54 @@ The board-independent implementation for this plan is now checked in:
   live, benchmark, ROI activity, snapshot, cancellation, and structured-log
   surfaces described above.
 - With Vivado 2026.1 launched from
-  `C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat`, all 11 board-independent
+  `C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat`, all 12 board-independent
   RTL benches pass; the M7 synthesis check completes with zero errors and zero
-  critical warnings. The pre-route report is 13,557 LUTs, 28,705 registers,
-  16 BRAM tiles, and 0 DSPs.
+  critical warnings.
+- The first routed image failed at WNS -1.289 ns and TNS -41.811 ns because the
+  synthetic-pixel expression directly drove the line-buffer BRAM and intentional
+  asynchronous reset/FIFO crossings were timed synchronously. The source is now
+  registered, live FIFO draining pauses during synthetic runs, and M7-specific
+  clock-domain constraints classify those crossings.
+- The final 200 MHz routed candidate passes at WNS +0.107 ns, TNS 0.000 ns,
+  WHS +0.031 ns, and THS 0.000 ns with zero failed routes. It uses 13,105 LUTs,
+  28,924 registers, 17 BRAM tiles, and 0 DSPs. Its bitstream SHA-256 is
+  `d326353db16749c1f64178fd81cdef8c0469eb4665a4cf6500a609513827e0fc`.
+- The first programmed image exposed an invalid M7 ACK IPv4 checksum. The ACK
+  generator now uses the proven folded one's-complement calculation, and a new
+  packet-level regression validates checksum `0xa571`, opcode `0x83`, and build
+  ID `0x4d370001`. The corrected image passes M4 echo plus M7 STATUS/START/STOP.
 
-The Arty A7 and Ethernet adapter were intentionally not attached for this
-handoff. Therefore items 2, 3, 4, 6, 7, 8, 9, and 10 in the completion
-contract remain physical qualification work; the implementation does not claim
-15/30 FPS, routed timing, or an FPGA/OpenCV win until those measurements are
-captured.
+The original medium/fast profile table incorrectly changed scaler register
+`0x73` without its paired COM14 setting. Hardware reported error `0x0004` and
+zero active bytes. The fixed table keeps the QVGA scaler pair at `0x19/0xF1`
+and selects `CLKRC=0x01/0x00/0x40` for safe/medium/fast. Pages 13/14 read back
+those exact values, and all three profiles report 640 active RGB565 bytes by
+240 lines.
+
+- Safe completed 1,000 grayscale and 1,000 Sobel frames at 7.503 FPS.
+- Medium completed 1,000 grayscale and 1,000 Sobel frames at 15.006 FPS.
+- Fast completed 1,000 grayscale and 1,000 Sobel frames at 30.012 FPS.
+- Every session had zero host integrity errors and zero FPGA error flags; the
+  final setup check also passed after returning the board to safe.
+
+The first 1,000-frame synthetic hardware check exposed a live-camera input FIFO
+overflow while the synthetic generator owned the core. Blocking live writes
+removed error `0x2000`, but allowing the camera to resume immediately then
+overwrote the synthetic frame interval before the host read it. The final RTL
+holds live input until the next CONFIGURE or START and resumes only on camera
+coordinate `(0,0)`. The expanded accelerated-core bench covers both the blocked
+and explicit-resume cases. A second independent 200 MHz Sobel lane now processes
+`lane0 ^ 0xA5`; the combined CRC proves both lanes and the aggregate per-frame
+interval is 38,400 cycles (0.192 ms). The output-FIFO overflow indication is now
+a core-domain sticky level followed by a two-flop synchronizer, and the remaining
+CDC/DRC findings are classified in `milestone7_cdc_drc_classification.md`. The
+final candidate still needs to be programmed and rerun because this execution
+environment could not obtain external approval for Vivado hardware-manager
+access after the board connected.
+
+The FPGA/OpenCV comparison, threshold mode, dashboard, and activity-monitor
+items remain open. Camera-profile qualification and CDC/DRC classification no
+longer block those tasks.
 
 ## Features enabled by this foundation after M7
 

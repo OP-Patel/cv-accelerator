@@ -17,6 +17,9 @@ foreach source $m7_design_sources {
 if {[llength [get_files -quiet arty_a7_m5_camera_ethernet.xdc]] == 0} {
     add_files -fileset constrs_1 -norecurse ../constraints/arty_a7_m5_camera_ethernet.xdc
 }
+if {[llength [get_files -quiet arty_a7_m7_timing.xdc]] == 0} {
+    add_files -fileset constrs_1 -norecurse ../constraints/arty_a7_m7_timing.xdc
+}
 set_property top arty_m7_camera_ethernet_top [current_fileset]
 update_compile_order -fileset sources_1
 synth_design -top arty_m7_camera_ethernet_top -part xc7a100tcsg324-1

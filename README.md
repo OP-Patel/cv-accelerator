@@ -23,7 +23,7 @@ output plumbing around that compute core.
 | M4 100 Mb/s Ethernet, ARP, UDP echo | Complete, 10,000-echo hardware run |
 | M5 camera/Sobel over UDP | Complete, 216 consecutive reconstructed frames |
 | M6 live laptop viewer and OpenCV benchmark | Complete, 300-frame display and final physical benchmark passed |
-| M7 optimized application/dashboard | RTL, protocol, host tests, benchmark/dashboard tooling complete; hardware qualification pending |
+| M7 optimized application/dashboard | Camera profiles hardware-qualified at 7.5/15/30 FPS; OpenCV/dashboard acceptance pending |
 
 The tested M5 bitstream also preserves M4 UDP echo on port 4000. M6 reuses the
 same bitstream: it adds laptop display and measurement, not a new FPGA data
@@ -276,7 +276,7 @@ The M6 plan defines live-view acceptance, exact OpenCV equivalence, benchmark
 methodology, result files, and the distinction between compute throughput and
 end-to-end performance.
 
-## Milestone 7 (hardware not attached yet)
+## Milestone 7 (camera profiles hardware-qualified)
 
 M7 keeps the M5/M6 v1 control and stream protocol while adding additive v2
 controls for camera profiles, thresholded Sobel, coherent status pages, and a
@@ -305,17 +305,42 @@ The explicit Vivado commands remain the authoritative build path:
 ```powershell
 $env:XILINX_LOCAL_USER_DATA = "NO"
 $vivado = "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat"
-& $vivado -mode batch -source scripts/run_m7_simulations.tcl -notrace
-& $vivado -mode batch -source scripts/check_m7_synthesis.tcl -notrace
-& $vivado -mode batch -source scripts/build_m7_bitstream.tcl -notrace
+Push-Location scripts
+& $vivado -mode batch -source run_m7_simulations.tcl -notrace
+& $vivado -mode batch -source check_m7_synthesis.tcl -notrace
+& $vivado -mode batch -source build_m7_bitstream.tcl -notrace
+Pop-Location
+
+# With the Arty A7 attached, program the exact stable artifact.
+& $vivado -mode batch -source scripts/program_m7_device.tcl -notrace
 ```
 
-M7 has not been benchmarked on physical hardware in this checkout. Do not
-interpret the benchmark command's OpenCV-only measurements or the synthesis
-resource report as camera FPS, routed timing, or an FPGA/OpenCV win. The
-remaining acceptance evidence is tracked in:
+The current routed M7 build passes timing at a 200 MHz core clock: WNS is
+`+0.107 ns`, TNS is `0.000 ns`, WHS is `+0.031 ns`, and THS is `0.000 ns`.
+The timing-clean bitstream is kept at the reset-safe path
+`artifacts/m7_runs/build/arty_m7_camera_ethernet_top.bit` and mirrored into
+`vivado_project_m7/arty_conv_m7.runs/impl_1/` for Vivado. Its SHA-256 is
+`d326353db16749c1f64178fd81cdef8c0469eb4665a4cf6500a609513827e0fc`.
+
+The profile-qualified image returns M7 build ID `0x4d370001`; M4 UDP echo, M7
+v2 STATUS/START/STOP, and the setup check pass. Hardware
+readback and 1,000-frame grayscale plus 1,000-frame Sobel runs qualified all
+three profiles with zero integrity or FPGA errors: `safe` at 7.503 FPS,
+`medium` at 15.006 FPS, and `fast` at 30.012 FPS. Each profile reported 153,600
+active bytes, which is 640 RGB565 bytes by 240 lines. This camera-rate result is
+not the separate FPGA-versus-OpenCV compute-contract result. The final candidate
+adds two independent 200 MHz synthetic Sobel lanes, an aggregate 38,400-cycle
+(0.192 ms) per-frame interval, a combined CRC proving both lanes, live-camera
+isolation during synthetic runs, stable metric capture, and synchronized
+overflow/error handling. It passed all 12 RTL benches and timing signoff. Its
+final board rerun, OpenCV comparison, threshold run, and dashboard/activity
+acceptance remain open because automated JTAG access was blocked by the
+execution environment after the board connected. Evidence is tracked in:
 
 - `docs/milestone7_algorithm_evaluation.md`
 - `docs/milestone7_hardware_validation.md`
+- `docs/milestone7_timing_summary_pass.rpt`
+- `docs/milestone7_cdc_drc_classification.md`
+- `docs/milestone7_profile_qualification.txt`
 - `docs/milestone7_benchmark_results.md`
 - `docs/milestone6_handoff_and_milestone7_plan.md`

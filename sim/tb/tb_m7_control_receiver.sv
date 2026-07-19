@@ -47,6 +47,9 @@ module tb_m7_control_receiver;
         load(2,4,0,{8'd1,8'd1,8'd96,8'd0});present();
         if(!command_valid || command_status!=1) $fatal(1,"active CONFIG was not rejected");
         load(1,2,0,0);present();
+        load(2,3,0,0);present();
+        if(!command_valid || command_version!=2 || command_opcode!=3 || command_value!=0)
+            $fatal(1,"M7 STATUS command failed");
         load(2,4,0,{8'd1,8'd1,8'd96,8'd0});present();
         if(command_status!=0 || requested_profile!=1 || !requested_threshold_enable ||
            requested_threshold!=96) $fatal(1,"valid CONFIG failed");

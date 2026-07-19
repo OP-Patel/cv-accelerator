@@ -396,7 +396,10 @@ module arty_m5_camera_ethernet_top #(
                 .system_clk(clk_100mhz), .reset(reset), .clear_metrics(clear_level),
                 .metrics_request(core_metrics_request),
                 .synthetic_start(core_synthetic_start),
-                .synthetic_frames(core_synthetic_frames), .in_valid(gray_valid),
+                .synthetic_frames(core_synthetic_frames),
+                .live_resume(camera_reconfigure_pulse ||
+                             (session_active_sync[0] && !session_active_sync[1])),
+                .in_valid(gray_valid),
                 .in_x(gray_x), .in_y(gray_y), .in_gray(gray_pixel),
                 .out_valid(sobel_valid), .out_x(sobel_x), .out_y(sobel_y),
                 .out_pixel(sobel_pixel), .core_locked(core_locked),

@@ -24,7 +24,8 @@ module m7_core_clock (
         .CLKFBOUT(feedback),
         .CLKOUT0(core_unbuffered),
         .LOCKED(locked),
-        .CLKOUT0B(), .CLKOUT1(), .CLKOUT1B(), .CLKOUT2(), .CLKOUT2B(),
+        .CLKFBOUTB(), .CLKOUT0B(), .CLKOUT1(), .CLKOUT1B(),
+        .CLKOUT2(), .CLKOUT2B(),
         .CLKOUT3(), .CLKOUT3B(), .CLKOUT4(), .CLKOUT5(), .CLKOUT6()
     );
     BUFG u_feedback_buffer (.I(feedback), .O(feedback_buffered));
