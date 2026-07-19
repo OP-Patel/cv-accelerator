@@ -154,7 +154,7 @@ module arty_m3_camera_top #(
 
     camera_register_init #(.CLOCK_HZ(CLOCK_HZ)) u_camera_init (
         .clk(clk_100mhz), .reset(reset), .start(init_start),
-        .test_pattern_enable(sw_clean[0]),
+        .test_pattern_enable(sw_clean[0]), .profile_select(2'd0),
         .command_start(command_start), .command_write_enable(command_write),
         .command_register(command_register), .command_write_data(command_write_data),
         .command_read_data(command_read_data), .command_busy(command_busy),
@@ -162,7 +162,8 @@ module arty_m3_camera_top #(
         .command_timeout_error(command_timeout_error),
         .init_busy(init_busy), .init_done(init_done), .init_error(init_error),
         .completed_writes(completed_writes), .nack_count(nack_count),
-        .product_id(product_id), .version_id(version_id)
+        .product_id(product_id), .version_id(version_id),
+        .selected_profile(), .timing_readback_valid(), .timing_readback()
     );
 
     // Static controls and sticky status are safe to synchronize bit by bit.

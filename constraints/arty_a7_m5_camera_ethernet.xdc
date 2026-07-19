@@ -69,7 +69,7 @@ set_output_delay -clock eth_tx_clk_in -clock_fall -min 0.000 [get_ports {eth_txd
 
 ## Camera, system, and PHY-provided clocks are independent domains.
 set_clock_groups -asynchronous \
-    -group [get_clocks sys_clk] \
+    -group [get_clocks -include_generated_clocks sys_clk] \
     -group [get_clocks cam_pclk] \
     -group [get_clocks eth_rx_clk_in] \
     -group [get_clocks eth_tx_clk_in]

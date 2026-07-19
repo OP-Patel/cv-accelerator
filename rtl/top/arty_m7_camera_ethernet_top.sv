@@ -1,0 +1,57 @@
+// Pin-compatible M7 build wrapper around the backward-compatible integrated design.
+module arty_m7_camera_ethernet_top #(
+    parameter integer CLOCK_HZ = 100_000_000,
+    parameter integer UART_BAUD = 115_200,
+    parameter integer DEBOUNCE_CYCLES = 1_000_000,
+    parameter integer PHY_RESET_US = 10_000,
+    parameter integer PHY_STARTUP_US = 10_000,
+    parameter integer IMAGE_WIDTH = 320,
+    parameter integer IMAGE_HEIGHT = 240,
+    parameter integer CAMERA_FIFO_DEPTH = 1024,
+    parameter integer STREAM_FIFO_DEPTH = 32768,
+    parameter logic [1:0] DEFAULT_CAMERA_PROFILE = 2'd0,
+    parameter logic [47:0] FPGA_MAC = 48'h02_00_00_00_00_01,
+    parameter logic [31:0] FPGA_IP = 32'hC0A8_0A02,
+    parameter logic [15:0] ECHO_PORT = 16'd4000,
+    parameter logic [15:0] CONTROL_PORT = 16'd4001
+) (
+    input  logic       clk_100mhz,
+    input  logic       reset_btn,
+    input  logic [2:0] btn,
+    input  logic [3:0] sw,
+    input  logic       uart_rx,
+    output logic       uart_tx,
+    output logic [3:0] led,
+    input  logic       cam_pclk,
+    input  logic       cam_vsync,
+    input  logic       cam_href,
+    input  logic [7:0] cam_d,
+    output logic       cam_xclk,
+    output logic       cam_reset_n,
+    output logic       cam_pwdn,
+    inout  wire        cam_sio_d,
+    output logic       cam_sio_c,
+    input  logic       eth_col,
+    input  logic       eth_crs,
+    output logic       eth_mdc,
+    inout  wire        eth_mdio,
+    output logic       eth_ref_clk,
+    output logic       eth_rstn,
+    input  logic       eth_rx_clk,
+    input  logic       eth_rx_dv,
+    input  logic [3:0] eth_rxd,
+    input  logic       eth_rxerr,
+    input  logic       eth_tx_clk,
+    output logic       eth_tx_en,
+    output logic [3:0] eth_txd
+);
+    arty_m5_camera_ethernet_top #(
+        .CLOCK_HZ(CLOCK_HZ), .UART_BAUD(UART_BAUD),
+        .DEBOUNCE_CYCLES(DEBOUNCE_CYCLES), .PHY_RESET_US(PHY_RESET_US),
+        .PHY_STARTUP_US(PHY_STARTUP_US), .IMAGE_WIDTH(IMAGE_WIDTH),
+        .IMAGE_HEIGHT(IMAGE_HEIGHT), .CAMERA_FIFO_DEPTH(CAMERA_FIFO_DEPTH),
+        .STREAM_FIFO_DEPTH(STREAM_FIFO_DEPTH), .M7_ENABLE(1'b1),
+        .M7_DEFAULT_PROFILE(DEFAULT_CAMERA_PROFILE), .FPGA_MAC(FPGA_MAC),
+        .FPGA_IP(FPGA_IP), .ECHO_PORT(ECHO_PORT), .CONTROL_PORT(CONTROL_PORT)
+    ) u_implementation (.*);
+endmodule

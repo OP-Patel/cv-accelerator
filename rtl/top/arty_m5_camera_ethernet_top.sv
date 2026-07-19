@@ -9,6 +9,8 @@ module arty_m5_camera_ethernet_top #(
     parameter integer IMAGE_HEIGHT = 240,
     parameter integer CAMERA_FIFO_DEPTH = 1024,
     parameter integer STREAM_FIFO_DEPTH = 32768,
+    parameter bit M7_ENABLE = 1'b0,
+    parameter logic [1:0] M7_DEFAULT_PROFILE = 2'd0,
     parameter logic [47:0] FPGA_MAC = 48'h02_00_00_00_00_01,
     parameter logic [31:0] FPGA_IP = 32'hC0A8_0A02,
     parameter logic [15:0] ECHO_PORT = 16'd4000,
@@ -67,6 +69,16 @@ module arty_m5_camera_ethernet_top #(
     logic camera_init_busy, camera_init_done, camera_init_error;
     logic [15:0] completed_writes, camera_nack_count;
     logic [7:0] camera_product_id, camera_version_id;
+    logic [1:0] camera_selected_profile;
+    logic camera_timing_readback_valid;
+    logic [39:0] camera_timing_readback;
+    logic [31:0] camera_frame_period_cycles;
+    logic [31:0] camera_frame_pclk_edges, camera_active_bytes;
+    logic [15:0] camera_line_pclk_edges, camera_active_lines;
+    logic [31:0] camera_source_frame_pclk_edges, camera_source_active_bytes;
+    logic [15:0] camera_source_line_pclk_edges, camera_source_active_lines;
+    logic [127:0] camera_timing_source_snapshot, camera_timing_snapshot;
+    logic camera_timing_snapshot_busy, camera_timing_snapshot_valid;
     logic camera_id_valid;
     (* ASYNC_REG = "TRUE" *) logic [1:0] init_done_camera_sync;
     (* ASYNC_REG = "TRUE" *) logic [1:0] clear_camera_sync;
@@ -100,6 +112,26 @@ module arty_m5_camera_ethernet_top #(
     logic [7:0] sobel_pixel;
     logic [31:0] pipeline_inputs, pipeline_outputs, pipeline_frames_started;
     logic [31:0] pipeline_frames_completed, pipeline_errors, pipeline_crc;
+    logic core_locked, core_input_overflow, core_output_overflow;
+    logic core_metrics_busy, core_metrics_valid, core_metrics_request;
+    logic [31:0] core_latency_cycles, core_frame_interval_cycles;
+    logic [31:0] core_accepted_pixels, core_produced_pixels;
+    logic [31:0] core_valid_gap_cycles, core_completed_frames;
+    logic [31:0] core_output_crc;
+    logic core_synthetic_busy;
+    logic [15:0] core_synthetic_completed_frames;
+    logic thresholded_valid;
+    logic [X_W-1:0] thresholded_x;
+    logic [Y_W-1:0] thresholded_y;
+    logic [7:0] thresholded_pixel;
+    logic active_threshold_enable;
+    logic [7:0] active_threshold;
+    logic processed_valid;
+    logic [X_W-1:0] processed_x;
+    logic [Y_W-1:0] processed_y;
+    logic [7:0] processed_pixel;
+    logic [19:0] metrics_refresh_counter;
+    logic camera_timing_snapshot_request;
 
     // PHY control and Ethernet receive signals.
     logic ethernet_clock_ready, phy_ready, phy_ready_delayed;
@@ -138,9 +170,16 @@ module arty_m5_camera_ethernet_top #(
     logic [15:0] control_source_port;
     logic session_active, session_stream_id, session_restart;
     logic [31:0] session_frame_count, control_errors;
+    logic [7:0] control_version, control_status;
     logic [47:0] session_host_mac;
     logic [31:0] session_host_ip;
     logic [15:0] session_host_port;
+    logic [1:0] requested_profile_rx;
+    logic requested_threshold_enable_rx;
+    logic [7:0] requested_threshold_rx;
+    logic configuration_toggle_rx;
+    logic [15:0] requested_benchmark_frames_rx;
+    logic benchmark_toggle_rx;
     logic [10:0] control_read_address;
 
     (* ASYNC_REG = "TRUE" *) logic [1:0] session_active_sync;
@@ -148,6 +187,18 @@ module arty_m5_camera_ethernet_top #(
     (* ASYNC_REG = "TRUE" *) logic [1:0] stream_complete_sync;
     (* ASYNC_REG = "TRUE" *) logic [1:0] sw1_rx_sync;
     logic selected_frame_stream, selected_stream_now, capture_stream_enable;
+    (* ASYNC_REG = "TRUE" *) logic [2:0] configuration_toggle_sync;
+    (* ASYNC_REG = "TRUE" *) logic [5:0] requested_profile_sync;
+    (* ASYNC_REG = "TRUE" *) logic [2:0] requested_threshold_enable_sync;
+    (* ASYNC_REG = "TRUE" *) logic [23:0] requested_threshold_sync;
+    logic configuration_toggle_seen, camera_reconfigure_pulse;
+    logic [1:0] m7_profile_select;
+    logic m7_threshold_enable;
+    logic [7:0] m7_threshold;
+    (* ASYNC_REG = "TRUE" *) logic [2:0] benchmark_toggle_sync;
+    (* ASYNC_REG = "TRUE" *) logic [47:0] requested_benchmark_frames_sync;
+    logic benchmark_toggle_seen, core_synthetic_start;
+    logic [15:0] core_synthetic_frames;
     logic stream_write_valid, stream_write_start, stream_write_end;
     logic [7:0] stream_write_pixel;
     logic stream_fifo_read, stream_fifo_valid, stream_fifo_start, stream_fifo_end;
@@ -165,7 +216,7 @@ module arty_m5_camera_ethernet_top #(
     logic [47:0] ack_source_mac;
     logic [31:0] ack_source_ip, ack_frame_count;
     logic [15:0] ack_source_port;
-    logic [7:0] ack_opcode;
+    logic [7:0] ack_version, ack_opcode, ack_status;
     logic ack_stream_id;
     logic arp_grant, control_grant, echo_grant, camera_grant, test_grant;
     logic [2:0] active_source;
@@ -233,7 +284,7 @@ module arty_m5_camera_ethernet_top #(
         .clk(cam_pclk), .async_reset_in(reset_btn || !camera_clock_ready),
         .sync_reset_out(camera_reset)
     );
-    assign camera_init_start = restart_pulse ||
+    assign camera_init_start = restart_pulse || camera_reconfigure_pulse ||
                                (camera_clock_ready && !camera_clock_ready_delayed);
     sccb_master #(.CLOCK_HZ(CLOCK_HZ)) u_sccb (
         .clk(clk_100mhz), .reset(reset), .start(command_start),
@@ -244,9 +295,13 @@ module arty_m5_camera_ethernet_top #(
         .sio_d_in(cam_sio_d), .sio_d_drive_low(camera_sda_drive_low)
     );
     assign cam_sio_d = camera_sda_drive_low ? 1'b0 : 1'bz;
-    camera_register_init #(.CLOCK_HZ(CLOCK_HZ)) u_camera_init (
+    camera_register_init #(
+        .CLOCK_HZ(CLOCK_HZ), .ENABLE_M7_PROFILES(M7_ENABLE)
+    ) u_camera_init (
         .clk(clk_100mhz), .reset(reset), .start(camera_init_start),
-        .test_pattern_enable(sw_clean[0]), .command_start(command_start),
+        .test_pattern_enable(sw_clean[0]),
+        .profile_select(M7_ENABLE ? m7_profile_select : 2'd0),
+        .command_start(command_start),
         .command_write_enable(command_write), .command_register(command_register),
         .command_write_data(command_write_data), .command_read_data(command_read_data),
         .command_busy(command_busy), .command_done(command_done),
@@ -254,7 +309,29 @@ module arty_m5_camera_ethernet_top #(
         .init_busy(camera_init_busy), .init_done(camera_init_done),
         .init_error(camera_init_error), .completed_writes(completed_writes),
         .nack_count(camera_nack_count), .product_id(camera_product_id),
-        .version_id(camera_version_id)
+        .version_id(camera_version_id), .selected_profile(camera_selected_profile),
+        .timing_readback_valid(camera_timing_readback_valid),
+        .timing_readback(camera_timing_readback)
+    );
+    camera_timing_monitor u_camera_timing (
+        .system_clk(clk_100mhz), .system_reset(reset),
+        .cam_pclk(cam_pclk), .camera_reset(camera_reset), .clear(clear_level),
+        .cam_vsync(cam_vsync), .cam_href(cam_href),
+        .frame_period_system_cycles(camera_frame_period_cycles),
+        .frame_pclk_edges(camera_source_frame_pclk_edges),
+        .line_pclk_edges(camera_source_line_pclk_edges),
+        .active_bytes(camera_source_active_bytes),
+        .active_lines(camera_source_active_lines),
+        .source_snapshot(camera_timing_source_snapshot)
+    );
+    m5_status_snapshot #(.WIDTH(128)) u_camera_timing_snapshot (
+        .destination_clk(clk_100mhz), .destination_reset(reset),
+        .request(camera_timing_snapshot_request),
+        .busy(camera_timing_snapshot_busy),
+        .snapshot_valid(camera_timing_snapshot_valid),
+        .snapshot_data(camera_timing_snapshot),
+        .source_clk(cam_pclk), .source_reset(camera_reset),
+        .source_data(camera_timing_source_snapshot)
     );
 
     always_ff @(posedge cam_pclk or posedge reset_btn) begin
@@ -310,17 +387,82 @@ module arty_m5_camera_ethernet_top #(
         .frame_end(gray_frame_end), .line_end(gray_line_end),
         .coordinate_error(coordinate_error)
     );
-    conv_pipeline_top #(
-        .IMAGE_WIDTH(IMAGE_WIDTH), .IMAGE_HEIGHT(IMAGE_HEIGHT), .X_W(X_W), .Y_W(Y_W)
-    ) u_pipeline (
-        .clk(clk_100mhz), .reset(reset), .in_valid(gray_valid),
-        .in_x(gray_x), .in_y(gray_y), .in_gray(gray_pixel),
-        .out_valid(sobel_valid), .out_x(sobel_x), .out_y(sobel_y),
-        .out_pixel(sobel_pixel), .accepted_input_pixels(pipeline_inputs),
-        .valid_output_pixels(pipeline_outputs), .frames_started(pipeline_frames_started),
-        .frames_completed(pipeline_frames_completed), .protocol_errors(pipeline_errors),
-        .output_checksum(pipeline_crc)
+    generate
+        if (M7_ENABLE) begin : g_m7_pipeline
+            m7_accelerated_pipeline #(
+                .IMAGE_WIDTH(IMAGE_WIDTH), .IMAGE_HEIGHT(IMAGE_HEIGHT),
+                .X_W(X_W), .Y_W(Y_W)
+            ) u_pipeline (
+                .system_clk(clk_100mhz), .reset(reset), .clear_metrics(clear_level),
+                .metrics_request(core_metrics_request),
+                .synthetic_start(core_synthetic_start),
+                .synthetic_frames(core_synthetic_frames), .in_valid(gray_valid),
+                .in_x(gray_x), .in_y(gray_y), .in_gray(gray_pixel),
+                .out_valid(sobel_valid), .out_x(sobel_x), .out_y(sobel_y),
+                .out_pixel(sobel_pixel), .core_locked(core_locked),
+                .input_overflow_sticky(core_input_overflow),
+                .output_overflow_sticky(core_output_overflow),
+                .metrics_busy(core_metrics_busy), .metrics_valid(core_metrics_valid),
+                .synthetic_busy(core_synthetic_busy),
+                .synthetic_completed_frames(core_synthetic_completed_frames),
+                .last_latency_cycles(core_latency_cycles),
+                .last_frame_interval_cycles(core_frame_interval_cycles),
+                .last_accepted_pixels(core_accepted_pixels),
+                .last_produced_pixels(core_produced_pixels),
+                .last_valid_gap_cycles(core_valid_gap_cycles),
+                .completed_frames(core_completed_frames),
+                .last_output_crc(core_output_crc)
+            );
+            assign pipeline_inputs = core_accepted_pixels;
+            assign pipeline_outputs = core_produced_pixels;
+            assign pipeline_frames_started = core_completed_frames;
+            assign pipeline_frames_completed = core_completed_frames;
+            assign pipeline_errors = {30'd0, core_output_overflow, core_input_overflow};
+            assign pipeline_crc = 0;
+        end else begin : g_m5_pipeline
+            conv_pipeline_top #(
+                .IMAGE_WIDTH(IMAGE_WIDTH), .IMAGE_HEIGHT(IMAGE_HEIGHT),
+                .X_W(X_W), .Y_W(Y_W)
+            ) u_pipeline (
+                .clk(clk_100mhz), .reset(reset), .in_valid(gray_valid),
+                .in_x(gray_x), .in_y(gray_y), .in_gray(gray_pixel),
+                .out_valid(sobel_valid), .out_x(sobel_x), .out_y(sobel_y),
+                .out_pixel(sobel_pixel), .accepted_input_pixels(pipeline_inputs),
+                .valid_output_pixels(pipeline_outputs),
+                .frames_started(pipeline_frames_started),
+                .frames_completed(pipeline_frames_completed),
+                .protocol_errors(pipeline_errors), .output_checksum(pipeline_crc)
+            );
+            assign core_locked = 1'b1;
+            assign core_input_overflow = 1'b0;
+            assign core_output_overflow = 1'b0;
+            assign core_metrics_busy = 1'b0;
+            assign core_metrics_valid = 1'b0;
+            assign core_latency_cycles = 0;
+            assign core_frame_interval_cycles = 0;
+            assign core_accepted_pixels = 0;
+            assign core_produced_pixels = 0;
+            assign core_valid_gap_cycles = 0;
+            assign core_completed_frames = 0;
+            assign core_output_crc = 0;
+            assign core_synthetic_busy = 1'b0;
+            assign core_synthetic_completed_frames = 0;
+        end
+    endgenerate
+    m7_threshold_sobel #(.X_W(X_W), .Y_W(Y_W)) u_threshold (
+        .clk(clk_100mhz), .reset(reset), .in_valid(sobel_valid),
+        .in_x(sobel_x), .in_y(sobel_y), .in_pixel(sobel_pixel),
+        .requested_threshold_enable(M7_ENABLE && m7_threshold_enable),
+        .requested_threshold(m7_threshold), .out_valid(thresholded_valid),
+        .out_x(thresholded_x), .out_y(thresholded_y),
+        .out_pixel(thresholded_pixel),
+        .active_threshold_enable(active_threshold_enable),
+        .active_threshold(active_threshold)
     );
+    assign processed_valid = M7_ENABLE ? thresholded_valid : sobel_valid;
+    assign processed_x = M7_ENABLE ? thresholded_x : sobel_x;
+    assign processed_y = M7_ENABLE ? thresholded_y : sobel_y;
+    assign processed_pixel = M7_ENABLE ? thresholded_pixel : sobel_pixel;
     assign camera_id_valid = (camera_product_id == 8'h76) &&
                              ((camera_version_id == 8'h70) ||
                               (camera_version_id == 8'h73));
@@ -404,7 +546,7 @@ module arty_m5_camera_ethernet_top #(
         .sequence_gap_frames(sequence_gap_frames)
     );
 
-    m5_control_receiver #(
+    m7_control_receiver #(
         .FPGA_MAC(FPGA_MAC), .FPGA_IP(FPGA_IP), .CONTROL_PORT(CONTROL_PORT)
     ) u_control_receiver (
         .clk(eth_rx_clk), .reset(rx_reset), .clear_errors(clear_rx_sync[1]),
@@ -418,13 +560,20 @@ module arty_m5_camera_ethernet_top #(
         .udp_destination_port(rx_udp_destination_port), .udp_length(rx_udp_length),
         .read_address(control_read_address), .read_data(rx_read_data),
         .parser_busy(control_parser_busy), .command_valid(control_command_valid),
-        .command_opcode(control_opcode), .command_stream_id(control_stream_id),
-        .command_frame_count(control_frame_count),
+        .command_version(control_version), .command_opcode(control_opcode),
+        .command_stream_id(control_stream_id), .command_status(control_status),
+        .command_value(control_frame_count),
         .command_source_mac(control_source_mac), .command_source_ip(control_source_ip),
         .command_source_port(control_source_port), .session_active(session_active),
         .session_stream_id(session_stream_id), .session_frame_count(session_frame_count),
         .session_host_mac(session_host_mac), .session_host_ip(session_host_ip),
         .session_host_port(session_host_port), .session_restart(session_restart),
+        .requested_profile(requested_profile_rx),
+        .requested_threshold_enable(requested_threshold_enable_rx),
+        .requested_threshold(requested_threshold_rx),
+        .configuration_toggle(configuration_toggle_rx),
+        .requested_benchmark_frames(requested_benchmark_frames_rx),
+        .benchmark_toggle(benchmark_toggle_rx),
         .control_errors(control_errors)
     );
 
@@ -440,6 +589,22 @@ module arty_m5_camera_ethernet_top #(
             tx_overflow_system_sync <= '0;
             tx_length_system_sync <= '0;
             collision_system_sync <= '0;
+            configuration_toggle_sync <= '0;
+            requested_profile_sync <= {3{M7_DEFAULT_PROFILE}};
+            requested_threshold_enable_sync <= '0;
+            requested_threshold_sync <= {3{8'd128}};
+            configuration_toggle_seen <= 1'b0;
+            m7_profile_select <= M7_DEFAULT_PROFILE;
+            m7_threshold_enable <= 1'b0;
+            m7_threshold <= 8'd128;
+            camera_reconfigure_pulse <= 1'b0;
+            metrics_refresh_counter <= '0;
+            core_metrics_request <= 1'b0;
+            benchmark_toggle_sync <= '0;
+            requested_benchmark_frames_sync <= {3{16'd1}};
+            benchmark_toggle_seen <= 1'b0;
+            core_synthetic_start <= 1'b0;
+            core_synthetic_frames <= 16'd1;
         end else begin
             session_active_sync <= {session_active_sync[0], session_active};
             session_stream_sync <= {session_stream_sync[0], session_stream_id};
@@ -451,21 +616,61 @@ module arty_m5_camera_ethernet_top #(
             tx_overflow_system_sync <= {tx_overflow_system_sync[0], tx_fifo_overflow};
             tx_length_system_sync <= {tx_length_system_sync[0], frame_tx_length_error};
             collision_system_sync <= {collision_system_sync[0], eth_col};
+            configuration_toggle_sync <= {
+                configuration_toggle_sync[1:0], configuration_toggle_rx
+            };
+            requested_profile_sync <= {
+                requested_profile_sync[3:0], requested_profile_rx
+            };
+            requested_threshold_enable_sync <= {
+                requested_threshold_enable_sync[1:0], requested_threshold_enable_rx
+            };
+            requested_threshold_sync <= {
+                requested_threshold_sync[15:0], requested_threshold_rx
+            };
+            benchmark_toggle_sync <= {benchmark_toggle_sync[1:0], benchmark_toggle_rx};
+            requested_benchmark_frames_sync <= {
+                requested_benchmark_frames_sync[31:0], requested_benchmark_frames_rx
+            };
+            camera_reconfigure_pulse <= 1'b0;
+            core_synthetic_start <= 1'b0;
+            if (M7_ENABLE && configuration_toggle_sync[2] != configuration_toggle_seen) begin
+                configuration_toggle_seen <= configuration_toggle_sync[2];
+                m7_profile_select <= requested_profile_sync[5:4];
+                m7_threshold_enable <= requested_threshold_enable_sync[2];
+                m7_threshold <= requested_threshold_sync[23:16];
+                camera_reconfigure_pulse <= 1'b1;
+            end
+            if (M7_ENABLE && benchmark_toggle_sync[2] != benchmark_toggle_seen) begin
+                benchmark_toggle_seen <= benchmark_toggle_sync[2];
+                core_synthetic_frames <= requested_benchmark_frames_sync[47:32];
+                core_synthetic_start <= 1'b1;
+            end
+            core_metrics_request <= 1'b0;
+            metrics_refresh_counter <= metrics_refresh_counter + 1'b1;
+            if (M7_ENABLE && (&metrics_refresh_counter) && !core_metrics_busy)
+                core_metrics_request <= 1'b1;
         end
     end
+    assign {camera_frame_pclk_edges, camera_active_bytes,
+            camera_active_lines, camera_line_pclk_edges} =
+        camera_timing_snapshot[127:32];
+    assign camera_timing_snapshot_request =
+        M7_ENABLE && (&metrics_refresh_counter) && !camera_timing_snapshot_busy;
+
     assign selected_stream_now = gray_frame_start ?
                                  (sw_clean[1] || session_stream_sync[1]) :
                                  selected_frame_stream;
     assign capture_stream_enable = sw_clean[2] && session_active_sync[1] &&
                                    !stream_complete_sync[1];
     assign stream_write_valid = capture_stream_enable &&
-                                (selected_stream_now ? gray_valid : sobel_valid);
+                                (selected_stream_now ? gray_valid : processed_valid);
     assign stream_write_start = selected_stream_now ? gray_frame_start :
-                                (sobel_valid && sobel_x==1 && sobel_y==1);
+                                (processed_valid && processed_x==1 && processed_y==1);
     assign stream_write_end = selected_stream_now ? gray_frame_end :
-                              (sobel_valid && sobel_x==IMAGE_WIDTH-2 &&
-                               sobel_y==IMAGE_HEIGHT-2);
-    assign stream_write_pixel = selected_stream_now ? gray_pixel : sobel_pixel;
+                              (processed_valid && processed_x==IMAGE_WIDTH-2 &&
+                               processed_y==IMAGE_HEIGHT-2);
+    assign stream_write_pixel = selected_stream_now ? gray_pixel : processed_pixel;
 
     m5_stream_fifo #(.FIFO_DEPTH(STREAM_FIFO_DEPTH)) u_stream_fifo (
         .reset(reset_btn), .write_clk(clk_100mhz), .clear_errors(clear_level),
@@ -511,7 +716,8 @@ module arty_m5_camera_ethernet_top #(
             echo_source_mac  <= '0; echo_source_ip <= '0;
             echo_source_port <= '0; echo_udp_length <= '0;
             ack_source_mac   <= '0; ack_source_ip <= '0; ack_source_port <= '0;
-            ack_opcode       <= '0; ack_stream_id <= 1'b0; ack_frame_count <= '0;
+            ack_version      <= 8'd1; ack_opcode <= '0; ack_stream_id <= 1'b0;
+            ack_status       <= '0; ack_frame_count <= '0;
         end else begin
             if (arp_grant) arp_pending <= 1'b0;
             if (echo_grant) echo_pending <= 1'b0;
@@ -540,9 +746,44 @@ module arty_m5_camera_ethernet_top #(
                 ack_source_mac  <= control_source_mac;
                 ack_source_ip   <= control_source_ip;
                 ack_source_port <= control_source_port;
+                ack_version     <= control_version;
                 ack_opcode      <= control_opcode;
                 ack_stream_id   <= control_stream_id;
+                ack_status      <= control_status;
                 ack_frame_count <= control_frame_count;
+                if (control_version == 2 && control_opcode == 3) begin
+                    case (control_frame_count[7:0])
+                        0: ack_frame_count <= 32'h4d37_0001;
+                        1: ack_frame_count <= {
+                            link_up, camera_init_done, core_locked,
+                            camera_timing_readback_valid, active_threshold_enable,
+                            camera_selected_profile, camera_timing_snapshot_valid,
+                            active_threshold, combined_errors
+                        };
+                        2: ack_frame_count <= camera_frame_period_cycles;
+                        3: ack_frame_count <= camera_frame_pclk_edges;
+                        4: ack_frame_count <= camera_active_bytes;
+                        5: ack_frame_count <= {camera_active_lines, camera_line_pclk_edges};
+                        6: ack_frame_count <= {camera_fifo_maximum, stream_fifo_maximum};
+                        7: ack_frame_count <= core_latency_cycles;
+                        8: ack_frame_count <= core_frame_interval_cycles;
+                        9: ack_frame_count <= core_accepted_pixels;
+                        10: ack_frame_count <= core_produced_pixels;
+                        11: ack_frame_count <= core_valid_gap_cycles;
+                        12: ack_frame_count <= core_completed_frames;
+                        13: ack_frame_count <= camera_timing_readback[39:8];
+                        14: ack_frame_count <= {24'd0, camera_timing_readback[7:0]};
+                        15: ack_frame_count <= {16'd0, combined_errors};
+                        16: ack_frame_count <= {
+                            core_synthetic_busy, 15'd0, core_synthetic_completed_frames
+                        };
+                        17: ack_frame_count <= core_output_crc;
+                        default: begin
+                            ack_status <= 8'd3;
+                            ack_frame_count <= 0;
+                        end
+                    endcase
+                end
             end
         end
     end
@@ -558,12 +799,13 @@ module arty_m5_camera_ethernet_top #(
         .request_read_data(rx_read_data), .reply_length(echo_length),
         .reply_data(echo_data)
     );
-    m5_control_ack #(
+    m7_control_ack #(
         .FPGA_MAC(FPGA_MAC), .FPGA_IP(FPGA_IP), .CONTROL_PORT(CONTROL_PORT)
     ) u_control_ack (
         .destination_mac(ack_source_mac), .destination_ip(ack_source_ip),
-        .destination_port(ack_source_port), .command_opcode(ack_opcode),
-        .command_stream_id(ack_stream_id), .command_frame_count(ack_frame_count),
+        .destination_port(ack_source_port), .command_version(ack_version),
+        .command_opcode(ack_opcode), .command_stream_id(ack_stream_id),
+        .reply_status(ack_status), .reply_value(ack_frame_count),
         .frame_index(frame_tx_index), .frame_length(control_ack_length),
         .frame_data(control_ack_data)
     );
@@ -647,6 +889,7 @@ module arty_m5_camera_ethernet_top #(
         combined_errors[12] = tx_underflow_system_sync[1] || mii_underrun_system_sync[1];
         combined_errors[13] = (pipeline_errors != 0);
         combined_errors[14] = collision_system_sync[1];
+        combined_errors[15] = M7_ENABLE && !core_locked;
     end
     uart_tx #(.CLOCK_HZ(CLOCK_HZ), .BAUD_RATE(UART_BAUD)) u_uart (
         .clk(clk_100mhz), .reset(reset), .data(uart_data), .send(uart_send),
@@ -703,5 +946,7 @@ module arty_m5_camera_ethernet_top #(
                           pipeline_inputs[0] ^ pipeline_outputs[0] ^
                           pipeline_frames_started[0] ^ pipeline_frames_completed[0] ^
                           pipeline_crc[0] ^ stream_dropped_pixels[0] ^
-                          stream_fifo_maximum[0] ^ camera_grant ^ test_grant ^ snapshot_busy;
+                          stream_fifo_maximum[0] ^ camera_grant ^ test_grant ^ snapshot_busy ^
+                          core_metrics_valid ^ active_threshold[0] ^ camera_timing_readback[0] ^
+                          camera_timing_snapshot_valid ^ camera_source_active_lines[0];
 endmodule

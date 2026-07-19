@@ -450,10 +450,37 @@ M7 is complete when:
 9. the activity-monitor use case passes a physical idle/activity demonstration
    and produces a correct event log;
 10. routed timing passes and all CDC/DRC findings are resolved or explicitly
-   classified;
+    classified;
+
 11. generated artifacts are ignored, curated evidence is tracked, and the README
    contains only the current setup, commands, results, and links;
 12. the programmed bitstream hash and exact reproduction commands are archived.
+
+## M7 implementation handoff (2026-07-19)
+
+The board-independent implementation for this plan is now checked in:
+
+- `arty_m7_camera_ethernet_top` wraps the pin-compatible M5 design with a
+  dedicated 200 MHz core clock, asynchronous input/output FIFOs, measured core
+  counters, synthetic-source benchmark control, and frame-locked thresholded
+  Sobel;
+- camera profiles are named `safe`, `medium`, and `fast`, with SCCB timing
+  readback and camera PCLK/frame instrumentation;
+- v2 control/status is additive to the v1 M5/M6 protocol, and configuration is
+  rejected while a stream session is active;
+- `scripts/python/run_m7_host_tests.py` passes the 10 board-independent host
+  tests; the Vivado simulation list contains the preserved M5 benches plus the
+  camera/profile/timing, threshold, metrics, accelerated-core, and v2-control
+  benches;
+- `scripts/python/m7_dashboard.py` and `m7_stream_worker.py` provide the setup,
+  live, benchmark, ROI activity, snapshot, cancellation, and structured-log
+  surfaces described above.
+
+The Arty A7 and Ethernet adapter were intentionally not attached for this
+handoff. Therefore items 2, 3, 4, 6, 7, 8, 9, and 10 in the completion
+contract remain physical qualification work; the implementation does not claim
+15/30 FPS, routed timing, or an FPGA/OpenCV win until those measurements are
+captured.
 
 ## Features enabled by this foundation after M7
 

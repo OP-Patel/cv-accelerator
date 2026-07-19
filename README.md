@@ -23,7 +23,7 @@ output plumbing around that compute core.
 | M4 100 Mb/s Ethernet, ARP, UDP echo | Complete, 10,000-echo hardware run |
 | M5 camera/Sobel over UDP | Complete, 216 consecutive reconstructed frames |
 | M6 live laptop viewer and OpenCV benchmark | Complete, 300-frame display and final physical benchmark passed |
-| M7 optimized application/dashboard | Planned: beat equivalent OpenCV, raise FPS, refine edges, and add a Streamlit activity-monitor dashboard |
+| M7 optimized application/dashboard | RTL, protocol, host tests, benchmark/dashboard tooling complete; hardware qualification pending |
 
 The tested M5 bitstream also preserves M4 UDP echo on port 4000. M6 reuses the
 same bitstream: it adds laptop display and measurement, not a new FPGA data
@@ -275,3 +275,46 @@ docs/              contracts, evidence, handoffs, and reports
 The M6 plan defines live-view acceptance, exact OpenCV equivalence, benchmark
 methodology, result files, and the distinction between compute throughput and
 end-to-end performance.
+
+## Milestone 7 (hardware not attached yet)
+
+M7 keeps the M5/M6 v1 control and stream protocol while adding additive v2
+controls for camera profiles, thresholded Sobel, coherent status pages, and a
+synthetic no-camera benchmark. The M7 top is
+`rtl/top/arty_m7_camera_ethernet_top.sv`; it uses a dedicated 200 MHz Sobel
+clock, explicit asynchronous FIFOs, frame-locked threshold configuration, and
+camera timing/register readback instrumentation.
+
+Install the host tools and run the board-independent checks:
+
+```powershell
+py -3 -m pip install -r scripts/python/requirements-m7.txt
+py -3 scripts/python/m7_setup_check.py --offline
+py -3 scripts/python/run_m7_host_tests.py
+```
+
+When the Arty A7 and Ethernet adapter are connected, the normal UI is:
+
+```powershell
+py -3 scripts/python/m7_setup_check.py
+py -3 -m streamlit run scripts/python/m7_dashboard.py
+```
+
+The explicit Vivado commands remain the authoritative build path:
+
+```powershell
+$env:XILINX_LOCAL_USER_DATA = "NO"
+vivado -mode batch -source scripts/run_m7_simulations.tcl -notrace
+vivado -mode batch -source scripts/check_m7_synthesis.tcl -notrace
+vivado -mode batch -source scripts/build_m7_bitstream.tcl -notrace
+```
+
+M7 has not been benchmarked on physical hardware in this checkout. Do not
+interpret the benchmark command's OpenCV-only measurements or the synthesis
+resource report as camera FPS, routed timing, or an FPGA/OpenCV win. The
+remaining acceptance evidence is tracked in:
+
+- `docs/milestone7_algorithm_evaluation.md`
+- `docs/milestone7_hardware_validation.md`
+- `docs/milestone7_benchmark_results.md`
+- `docs/milestone6_handoff_and_milestone7_plan.md`

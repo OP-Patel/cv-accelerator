@@ -8,6 +8,7 @@ set m5_design_sources {
     ../rtl/camera/camera_xclk.sv
     ../rtl/camera/sccb_master.sv
     ../rtl/camera/camera_register_init.sv
+    ../rtl/camera/camera_timing_monitor.sv
     ../rtl/camera/dvp_rgb565_capture.sv
     ../rtl/camera/camera_stream_cdc.sv
     ../rtl/camera/camera_stream_adapter.sv
@@ -18,6 +19,10 @@ set m5_design_sources {
     ../rtl/conv/sobel3x3.sv
     ../rtl/conv/stream_checksum.sv
     ../rtl/conv/conv_pipeline_top.sv
+    ../rtl/conv/m7_threshold_sobel.sv
+    ../rtl/conv/m7_core_metrics.sv
+    ../rtl/conv/m7_core_clock.sv
+    ../rtl/conv/m7_accelerated_pipeline.sv
     ../rtl/ethernet/ethernet_ref_clock.sv
     ../rtl/ethernet/phy_reset.sv
     ../rtl/ethernet/mdio_master.sv
@@ -35,6 +40,8 @@ set m5_design_sources {
     ../rtl/integration/m5_stream_packetizer.sv
     ../rtl/integration/m5_tx_scheduler.sv
     ../rtl/integration/m5_status_snapshot.sv
+    ../rtl/integration/m7_control_receiver.sv
+    ../rtl/integration/m7_control_ack.sv
 }
 
 set m5_sim_sources {

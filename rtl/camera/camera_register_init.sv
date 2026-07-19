@@ -2,12 +2,14 @@
 module camera_register_init #(
     parameter integer CLOCK_HZ = 100_000_000,
     parameter integer RESET_DELAY_CYCLES = CLOCK_HZ / 1_000,
-    parameter integer SETTLE_CYCLES = (CLOCK_HZ / 10) * 3
+    parameter integer SETTLE_CYCLES = (CLOCK_HZ / 10) * 3,
+    parameter bit ENABLE_M7_PROFILES = 1'b0
 ) (
     input  logic        clk,
     input  logic        reset,
     input  logic        start,
     input  logic        test_pattern_enable,
+    input  logic [1:0]  profile_select,
     output logic        command_start,
     output logic        command_write_enable,
     output logic [7:0]  command_register,
@@ -23,7 +25,10 @@ module camera_register_init #(
     output logic [15:0] completed_writes,
     output logic [15:0] nack_count,
     output logic [7:0]  product_id,
-    output logic [7:0]  version_id
+    output logic [7:0]  version_id,
+    output logic [1:0]  selected_profile,
+    output logic        timing_readback_valid,
+    output logic [39:0] timing_readback
 );
     localparam integer DELAY_W = $clog2(((SETTLE_CYCLES > RESET_DELAY_CYCLES) ?
                                          SETTLE_CYCLES : RESET_DELAY_CYCLES) + 1);
@@ -39,6 +44,8 @@ module camera_register_init #(
         WAIT_VER,
         ISSUE_CONFIG,
         WAIT_CONFIG,
+        ISSUE_TIMING_READ,
+        WAIT_TIMING_READ,
         SETTLE_DELAY,
         INIT_FINISHED
     } init_state_t;
@@ -47,24 +54,27 @@ module camera_register_init #(
     logic [7:0] config_index;
     logic [DELAY_W-1:0] delay_count;
     logic saved_test_pattern;
+    logic [1:0] saved_profile;
+    logic [2:0] readback_index;
     logic [15:0] current_entry;
 
     // Returns a compact table composed from OmniVision's guide and Linux OV7670 driver.
     function automatic logic [15:0] configuration_entry(
         input logic [7:0] index,
-        input logic enable_test_pattern
+        input logic enable_test_pattern,
+        input logic [1:0] profile
     );
         begin
             case (index)
                 // 24 MHz clock, QVGA RGB, active-high VSYNC/HREF, normal byte order.
-                0:  configuration_entry = 16'h1101; // CLKRC: 30 fps clock divider.
+                0:  configuration_entry = {8'h11, (profile == 2) ? 8'h00 : 8'h01};
                 1:  configuration_entry = 16'h1214; // COM7: QVGA plus RGB output.
                 2:  configuration_entry = 16'h0c04; // COM3: downsample/crop enable.
                 3:  configuration_entry = 16'h3e19; // COM14: QVGA DCW and PCLK divide.
                 4:  configuration_entry = 16'h703a; // Horizontal scaling factor.
                 5:  configuration_entry = 16'h7135; // Vertical scaling factor.
                 6:  configuration_entry = 16'h7211; // Downsample by two.
-                7:  configuration_entry = 16'h73f1; // Pixel-clock divide by two.
+                7:  configuration_entry = {8'h73, (profile == 0) ? 8'hf1 : 8'hf0};
                 8:  configuration_entry = 16'ha202; // Pixel-clock delay.
                 9:  configuration_entry = 16'h1500; // COM10: documented normal polarities.
 
@@ -134,13 +144,27 @@ module camera_register_init #(
 
                 // COM17 provides the first deterministic hardware test pattern.
                 63: configuration_entry = {8'h42, enable_test_pattern ? 8'h08 : 8'h00};
-                64: configuration_entry = 16'h1101; // Reapply CLKRC after RGB setup.
+                64: configuration_entry = {8'h11, (profile == 2) ? 8'h00 : 8'h01};
                 default: configuration_entry = 16'hffff;
             endcase
         end
     endfunction
 
-    assign current_entry = configuration_entry(config_index, saved_test_pattern);
+    // Timing registers are read back after M7 initialization in this fixed order.
+    function automatic logic [7:0] timing_register(input logic [2:0] index);
+        begin
+            case (index)
+                0: timing_register = 8'h11; // CLKRC
+                1: timing_register = 8'h0c; // COM3
+                2: timing_register = 8'h3e; // COM14
+                3: timing_register = 8'h72; // downsample control
+                default: timing_register = 8'h73; // pixel-clock scaling
+            endcase
+        end
+    endfunction
+
+    assign current_entry = configuration_entry(config_index, saved_test_pattern,
+                                                 saved_profile);
 
     always_ff @(posedge clk) begin
         if (reset) begin
@@ -148,6 +172,8 @@ module camera_register_init #(
             config_index         <= '0;
             delay_count          <= '0;
             saved_test_pattern   <= 1'b0;
+            saved_profile        <= 2'd0;
+            readback_index       <= '0;
             command_start        <= 1'b0;
             command_write_enable <= 1'b0;
             command_register     <= '0;
@@ -159,6 +185,9 @@ module camera_register_init #(
             nack_count           <= '0;
             product_id           <= '0;
             version_id           <= '0;
+            selected_profile     <= 2'd0;
+            timing_readback_valid <= 1'b0;
+            timing_readback      <= '0;
         end else begin
             command_start <= 1'b0;
 
@@ -168,6 +197,9 @@ module camera_register_init #(
                     if (start) begin
                         config_index       <= '0;
                         saved_test_pattern <= test_pattern_enable;
+                        saved_profile      <= (profile_select <= 2) ? profile_select : 2'd0;
+                        selected_profile   <= (profile_select <= 2) ? profile_select : 2'd0;
+                        readback_index     <= '0;
                         init_busy          <= 1'b1;
                         init_done          <= 1'b0;
                         init_error         <= 1'b0;
@@ -175,6 +207,8 @@ module camera_register_init #(
                         nack_count         <= '0;
                         product_id         <= '0;
                         version_id         <= '0;
+                        timing_readback_valid <= 1'b0;
+                        timing_readback    <= '0;
                         state              <= ISSUE_RESET;
                     end
                 end
@@ -266,13 +300,49 @@ module camera_register_init #(
                 ISSUE_CONFIG: begin
                     if (current_entry == 16'hffff) begin
                         delay_count <= '0;
-                        state <= SETTLE_DELAY;
+                        readback_index <= '0;
+                        state <= ENABLE_M7_PROFILES ? ISSUE_TIMING_READ : SETTLE_DELAY;
                     end else if (!command_busy) begin
                         command_register     <= current_entry[15:8];
                         command_write_data   <= current_entry[7:0];
                         command_write_enable <= 1'b1;
                         command_start        <= 1'b1;
                         state                <= WAIT_CONFIG;
+                    end
+                end
+
+                ISSUE_TIMING_READ: begin
+                    if (!command_busy) begin
+                        command_register     <= timing_register(readback_index);
+                        command_write_enable <= 1'b0;
+                        command_start        <= 1'b1;
+                        state                <= WAIT_TIMING_READ;
+                    end
+                end
+
+                WAIT_TIMING_READ: begin
+                    if (command_done) begin
+                        if (command_ack_error || command_timeout_error) begin
+                            if (command_ack_error) nack_count <= nack_count + 1'b1;
+                            init_error <= 1'b1;
+                            state <= INIT_FINISHED;
+                        end else begin
+                            case (readback_index)
+                                0: timing_readback[39:32] <= command_read_data;
+                                1: timing_readback[31:24] <= command_read_data;
+                                2: timing_readback[23:16] <= command_read_data;
+                                3: timing_readback[15:8]  <= command_read_data;
+                                default: timing_readback[7:0] <= command_read_data;
+                            endcase
+                            if (readback_index == 4) begin
+                                timing_readback_valid <= 1'b1;
+                                delay_count <= '0;
+                                state <= SETTLE_DELAY;
+                            end else begin
+                                readback_index <= readback_index + 1'b1;
+                                state <= ISSUE_TIMING_READ;
+                            end
+                        end
                     end
                 end
 

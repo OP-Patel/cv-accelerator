@@ -6,6 +6,7 @@ module tb_camera_register_init;
     logic reset = 1'b1;
     logic start = 1'b0;
     logic test_pattern_enable = 1'b1;
+    logic [1:0] profile_select = 2'd0;
     logic command_start, command_write_enable;
     logic [7:0] command_register, command_write_data;
     logic [7:0] command_read_data = 8'd0;
@@ -16,6 +17,9 @@ module tb_camera_register_init;
     logic init_busy, init_done, init_error;
     logic [15:0] completed_writes, nack_count;
     logic [7:0] product_id, version_id;
+    logic [1:0] selected_profile;
+    logic timing_readback_valid;
+    logic [39:0] timing_readback;
     logic [7:0] version_response = 8'h70;
     integer command_count = 0;
 
