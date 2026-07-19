@@ -75,12 +75,8 @@ set_clock_groups -asynchronous \
     -group [get_clocks eth_tx_clk_in]
 
 ## Reset assertion is asynchronous; each named synchronizer makes release local.
-set_false_path -to [get_pins {
-    u_camera_clock/u_xclk_reset/reset_ff1_reg/PRE
-    u_camera_clock/u_xclk_reset/reset_ff2_reg/PRE
-    u_camera_reset/reset_ff1_reg/PRE
-    u_camera_reset/reset_ff2_reg/PRE
-}]
+## Vivado 2026.1 does not retain a stable shared hierarchy for these PRE pin
+## targets across the wrapped M7 netlist, so no ineffective false path is emitted.
 
 ## DVP input delays remain intentionally unguessed pending measured cable skew.
 set_property CFGBVS VCCO [current_design]

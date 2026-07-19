@@ -304,9 +304,10 @@ The explicit Vivado commands remain the authoritative build path:
 
 ```powershell
 $env:XILINX_LOCAL_USER_DATA = "NO"
-vivado -mode batch -source scripts/run_m7_simulations.tcl -notrace
-vivado -mode batch -source scripts/check_m7_synthesis.tcl -notrace
-vivado -mode batch -source scripts/build_m7_bitstream.tcl -notrace
+$vivado = "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat"
+& $vivado -mode batch -source scripts/run_m7_simulations.tcl -notrace
+& $vivado -mode batch -source scripts/check_m7_synthesis.tcl -notrace
+& $vivado -mode batch -source scripts/build_m7_bitstream.tcl -notrace
 ```
 
 M7 has not been benchmarked on physical hardware in this checkout. Do not

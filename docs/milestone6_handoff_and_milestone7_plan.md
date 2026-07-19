@@ -475,6 +475,11 @@ The board-independent implementation for this plan is now checked in:
 - `scripts/python/m7_dashboard.py` and `m7_stream_worker.py` provide the setup,
   live, benchmark, ROI activity, snapshot, cancellation, and structured-log
   surfaces described above.
+- With Vivado 2026.1 launched from
+  `C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat`, all 11 board-independent
+  RTL benches pass; the M7 synthesis check completes with zero errors and zero
+  critical warnings. The pre-route report is 13,557 LUTs, 28,705 registers,
+  16 BRAM tiles, and 0 DSPs.
 
 The Arty A7 and Ethernet adapter were intentionally not attached for this
 handoff. Therefore items 2, 3, 4, 6, 7, 8, 9, and 10 in the completion
