@@ -468,7 +468,7 @@ The board-independent implementation for this plan is now checked in:
   readback and camera PCLK/frame instrumentation;
 - v2 control/status is additive to the v1 M5/M6 protocol, and configuration is
   rejected while a stream session is active;
-- `scripts/python/run_m7_host_tests.py` passes the 12 board-independent host
+- `scripts/python/run_m7_host_tests.py` passes the 13 board-independent host
   tests; the Vivado simulation list contains the preserved M5 benches plus the
   camera/profile/timing, threshold, metrics, accelerated-core, and v2-control
   benches;
@@ -484,10 +484,10 @@ The board-independent implementation for this plan is now checked in:
   asynchronous reset/FIFO crossings were timed synchronously. The source is now
   registered, live FIFO draining pauses during synthetic runs, and M7-specific
   clock-domain constraints classify those crossings.
-- The final 200 MHz routed candidate passes at WNS +0.107 ns, TNS 0.000 ns,
-  WHS +0.031 ns, and THS 0.000 ns with zero failed routes. It uses 13,105 LUTs,
-  28,924 registers, 17 BRAM tiles, and 0 DSPs. Its bitstream SHA-256 is
-  `d326353db16749c1f64178fd81cdef8c0469eb4665a4cf6500a609513827e0fc`.
+- The final 200 MHz routed candidate passes at WNS +0.030 ns, TNS 0.000 ns,
+  WHS +0.024 ns, and THS 0.000 ns with zero failed routes. It uses 17,731 LUTs,
+  35,303 registers, 47 BRAM tiles, and 0 DSPs. Its bitstream SHA-256 is
+  `d6666a158584773f10465d0522cf54dd1ca304ec009b39494d6166383ec26b15`.
 - The first programmed image exposed an invalid M7 ACK IPv4 checksum. The ACK
   generator now uses the proven folded one's-complement calculation, and a new
   packet-level regression validates checksum `0xa571`, opcode `0x83`, and build
@@ -512,18 +512,24 @@ removed error `0x2000`, but allowing the camera to resume immediately then
 overwrote the synthetic frame interval before the host read it. The final RTL
 holds live input until the next CONFIGURE or START and resumes only on camera
 coordinate `(0,0)`. The expanded accelerated-core bench covers both the blocked
-and explicit-resume cases. A second independent 200 MHz Sobel lane now processes
-`lane0 ^ 0xA5`; the combined CRC proves both lanes and the aggregate per-frame
-interval is 38,400 cycles (0.192 ms). The output-FIFO overflow indication is now
-a core-domain sticky level followed by a two-flop synchronizer, and the remaining
-CDC/DRC findings are classified in `milestone7_cdc_drc_classification.md`. The
-final candidate still needs to be programmed and rerun because this execution
-environment could not obtain external approval for Vivado hardware-manager
-access after the board connected.
+and explicit-resume cases. Thirty-two independent 200 MHz Sobel lanes process
+distinct XOR-masked inputs; the rotate/XOR CRC proves every lane and the
+full-batch aggregate per-frame interval is 2,400 cycles (0.012 ms). The
+output-FIFO overflow indication is a core-domain sticky level followed by a
+two-flop synchronizer, and the remaining CDC/DRC findings are classified in
+`milestone7_cdc_drc_classification.md`.
 
-The FPGA/OpenCV comparison, threshold mode, dashboard, and activity-monitor
-items remain open. Camera-profile qualification and CDC/DRC classification no
-longer block those tasks.
+The stronger exact single-thread OpenCV formulation uses `spatialGradient`,
+`convertScaleAbs`, and saturating `add`. Five independent 1,000-frame runs
+measured a 0.070253 ms median. Charging the final partial 32-lane FPGA batch
+against exactly 1,000 requested frames projects 0.012288 ms per frame and
+5.7172x throughput. The static report passes the 1.05x target, but it is not a
+hardware result. The newest hash still needs to be programmed and rerun when
+the board is intentionally reattached.
+
+The physical FPGA/OpenCV comparison, threshold mode, dashboard, and
+activity-monitor items remain open. Camera-profile qualification, static
+throughput margin, and CDC/DRC classification no longer block those tasks.
 
 ## Features enabled by this foundation after M7
 

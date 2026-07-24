@@ -8,13 +8,13 @@ STATUS, build ID `0x4d370001`, v2 START/STOP, and the setup check passed. The
 7.503, 15.006, and 30.012 FPS. Each profile completed 1,000 grayscale and 1,000
 Sobel frames with zero host integrity errors and zero FPGA error flags. The
 final candidate additionally fixes synthetic/live arbitration, host START frame
-retention, metric capture, and the output-overflow clock crossing. It has passed
-all 12 RTL benches and routed signoff but still needs its final board rerun. The
-board is attached; automated programming from this environment was blocked when
-Vivado `cs_server` temporary-file access required an unavailable external-
-execution approval. The separate FPGA-versus-OpenCV comparison, threshold mode,
-dashboard workflow, and physical activity demonstration remain open until that
-exact image is programmed.
+retention, metric capture, and the output-overflow clock crossing, and expands
+controlled synthetic compute to 32 independent lanes. It has passed all 12 RTL
+benches, all 13 host tests, and routed signoff but still needs its final board
+rerun. Per the current validation schedule, the board is intentionally not
+attached. The physical FPGA-versus-OpenCV comparison, threshold mode, dashboard
+workflow, and activity demonstration remain open until this exact image is
+programmed.
 
 The board-independent implementation is complete. All 12 RTL testbenches pass,
 the Vivado 2026.1 synthesis check finishes with zero errors and zero critical
@@ -24,13 +24,13 @@ bitstream for `xc7a100tcsg324-1`.
 | Routed implementation metric | Result |
 |---|---:|
 | Core clock | 200.000 MHz |
-| WNS / TNS | +0.107 ns / 0.000 ns |
-| WHS / THS | +0.031 ns / 0.000 ns |
+| WNS / TNS | +0.030 ns / 0.000 ns |
+| WHS / THS | +0.024 ns / 0.000 ns |
 | Failing setup / hold endpoints | 0 / 0 |
 | Failed routes | 0 |
-| Slice LUTs | 13,105 (20.67%) |
-| Slice registers | 28,924 (22.81%) |
-| Block RAM tiles | 17 (12.59%) |
+| Slice LUTs | 17,731 (27.97%) |
+| Slice registers | 35,303 (27.84%) |
+| Block RAM tiles | 47 (34.81%) |
 | DSPs | 0 (0.00%) |
 
 The final candidate bitstream is:
@@ -43,7 +43,7 @@ Use the stable `artifacts/` copy in Hardware Manager because resetting a Vivado
 implementation run removes the project-run copy.
 
 SHA-256:
-`d326353db16749c1f64178fd81cdef8c0469eb4665a4cf6500a609513827e0fc`
+`d6666a158584773f10465d0522cf54dd1ca304ec009b39494d6166383ec26b15`
 
 The original routed failure is preserved in
 `docs/milestone7_timing_summary_fail.rpt`: WNS was -1.289 ns, TNS was
@@ -74,13 +74,22 @@ remain stable. The next CONFIGURE or START records a resume request, and the
 camera path reopens only on coordinate `(0,0)`. The self-checking core test holds
 live input asserted during synthetic operation, verifies no overflow and the
 synthetic interval, then explicitly resumes and verifies the block clears. The
-synthetic path now processes two independent frames concurrently at 200 MHz.
-Lane 0 uses the deterministic coordinate pattern; lane 1 uses `lane0 ^ 0xA5`.
-The reported CRC combines both lanes, so both physical pipelines must
-contribute. A batch starts every 76,800 cycles and therefore reports an
-aggregate 38,400-cycle per-frame interval: 0.192 ms or 5,208.33 frames/s. This
-is controlled two-frame compute throughput, not live camera cadence. The final
-hardware run remains pending until the exact hash above is programmed.
+synthetic path now processes 32 independent frames concurrently at 200 MHz.
+Lane `n` uses `lane0 ^ ((n * 0x1d) & 0xff)`. The reported CRC rotates and XORs
+all 32 lane CRCs, so every physical pipeline must contribute. A complete batch
+starts every 76,800 cycles and therefore reports an aggregate 2,400-cycle
+per-frame interval: 0.012 ms or 83,333.33 frames/s. For the exact 1,000-frame
+contract, 32 batches are required, so the static report conservatively uses
+2,457.6 cycles or 0.012288 ms per requested frame. This is controlled synthetic
+compute throughput, not live camera cadence. The final hardware run remains
+pending until the exact hash above is programmed.
+
+The five single-thread OpenCV runs in `milestone7_static_projection.md`
+measured a 0.070253 ms median against the stronger exact
+`spatialGradient`/`convertScaleAbs`/saturating-add formulation. The resulting
+5.7172x is explicitly a routed-RTL projection. Final acceptance still requires
+the programmed image to return the expected `0x9e562313` combined CRC and its
+hardware cycle counters.
 
 ## Camera profile qualification
 
@@ -146,6 +155,8 @@ Run these in order after connecting the hardware:
 - [ ] Synthetic core counters report latency, interval, pixel totals, and CRC.
 - [ ] Five controlled OpenCV runs and five FPGA runs satisfy the 1.05x contract,
   or the report explicitly records the failed comparison.
+- [x] Five controlled OpenCV runs and the routed-RTL projection clear the 1.05x
+  target; this does not replace the unchecked physical item above.
 - [ ] Dashboard setup, clean stop, snapshot, benchmark cancel, and log export pass.
 - [ ] Idle/activity demonstration produces matching visible transitions and log rows.
 - [x] Routed setup and hold timing pass at the 200 MHz core target.

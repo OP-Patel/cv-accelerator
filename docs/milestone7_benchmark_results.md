@@ -2,8 +2,10 @@
 
 > Superseded diagnostic run. This result came from the earlier single-lane
 > 76,800-cycle FPGA image and intentionally records why it missed the 1.05x
-> contract. The final dual-lane bitstream reports 38,400 cycles per frame, but
-> its five-run hardware result has not been generated yet. Re-running
+> contract. The current 32-lane bitstream reports 2,400 cycles per frame for a
+> complete batch. Its conservative five-run/1,000-frame static projection is
+> recorded in `milestone7_static_projection.md` and passes at 5.7172x, but the
+> physical five-run result has not been generated yet. Re-running
 > `scripts/python/benchmark_m7.py` after programming the final image overwrites
 > this Markdown plus the matching JSON/CSV artifacts.
 

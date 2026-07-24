@@ -1,10 +1,10 @@
 `timescale 1ns/1ps
-// Exercises the real CDC-wrapped M7 core with a four-frame dual-lane source.
+// Exercises the real CDC-wrapped M7 core with two 32-frame parallel batches.
 module tb_m7_accelerated_core;
     localparam integer WIDTH=16, HEIGHT=12, X_W=4, Y_W=4;
     logic system_clk=0, reset=1, clear_metrics=0, metrics_request=0;
     logic synthetic_start=0;
-    logic [15:0] synthetic_frames=4;
+    logic [15:0] synthetic_frames=64;
     logic live_resume=0;
     logic in_valid=0;
     logic [X_W-1:0] in_x=0;
@@ -58,7 +58,7 @@ module tb_m7_accelerated_core;
         begin : wait_for_synthetic
             repeat(2000) begin
                 @(posedge system_clk);
-                if (synthetic_completed_frames==4 && !synthetic_busy)
+                if (synthetic_completed_frames==64 && !synthetic_busy)
                     disable wait_for_synthetic;
             end
             $fatal(1,"synthetic M7 benchmark did not complete");
@@ -69,8 +69,8 @@ module tb_m7_accelerated_core;
         @(negedge system_clk); metrics_request=0;
         wait(metrics_valid);
         if(input_overflow || output_overflow || accepted!=WIDTH*HEIGHT ||
-           produced!=(WIDTH-2)*(HEIGHT-2) || completed!=4 || gaps!=0 ||
-           latency==0 || interval!=WIDTH*HEIGHT/2 || crc!=32'h14407397)
+           produced!=(WIDTH-2)*(HEIGHT-2) || completed!=64 || gaps!=0 ||
+           latency==0 || interval!=WIDTH*HEIGHT/32 || crc!=32'h320c398f)
             $fatal(1,"core metrics overflow=%0d/%0d in=%0d out=%0d frames=%0d gaps=%0d latency=%0d interval=%0d crc=%08h",
                    input_overflow,output_overflow,accepted,produced,completed,
                    gaps,latency,interval,crc);

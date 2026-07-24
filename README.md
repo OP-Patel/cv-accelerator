@@ -23,7 +23,7 @@ output plumbing around that compute core.
 | M4 100 Mb/s Ethernet, ARP, UDP echo | Complete, 10,000-echo hardware run |
 | M5 camera/Sobel over UDP | Complete, 216 consecutive reconstructed frames |
 | M6 live laptop viewer and OpenCV benchmark | Complete, 300-frame display and final physical benchmark passed |
-| M7 optimized application/dashboard | Camera profiles hardware-qualified at 7.5/15/30 FPS; OpenCV/dashboard acceptance pending |
+| M7 optimized application/dashboard | 32-lane routed design projects 5.71x OpenCV throughput; final board acceptance pending |
 
 The tested M5 bitstream also preserves M4 UDP echo on port 4000. M6 reuses the
 same bitstream: it adds laptop display and measurement, not a new FPGA data
@@ -291,6 +291,10 @@ Install the host tools and run the board-independent checks:
 py -3 -m pip install -r scripts/python/requirements-m7.txt
 py -3 scripts/python/m7_setup_check.py --offline
 py -3 scripts/python/run_m7_host_tests.py
+py -3 scripts/python/benchmark_m7.py --static-projection `
+  --json-output docs/m7_static_projection.json `
+  --csv-output docs/m7_static_projection.csv `
+  --markdown-output docs/milestone7_static_projection.md
 ```
 
 When the Arty A7 and Ethernet adapter are connected, the normal UI is:
@@ -316,11 +320,11 @@ Pop-Location
 ```
 
 The current routed M7 build passes timing at a 200 MHz core clock: WNS is
-`+0.107 ns`, TNS is `0.000 ns`, WHS is `+0.031 ns`, and THS is `0.000 ns`.
+`+0.030 ns`, TNS is `0.000 ns`, WHS is `+0.024 ns`, and THS is `0.000 ns`.
 The timing-clean bitstream is kept at the reset-safe path
 `artifacts/m7_runs/build/arty_m7_camera_ethernet_top.bit` and mirrored into
 `vivado_project_m7/arty_conv_m7.runs/impl_1/` for Vivado. Its SHA-256 is
-`d326353db16749c1f64178fd81cdef8c0469eb4665a4cf6500a609513827e0fc`.
+`d6666a158584773f10465d0522cf54dd1ca304ec009b39494d6166383ec26b15`.
 
 The profile-qualified image returns M7 build ID `0x4d370001`; M4 UDP echo, M7
 v2 STATUS/START/STOP, and the setup check pass. Hardware
@@ -329,18 +333,21 @@ three profiles with zero integrity or FPGA errors: `safe` at 7.503 FPS,
 `medium` at 15.006 FPS, and `fast` at 30.012 FPS. Each profile reported 153,600
 active bytes, which is 640 RGB565 bytes by 240 lines. This camera-rate result is
 not the separate FPGA-versus-OpenCV compute-contract result. The final candidate
-adds two independent 200 MHz synthetic Sobel lanes, an aggregate 38,400-cycle
-(0.192 ms) per-frame interval, a combined CRC proving both lanes, live-camera
-isolation during synthetic runs, stable metric capture, and synchronized
-overflow/error handling. It passed all 12 RTL benches and timing signoff. Its
-final board rerun, OpenCV comparison, threshold run, and dashboard/activity
-acceptance remain open because automated JTAG access was blocked by the
-execution environment after the board connected. Evidence is tracked in:
+adds 32 independent 200 MHz synthetic Sobel lanes, a 2,400-cycle (0.012 ms)
+full-batch per-frame interval, and a combined CRC proving every lane. The exact
+five-run, 1,000-frame static comparison charges the partial final batch and
+projects 0.012288 ms per FPGA frame versus a measured 0.070253 ms OpenCV median:
+5.7172x throughput. This is a routed-RTL projection, not a board measurement.
+The design passed all 12 RTL benches, all 13 host tests, and routed timing
+signoff. The newest image's board benchmark, threshold run, and
+dashboard/activity acceptance are deliberately deferred until the board is
+connected again. Evidence is tracked in:
 
 - `docs/milestone7_algorithm_evaluation.md`
 - `docs/milestone7_hardware_validation.md`
 - `docs/milestone7_timing_summary_pass.rpt`
 - `docs/milestone7_cdc_drc_classification.md`
 - `docs/milestone7_profile_qualification.txt`
+- `docs/milestone7_static_projection.md`
 - `docs/milestone7_benchmark_results.md`
 - `docs/milestone6_handoff_and_milestone7_plan.md`

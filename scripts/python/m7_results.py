@@ -42,6 +42,15 @@ def flatten(prefix: str, value, rows: list[tuple[str, object]]) -> None:
 def markdown_summary(results: dict) -> str:
     comparison = results["comparison"]
     passed = comparison["throughput_ratio"] >= 1.05 and comparison["bit_exact_crc_match"]
+    projected = comparison.get("evidence_kind") == "routed_rtl_projection"
+    fpga_time_label = (
+        "FPGA projected sustained frame time"
+        if projected else "FPGA median sustained frame time"
+    )
+    contract_label = (
+        "Static 5% acceleration projection"
+        if projected else "5% acceleration contract"
+    )
     lines = [
         "# Milestone 7 benchmark result",
         "",
@@ -50,13 +59,19 @@ def markdown_summary(results: dict) -> str:
         "| Measurement | Result |",
         "|---|---:|",
         f"| OpenCV median kernel time | {comparison['opencv_median_ms']:.6f} ms |",
-        f"| FPGA median sustained frame time | {comparison['fpga_median_frame_ms']:.6f} ms |",
+        f"| {fpga_time_label} | {comparison['fpga_median_frame_ms']:.6f} ms |",
         f"| FPGA/OpenCV throughput ratio | {comparison['throughput_ratio']:.4f}x |",
         f"| Bit-exact CRC agreement | {comparison['bit_exact_crc_match']} |",
-        f"| 5% acceleration contract | {'PASS' if passed else 'FAIL'} |",
+        f"| {contract_label} | {'PASS' if passed else 'FAIL'} |",
         "",
         "Kernel time, core time, transport FPS, and host CPU utilization are separate fields in the JSON/CSV.",
     ]
+    if projected:
+        lines.extend([
+            "",
+            "> This is a routed-RTL projection, not a physical FPGA benchmark. "
+            "The board run remains required for final acceptance.",
+        ])
     if results.get("live_sessions"):
         lines.extend(["", "## Live sessions", "", "| Profile | Mode | Frames | FPS | CPU | Errors |",
                       "|---|---|---:|---:|---:|---:|"])

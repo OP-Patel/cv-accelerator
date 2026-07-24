@@ -8,7 +8,15 @@ import binascii
 
 import numpy as np
 
-from benchmark_m7 import combined_crc, exact_opencv_sobel, synthetic_inputs
+from benchmark_m7 import (
+    EXPECTED_SYNTHETIC_CRC32,
+    PROJECTED_FRAME_INTERVAL_CYCLES,
+    SYNTHETIC_LANES,
+    combined_crc,
+    exact_opencv_sobel,
+    projected_fpga_runs,
+    synthetic_inputs,
+)
 from m7_algorithms import sobel_l1, threshold_sobel
 
 
@@ -23,6 +31,7 @@ class M7AlgorithmTests(unittest.TestCase):
         expected = np.clip(np.abs(gx.astype(np.int32)) + np.abs(gy.astype(np.int32)),
                            0, 255).astype(np.uint8)[1:-1, 1:-1]
         np.testing.assert_array_equal(sobel_l1(gray), expected)
+        np.testing.assert_array_equal(exact_opencv_sobel(gray, cv2, np), expected)
 
     def test_threshold_is_greater_than_or_equal(self) -> None:
         source = np.array([[0, 95, 96, 255]], dtype=np.uint8)
@@ -34,20 +43,33 @@ class M7AlgorithmTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             threshold_sobel(np.zeros((2, 2), dtype=np.uint8), 256)
 
-    def test_dual_lane_patterns_and_combined_crc(self) -> None:
+    def test_parallel_lane_patterns_and_combined_crc(self) -> None:
         import cv2
 
-        first, second = synthetic_inputs(np)
-        self.assertFalse(np.array_equal(first, second))
-        first_crc = binascii.crc32(
-            exact_opencv_sobel(first, cv2, np).tobytes()
-        ) & 0xFFFFFFFF
-        second_crc = binascii.crc32(
-            exact_opencv_sobel(second, cv2, np).tobytes()
-        ) & 0xFFFFFFFF
-        self.assertEqual(first_crc, 0x5B467F89)
-        self.assertEqual(second_crc, 0x26F0AB1D)
-        self.assertEqual(combined_crc(first_crc, second_crc), 0x16A729B3)
+        inputs = synthetic_inputs(np)
+        self.assertEqual(len(inputs), SYNTHETIC_LANES)
+        self.assertEqual(len({image.tobytes() for image in inputs}),
+                         SYNTHETIC_LANES)
+        crcs = [
+            binascii.crc32(
+                exact_opencv_sobel(image, cv2, np).tobytes()
+            ) & 0xFFFFFFFF
+            for image in inputs
+        ]
+        self.assertEqual(crcs[0], 0x5B467F89)
+        self.assertEqual(crcs[-1], 0x8F63DE67)
+        self.assertEqual(combined_crc(crcs), EXPECTED_SYNTHETIC_CRC32)
+
+    def test_static_projection_is_explicit(self) -> None:
+        runs = projected_fpga_runs(1000, 5)
+        self.assertEqual(len(runs), 5)
+        self.assertEqual(
+            runs[0]["frame_interval_cycles"],
+            PROJECTED_FRAME_INTERVAL_CYCLES,
+        )
+        self.assertEqual(runs[0]["measurement"], "routed_rtl_projection")
+        self.assertEqual(runs[0]["output_crc32"], EXPECTED_SYNTHETIC_CRC32)
+        self.assertEqual(runs[0]["effective_frame_interval_cycles"], 2457.6)
 
 
 if __name__ == "__main__":

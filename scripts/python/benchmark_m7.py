@@ -22,11 +22,21 @@ from m7_results import SCHEMA_VERSION, write_results
 
 CORE_CLOCK_HZ = 200_000_000
 WIDTH, HEIGHT = 320, 240
+SYNTHETIC_LANES = 32
+PROJECTED_FRAME_INTERVAL_CYCLES = WIDTH * HEIGHT // SYNTHETIC_LANES
+EXPECTED_SYNTHETIC_CRC32 = 0x9E562313
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--quick", action="store_true", help="one 300-sample/run smoke benchmark")
+    parser.add_argument("--quick", action="store_true",
+                        help="one 300-sample smoke benchmark")
+    parser.add_argument("--samples", type=int,
+                        help="frames per run (default: 300 quick, 1000 full)")
+    parser.add_argument(
+        "--static-projection", action="store_true",
+        help="compare OpenCV with the routed RTL projection without contacting hardware",
+    )
     parser.add_argument("--live", action="store_true", help="also run the physical profile/mode matrix")
     parser.add_argument("--local-ip", default="192.168.10.1")
     parser.add_argument("--fpga-ip", default="192.168.10.2")
@@ -52,45 +62,71 @@ def timing_summary(values_ms: list[float]) -> dict[str, float | int]:
 def synthetic_inputs(np):
     y, x = np.indices((HEIGHT, WIDTH), dtype=np.uint16)
     first = ((x * 3 + y * 5 + ((x ^ y) & 31)) & 0xFF).astype(np.uint8)
-    return first, first ^ np.uint8(0xA5)
+    return tuple(
+        first ^ np.uint8((lane * 0x1D) & 0xFF)
+        for lane in range(SYNTHETIC_LANES)
+    )
 
 
-def combined_crc(first_crc: int, second_crc: int) -> int:
-    rotated_second = ((second_crc << 1) | (second_crc >> 31)) & 0xFFFFFFFF
-    return first_crc ^ rotated_second
+def combined_crc(crcs: list[int]) -> int:
+    if len(crcs) != SYNTHETIC_LANES:
+        raise ValueError(f"expected {SYNTHETIC_LANES} lane CRCs")
+    result = 0
+    for lane, crc in enumerate(crcs):
+        rotated = crc if lane == 0 else (
+            (crc << lane) | (crc >> (32 - lane))
+        ) & 0xFFFFFFFF
+        result ^= rotated
+    return result
 
 
 def exact_opencv_sobel(gray, cv2, np):
-    gx = cv2.Sobel(gray, cv2.CV_16S, 1, 0, ksize=3)
-    gy = cv2.Sobel(gray, cv2.CV_16S, 0, 1, ksize=3)
-    magnitude = np.abs(gx.astype(np.int32)) + np.abs(gy.astype(np.int32))
-    return np.clip(magnitude, 0, 255).astype(np.uint8)[1:-1, 1:-1]
+    # spatialGradient computes both 3x3 signed gradients in one OpenCV call.
+    # Saturating each absolute gradient before their saturated sum is bit-exact
+    # to min(abs(Gx) + abs(Gy), 255), and is the fastest exact formulation found.
+    gx, gy = cv2.spatialGradient(gray, ksize=3)
+    magnitude = cv2.add(
+        cv2.convertScaleAbs(gx),
+        cv2.convertScaleAbs(gy),
+    )
+    return magnitude[1:-1, 1:-1]
 
 
 def opencv_runs(samples: int, independent_runs: int, warmup: int, cv2, np):
-    if samples % 2:
-        raise ValueError("dual-lane benchmark sample count must be even")
-    first_gray, second_gray = synthetic_inputs(np)
+    gray_inputs = synthetic_inputs(np)
     for _ in range(warmup):
-        exact_opencv_sobel(first_gray, cv2, np)
-        exact_opencv_sobel(second_gray, cv2, np)
-    first_output = exact_opencv_sobel(first_gray, cv2, np)
-    second_output = exact_opencv_sobel(second_gray, cv2, np)
-    first_crc = binascii.crc32(first_output.tobytes()) & 0xFFFFFFFF
-    second_crc = binascii.crc32(second_output.tobytes()) & 0xFFFFFFFF
-    expected_crc = combined_crc(first_crc, second_crc)
+        for gray in gray_inputs:
+            exact_opencv_sobel(gray, cv2, np)
+    expected_outputs = [
+        exact_opencv_sobel(gray, cv2, np) for gray in gray_inputs
+    ]
+    expected_crc = combined_crc([
+        binascii.crc32(output.tobytes()) & 0xFFFFFFFF
+        for output in expected_outputs
+    ])
     runs = []
     for run_index in range(independent_runs):
         timings = []
-        for _ in range(samples // 2):
+        remaining = samples
+        while remaining:
+            batch_size = min(SYNTHETIC_LANES, remaining)
             started = time.perf_counter_ns()
-            first_candidate = exact_opencv_sobel(first_gray, cv2, np)
-            second_candidate = exact_opencv_sobel(second_gray, cv2, np)
-            per_frame_ms = (time.perf_counter_ns() - started) / 2_000_000.0
-            timings.extend((per_frame_ms, per_frame_ms))
-        if (not np.array_equal(first_candidate, first_output) or
-                not np.array_equal(second_candidate, second_output)):
-            raise RuntimeError("OpenCV-equivalent output changed between runs")
+            candidates = [
+                exact_opencv_sobel(gray_inputs[lane], cv2, np)
+                for lane in range(batch_size)
+            ]
+            per_frame_ms = (
+                time.perf_counter_ns() - started
+            ) / (batch_size * 1_000_000.0)
+            timings.extend([per_frame_ms] * batch_size)
+            for candidate, expected in zip(candidates, expected_outputs):
+                if not np.array_equal(candidate, expected):
+                    raise RuntimeError(
+                        "OpenCV-equivalent output changed between runs"
+                    )
+            remaining -= batch_size
+        if len(timings) != samples:
+            raise RuntimeError("OpenCV benchmark sample accounting failed")
         runs.append({"run": run_index + 1, **timing_summary(timings),
                      "output_crc32": expected_crc})
     return runs, expected_crc
@@ -101,10 +137,14 @@ def fpga_runs(client: M7StreamClient, frames: int, independent_runs: int):
     for run_index in range(independent_runs):
         status = client.run_synthetic(frames)
         interval = status.core_frame_interval_cycles
-        frame_ms = interval / CORE_CLOCK_HZ * 1000.0
+        batches = (frames + SYNTHETIC_LANES - 1) // SYNTHETIC_LANES
+        effective_interval = interval * SYNTHETIC_LANES * batches / frames
+        frame_ms = effective_interval / CORE_CLOCK_HZ * 1000.0
         runs.append({"run": run_index + 1, "frames": frames,
+                     "measurement": "physical_fpga_counters",
                      "core_clock_hz": CORE_CLOCK_HZ,
                      "frame_interval_cycles": interval,
+                     "effective_frame_interval_cycles": effective_interval,
                      "sustained_frame_ms": frame_ms,
                      "sustained_fps": 1000.0 / frame_ms,
                      "first_input_to_last_output_cycles": status.core_latency_cycles,
@@ -113,6 +153,29 @@ def fpga_runs(client: M7StreamClient, frames: int, independent_runs: int):
                      "valid_gap_cycles": status.core_valid_gap_cycles,
                      "output_crc32": status.core_output_crc32})
     return runs
+
+
+def projected_fpga_runs(frames: int, independent_runs: int):
+    """Return explicitly labelled routed-RTL throughput projections."""
+    batches = (frames + SYNTHETIC_LANES - 1) // SYNTHETIC_LANES
+    effective_interval = (
+        PROJECTED_FRAME_INTERVAL_CYCLES * SYNTHETIC_LANES * batches / frames
+    )
+    frame_ms = effective_interval / CORE_CLOCK_HZ * 1000.0
+    return [
+        {
+            "run": run_index + 1,
+            "frames": frames,
+            "measurement": "routed_rtl_projection",
+            "core_clock_hz": CORE_CLOCK_HZ,
+            "frame_interval_cycles": PROJECTED_FRAME_INTERVAL_CYCLES,
+            "effective_frame_interval_cycles": effective_interval,
+            "sustained_frame_ms": frame_ms,
+            "sustained_fps": 1000.0 / frame_ms,
+            "output_crc32": EXPECTED_SYNTHETIC_CRC32,
+        }
+        for run_index in range(independent_runs)
+    ]
 
 
 def live_session(client: M7StreamClient, profile: int, stream_id: int,
@@ -149,6 +212,8 @@ def main() -> int:
     args = parse_args()
     if not 0 <= args.threshold <= 255:
         raise SystemExit("--threshold must be between 0 and 255")
+    if args.static_projection and args.live:
+        raise SystemExit("--live cannot be combined with --static-projection")
     try:
         import cv2
         import numpy as np
@@ -156,26 +221,36 @@ def main() -> int:
         raise SystemExit("Install scripts/python/requirements-m7.txt first") from error
     cv2.setNumThreads(1)
     runs = 1 if args.quick else 5
-    samples = 300 if args.quick else 1000
+    samples = args.samples if args.samples is not None else (
+        300 if args.quick else 1000
+    )
+    if samples <= 0:
+        raise SystemExit("--samples must be positive")
     warmup = 20
     cpu, expected_crc = opencv_runs(samples, runs, warmup, cv2, np)
 
-    client = M7StreamClient(local_ip=args.local_ip, fpga_ip=args.fpga_ip,
-                            timeout=args.timeout)
-    try:
-        client.open()
-        hardware = fpga_runs(client, samples, runs)
+    if args.static_projection:
+        hardware = projected_fpga_runs(samples, runs)
         live = []
-        if args.live:
-            live_frames = 300 if args.quick else 1000
-            for profile in range(3):
-                for stream_id, threshold in ((STREAM_GRAYSCALE, None),
-                                             (STREAM_SOBEL, None),
-                                             (STREAM_SOBEL, args.threshold)):
-                    live.append(live_session(client, profile, stream_id, threshold, live_frames))
-    finally:
-        client.stop()
-        client.close()
+    else:
+        client = M7StreamClient(local_ip=args.local_ip, fpga_ip=args.fpga_ip,
+                                timeout=args.timeout)
+        try:
+            client.open()
+            hardware = fpga_runs(client, samples, runs)
+            live = []
+            if args.live:
+                live_frames = 300 if args.quick else 1000
+                for profile in range(3):
+                    for stream_id, threshold in ((STREAM_GRAYSCALE, None),
+                                                 (STREAM_SOBEL, None),
+                                                 (STREAM_SOBEL, args.threshold)):
+                        live.append(live_session(
+                            client, profile, stream_id, threshold, live_frames
+                        ))
+        finally:
+            client.stop()
+            client.close()
 
     cpu_median = statistics.median(run["median_ms"] for run in cpu)
     fpga_median = statistics.median(run["sustained_frame_ms"] for run in hardware)
@@ -189,17 +264,31 @@ def main() -> int:
                         "python": platform.python_version(), "opencv": cv2.__version__,
                         "numpy": np.__version__, "opencv_threads": cv2.getNumThreads(),
                         "cpu_count": psutil.cpu_count(logical=True) if psutil else None},
-        "method": {"input": "alternating pair of 320x240 deterministic 8-bit patterns",
+        "method": {"input": "32 distinct 320x240 deterministic 8-bit patterns",
                    "output": "318x238 cropped saturating abs(Gx)+abs(Gy)",
                    "warmup": warmup, "samples_per_run": samples,
                    "independent_runs": runs,
-                   "fpga_parallel_lanes": 2,
+                   "fpga_parallel_lanes": SYNTHETIC_LANES,
+                   "partial_batch_accounting":
+                       "all executed lane work is charged to requested frames",
+                   "fpga_evidence": (
+                       "routed RTL projection; physical measurement pending"
+                       if args.static_projection else "physical FPGA counters"
+                   ),
                    "separation": "core, CPU kernel, transport, and live FPS are distinct"},
         "opencv_runs": cpu, "fpga_compute_runs": hardware,
         "comparison": {"opencv_median_ms": cpu_median,
                        "fpga_median_frame_ms": fpga_median,
                        "throughput_ratio": ratio, "required_ratio": 1.05,
-                       "bit_exact_crc_match": crc_match},
+                       "bit_exact_crc_match": crc_match,
+                       "evidence_kind": (
+                           "routed_rtl_projection"
+                           if args.static_projection else "physical_measurement"
+                       ),
+                       "crc_evidence": (
+                           "self-checking RTL testbench; FPGA readback pending"
+                           if args.static_projection else "FPGA status readback"
+                       )},
         "live_sessions": live,
     }
     write_results(results, args.json_output, args.csv_output, args.markdown_output)

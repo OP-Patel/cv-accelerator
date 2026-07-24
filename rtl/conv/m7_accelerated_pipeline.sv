@@ -1,12 +1,13 @@
 // Crosses camera pixels into a 200 MHz Sobel core and back to 100 MHz.
-// Synthetic batch runs use two identical frame-parallel lanes so the measured
-// aggregate compute path accepts two pixels per core cycle.
+// Synthetic batch runs use independent frame-parallel lanes so the measured
+// aggregate compute path accepts SYNTHETIC_LANES pixels per core cycle.
 module m7_accelerated_pipeline #(
     parameter integer IMAGE_WIDTH = 320,
     parameter integer IMAGE_HEIGHT = 240,
     parameter integer FIFO_DEPTH = 1024,
     parameter integer X_W = 9,
-    parameter integer Y_W = 8
+    parameter integer Y_W = 8,
+    parameter integer SYNTHETIC_LANES = 32
 ) (
     input  logic           system_clk,
     input  logic           reset,
@@ -41,6 +42,8 @@ module m7_accelerated_pipeline #(
     localparam integer INPUT_W = X_W + Y_W + 8;
     localparam integer OUTPUT_W = X_W + Y_W + 8;
     localparam integer COUNT_W = $clog2(FIFO_DEPTH) + 1;
+    localparam integer SYNTHETIC_LANE_SHIFT = $clog2(SYNTHETIC_LANES);
+    localparam integer CRC_GROUPS = SYNTHETIC_LANES / 4;
     logic core_clk, core_reset;
     (* ASYNC_REG = "TRUE" *) logic [1:0] clear_metrics_core_sync;
     logic fifo_reset;
@@ -56,17 +59,16 @@ module m7_accelerated_pipeline #(
     logic [X_W-1:0] core_out_x;
     logic [Y_W-1:0] core_out_y;
     logic [7:0] core_out_pixel;
-    logic parallel_out_valid;
-    logic [X_W-1:0] parallel_out_x;
-    logic [Y_W-1:0] parallel_out_y;
-    logic [7:0] parallel_out_pixel;
     logic [OUTPUT_W-1:0] output_data, system_output_data;
     logic output_full, output_empty, output_wr_busy, output_rd_busy;
     logic output_fifo_overflow, output_fifo_underflow;
     logic output_overflow_core_sticky;
     (* ASYNC_REG = "TRUE" *) logic [1:0] output_overflow_system_sync;
-    logic [31:0] unused_pipeline_counter [0:5];
-    logic [31:0] unused_parallel_counter [0:5];
+    logic [31:0] primary_pipeline_counter [0:5];
+    logic [31:0] lane_output_crc [0:SYNTHETIC_LANES-1];
+    logic [31:0] rotated_lane_crc [0:SYNTHETIC_LANES-1];
+    logic [31:0] crc_group [0:CRC_GROUPS-1];
+    logic [31:0] combined_crc_core;
     logic [223:0] metrics_source, metrics_snapshot;
     logic [31:0] source_last_latency_cycles;
     logic [31:0] source_last_frame_interval_cycles;
@@ -270,16 +272,16 @@ module m7_accelerated_pipeline #(
                 synthetic_toggle_seen <= synthetic_toggle_core_sync[2];
                 synthetic_active <= 1'b1;
                 synthetic_discard_outputs <= 1'b1;
-                // Each batch feeds two deterministic frames, one per lane,
-                // on the same coordinate schedule. The final odd request, if
-                // any, computes one harmless extra frame but still reports the
-                // requested count.
-                synthetic_remaining <= (synthetic_frames_core_sync[31:16] >> 1) +
-                                       synthetic_frames_core_sync[16];
+                // Each batch feeds one deterministic frame per lane on the
+                // same coordinate schedule. A final partial request computes
+                // harmless extra lanes but still reports the requested count.
+                synthetic_remaining <=
+                    (synthetic_frames_core_sync[31:16] +
+                     SYNTHETIC_LANES - 1) >> SYNTHETIC_LANE_SHIFT;
                 synthetic_target <= synthetic_frames_core_sync[31:16];
                 synthetic_outputs_remaining <=
-                    (synthetic_frames_core_sync[31:16] >> 1) +
-                    synthetic_frames_core_sync[16];
+                    (synthetic_frames_core_sync[31:16] +
+                     SYNTHETIC_LANES - 1) >> SYNTHETIC_LANE_SHIFT;
                 synthetic_completed_frames_core <= 0;
                 synthetic_result_valid_core <= 1'b0;
                 synthetic_batch_started <= 1'b0;
@@ -339,36 +341,64 @@ module m7_accelerated_pipeline #(
         .in_x(core_in_x), .in_y(core_in_y), .in_gray(core_in_gray),
         .out_valid(core_out_valid), .out_x(core_out_x), .out_y(core_out_y),
         .out_pixel(core_out_pixel),
-        .accepted_input_pixels(unused_pipeline_counter[0]),
-        .valid_output_pixels(unused_pipeline_counter[1]),
-        .frames_started(unused_pipeline_counter[2]),
-        .frames_completed(unused_pipeline_counter[3]),
-        .protocol_errors(unused_pipeline_counter[4]),
-        .output_checksum(unused_pipeline_counter[5])
+        .accepted_input_pixels(primary_pipeline_counter[0]),
+        .valid_output_pixels(primary_pipeline_counter[1]),
+        .frames_started(primary_pipeline_counter[2]),
+        .frames_completed(primary_pipeline_counter[3]),
+        .protocol_errors(primary_pipeline_counter[4]),
+        .output_checksum(primary_pipeline_counter[5])
     );
-    // Frame-parallel lane used only by controlled synthetic batch benchmarks.
-    // It receives a distinct deterministic pattern on the primary lane's
-    // coordinate schedule, giving a real aggregate rate of two accepted pixels
-    // per 200 MHz cycle without disturbing the single-camera live path.
-    conv_pipeline_top #(
-        .IMAGE_WIDTH(IMAGE_WIDTH), .IMAGE_HEIGHT(IMAGE_HEIGHT),
-        .X_W(X_W), .Y_W(Y_W)
-    ) u_parallel_pipeline (
-        .clk(core_clk), .reset(core_reset),
-        .in_valid(synthetic_feed_valid),
-        .in_x(synthetic_feed_x), .in_y(synthetic_feed_y),
-        // A distinct second pattern prevents synthesis from merging the two
-        // lanes and lets one combined CRC prove both results bit-exact.
-        .in_gray(synthetic_feed_pixel ^ 8'ha5),
-        .out_valid(parallel_out_valid), .out_x(parallel_out_x),
-        .out_y(parallel_out_y), .out_pixel(parallel_out_pixel),
-        .accepted_input_pixels(unused_parallel_counter[0]),
-        .valid_output_pixels(unused_parallel_counter[1]),
-        .frames_started(unused_parallel_counter[2]),
-        .frames_completed(unused_parallel_counter[3]),
-        .protocol_errors(unused_parallel_counter[4]),
-        .output_checksum(unused_parallel_counter[5])
+    assign lane_output_crc[0] = primary_pipeline_counter[5];
+
+    // Extra lanes are used only by controlled synthetic batch benchmarks.
+    // Relatively-prime XOR masks make every lane's frame distinct. Only each
+    // lane CRC is retained because it proves the complete Sobel datapath.
+    generate
+        for (genvar lane = 1; lane < SYNTHETIC_LANES; lane = lane + 1) begin : g_parallel_lane
+            localparam logic [7:0] LANE_XOR = (lane * 8'h1d) & 8'hff;
+            conv_pipeline_top #(
+                .IMAGE_WIDTH(IMAGE_WIDTH), .IMAGE_HEIGHT(IMAGE_HEIGHT),
+                .X_W(X_W), .Y_W(Y_W)
+            ) u_parallel_pipeline (
+                .clk(core_clk), .reset(core_reset),
+                .in_valid(synthetic_feed_valid),
+                .in_x(synthetic_feed_x), .in_y(synthetic_feed_y),
+                .in_gray(synthetic_feed_pixel ^ LANE_XOR),
+                .out_valid(), .out_x(), .out_y(), .out_pixel(),
+                .accepted_input_pixels(), .valid_output_pixels(),
+                .frames_started(), .frames_completed(), .protocol_errors(),
+                .output_checksum(lane_output_crc[lane])
+            );
+        end
+    endgenerate
+
+    // Rotate each lane CRC by its lane number, then combine four lanes per
+    // group. The fixed two-level grouping avoids a long serial XOR chain.
+    function automatic logic [31:0] rotate_crc(
+        input logic [31:0] value,
+        input integer amount
     );
+        if (amount == 0)
+            rotate_crc = value;
+        else
+            rotate_crc = (value << amount) | (value >> (32 - amount));
+    endfunction
+
+    generate
+        for (genvar lane = 0; lane < SYNTHETIC_LANES; lane = lane + 1) begin : g_rotate_crc
+            assign rotated_lane_crc[lane] = rotate_crc(lane_output_crc[lane], lane);
+        end
+        for (genvar group = 0; group < CRC_GROUPS; group = group + 1) begin : g_crc_group
+            assign crc_group[group] =
+                rotated_lane_crc[group*4] ^
+                rotated_lane_crc[group*4+1] ^
+                rotated_lane_crc[group*4+2] ^
+                rotated_lane_crc[group*4+3];
+        end
+    endgenerate
+    assign combined_crc_core =
+        crc_group[0] ^ crc_group[1] ^ crc_group[2] ^ crc_group[3] ^
+        crc_group[4] ^ crc_group[5] ^ crc_group[6] ^ crc_group[7];
     m7_core_metrics #(
         .IMAGE_WIDTH(IMAGE_WIDTH), .IMAGE_HEIGHT(IMAGE_HEIGHT),
         .X_W(X_W), .Y_W(Y_W)
@@ -387,21 +417,19 @@ module m7_accelerated_pipeline #(
         if (synthetic_result_valid_core) begin
             metrics_source = {
                 source_last_latency_cycles,
-                synthetic_batch_interval_cycles >> 1,
+                synthetic_batch_interval_cycles >> SYNTHETIC_LANE_SHIFT,
                 source_last_accepted_pixels,
                 source_last_produced_pixels,
                 source_last_valid_gap_cycles,
                 {16'd0, synthetic_target},
-                unused_pipeline_counter[5] ^
-                {unused_parallel_counter[5][30:0],
-                 unused_parallel_counter[5][31]}
+                combined_crc_core
             };
         end else begin
             metrics_source = {
                 source_last_latency_cycles, source_last_frame_interval_cycles,
                 source_last_accepted_pixels, source_last_produced_pixels,
                 source_last_valid_gap_cycles, source_completed_frames,
-                unused_pipeline_counter[5]
+                primary_pipeline_counter[5]
             };
         end
     end
@@ -466,14 +494,7 @@ module m7_accelerated_pipeline #(
         end
     end
 
-    logic unused_fifo_status, unused_parallel_status;
+    logic unused_fifo_status;
     assign unused_fifo_status = input_fifo_overflow ^ input_fifo_underflow ^
                                 output_fifo_underflow ^ output_full;
-    assign unused_parallel_status = parallel_out_valid ^ parallel_out_x[0] ^
-                                    parallel_out_y[0] ^ parallel_out_pixel[0] ^
-                                    unused_parallel_counter[0][0] ^
-                                    unused_parallel_counter[1][0] ^
-                                    unused_parallel_counter[2][0] ^
-                                    unused_parallel_counter[3][0] ^
-                                    unused_parallel_counter[4][0];
 endmodule
