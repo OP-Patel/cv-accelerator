@@ -38,13 +38,13 @@ The comparison checks
 `xor(rotate_left(lane_crc[n], n) for n in 0..31) == 0x9e562313`, so synthesis
 cannot silently merge or remove a hardware lane.
 
-The board-independent five-run, 1,000-frame result measured a 0.070253 ms
-median OpenCV kernel time. The routed FPGA structure accepts 32 independent
-frames every 76,800 core cycles. Charging the 32-batch hardware workload
-(including the final 24 unused lanes) against exactly 1,000 requested frames
-gives a conservative 0.012288 ms projected frame time and 5.7172x projected
-throughput. This clears the 1.05x target statically, but the newest bitstream's
-physical counters and CRC still must confirm it.
+The final physical five-run, 1,000-frame comparison measured a 0.070522 ms
+median OpenCV kernel time. The programmed FPGA accepted 32 independent frames
+every 76,800 core cycles. Charging the 32-batch hardware workload (including
+the final 24 unused lanes) against exactly 1,000 requested frames gives a
+conservative 0.012288 ms physical frame time and 5.7391x throughput. All five
+FPGA runs returned the expected combined CRC `0x9e562313`, so the result passes
+the 1.05x contract with physical counters and bit-exact evidence.
 
 ## RTL evidence
 
@@ -68,10 +68,11 @@ therefore remains one lane at the selected 7.5/15/30 FPS sensor rate. M5
 remains the default (`M7_ENABLE=0`) and retains the proven 100 MHz pipeline and
 v1 host protocol behavior.
 
-## Not yet measured
+## Remaining evaluation work
 
-The final routed build and camera-rate matrix are recorded in
-`docs/milestone7_hardware_validation.md`, and the explicit non-hardware result
-is in `docs/milestone7_static_projection.md`. A camera corpus, image-quality
-comparison, threshold-mode hardware CRC, and controlled physical
-FPGA-versus-OpenCV compute result are still pending.
+The final routed build, physical compute comparison, and camera-rate/mode matrix
+are recorded in `docs/milestone7_hardware_validation.md` and
+`docs/milestone7_benchmark_results.md`. The earlier non-hardware projection is
+retained in `docs/milestone7_static_projection.md`. A broader camera corpus,
+qualitative image-quality comparison, dashboard workflow, and activity-monitor
+demonstration remain open.

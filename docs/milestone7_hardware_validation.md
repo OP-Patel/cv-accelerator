@@ -2,19 +2,21 @@
 
 ## Current state
 
-The profile-qualified image was programmed on the Arty A7. M4 UDP echo, M7 v2
-STATUS, build ID `0x4d370001`, v2 START/STOP, and the setup check passed. The
+The final candidate image was programmed on the Arty A7. M4 UDP echo,
+M5-compatible v1 one-frame streaming, M7 v2 STATUS, build ID `0x4d370001`,
+v2 START/STOP, and the setup check passed. The
 `safe`, `medium`, and `fast` OV7670 profiles are hardware-qualified at
-7.503, 15.006, and 30.012 FPS. Each profile completed 1,000 grayscale and 1,000
-Sobel frames with zero host integrity errors and zero FPGA error flags. The
-final candidate additionally fixes synthetic/live arbitration, host START frame
-retention, metric capture, and the output-overflow clock crossing, and expands
-controlled synthetic compute to 32 independent lanes. It has passed all 12 RTL
-benches, all 13 host tests, and routed signoff but still needs its final board
-rerun. Per the current validation schedule, the board is intentionally not
-attached. The physical FPGA-versus-OpenCV comparison, threshold mode, dashboard
-workflow, and activity demonstration remain open until this exact image is
-programmed.
+7.503, 15.006, and 30.012 FPS. The final benchmark then completed all nine
+profile/mode cells: grayscale, reference Sobel, and thresholded Sobel in every
+profile, with 1,000 validated frames and zero integrity errors in each cell.
+
+The same run completed five controlled OpenCV runs and five physical synthetic
+FPGA runs. Hardware counters reported a 2,400-cycle full-batch interval,
+2,457.6 effective cycles per requested frame, 76,800 accepted pixels, 75,684
+outputs, zero valid gaps, and combined CRC `0x9e562313`. The physical FPGA
+throughput was 5.7391x the controlled single-thread OpenCV median, passing the
+required 1.05x contract. Dashboard workflow and the activity demonstration
+remain open; they do not invalidate the completed compute/live benchmark.
 
 The board-independent implementation is complete. All 12 RTL testbenches pass,
 the Vivado 2026.1 synthesis check finishes with zero errors and zero critical
@@ -43,7 +45,7 @@ Use the stable `artifacts/` copy in Hardware Manager because resetting a Vivado
 implementation run removes the project-run copy.
 
 SHA-256:
-`d6666a158584773f10465d0522cf54dd1ca304ec009b39494d6166383ec26b15`
+`0fb90997a1765c921955a383959c1cba94410ff54119dac3a46bf799a80689b6`
 
 The original routed failure is preserved in
 `docs/milestone7_timing_summary_fail.rpt`: WNS was -1.289 ns, TNS was
@@ -79,17 +81,17 @@ Lane `n` uses `lane0 ^ ((n * 0x1d) & 0xff)`. The reported CRC rotates and XORs
 all 32 lane CRCs, so every physical pipeline must contribute. A complete batch
 starts every 76,800 cycles and therefore reports an aggregate 2,400-cycle
 per-frame interval: 0.012 ms or 83,333.33 frames/s. For the exact 1,000-frame
-contract, 32 batches are required, so the static report conservatively uses
-2,457.6 cycles or 0.012288 ms per requested frame. This is controlled synthetic
-compute throughput, not live camera cadence. The final hardware run remains
-pending until the exact hash above is programmed.
+contract, 32 batches are required, so the accepted physical report
+conservatively charges 2,457.6 cycles or 0.012288 ms per requested frame. This
+is controlled synthetic compute throughput, not live camera cadence.
 
-The five single-thread OpenCV runs in `milestone7_static_projection.md`
-measured a 0.070253 ms median against the stronger exact
+Five physical FPGA runs returned identical counters and combined CRC
+`0x9e562313`. The matching five single-thread OpenCV runs measured a
+0.070522 ms median against the exact
 `spatialGradient`/`convertScaleAbs`/saturating-add formulation. The resulting
-5.7172x is explicitly a routed-RTL projection. Final acceptance still requires
-the programmed image to return the expected `0x9e562313` combined CRC and its
-hardware cycle counters.
+physical throughput ratio is 5.7391x. The earlier
+`milestone7_static_projection.md` remains useful as pre-hardware planning
+evidence but is superseded by `milestone7_benchmark_results.md` for acceptance.
 
 ## Camera profile qualification
 
@@ -149,12 +151,13 @@ Run these in order after connecting the hardware:
 - [x] Fast profile is stable near 30 FPS with zero camera/FIFO/protocol errors.
 - [x] SCCB timing readback matches the selected profile.
 - [x] M4 UDP echo still passes.
-- [ ] M5-compatible v1 streaming still passes.
+- [x] M5-compatible v1 streaming still passes (one 318x238 Sobel frame,
+  74 packets, 75,684 bytes, zero integrity errors).
 - [x] M7 v2 STATUS returns build ID `0x4d370001`, and v2 START/STOP pass.
 - [x] Reference Sobel and thresholded Sobel are bit-exact against the golden model.
-- [ ] Synthetic core counters report latency, interval, pixel totals, and CRC.
-- [ ] Five controlled OpenCV runs and five FPGA runs satisfy the 1.05x contract,
-  or the report explicitly records the failed comparison.
+- [x] Synthetic core counters report latency, interval, pixel totals, and CRC.
+- [x] Five controlled OpenCV runs and five physical FPGA runs satisfy the 1.05x
+  contract at 5.7391x with matching CRC.
 - [x] Five controlled OpenCV runs and the routed-RTL projection clear the 1.05x
   target; this does not replace the unchecked physical item above.
 - [ ] Dashboard setup, clean stop, snapshot, benchmark cancel, and log export pass.

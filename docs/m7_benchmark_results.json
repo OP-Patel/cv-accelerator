@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_utc": "2026-07-19T20:14:47.935917+00:00",
+  "generated_utc": "2026-07-25T18:13:28.237170+00:00",
   "benchmark_kind": "full",
   "environment": {
     "platform": "Windows-11-10.0.26200-SP0",
@@ -12,148 +12,335 @@
     "cpu_count": 22
   },
   "method": {
-    "input": "320x240 deterministic 8-bit coordinate pattern",
+    "input": "32 distinct 320x240 deterministic 8-bit patterns",
     "output": "318x238 cropped saturating abs(Gx)+abs(Gy)",
     "warmup": 20,
     "samples_per_run": 1000,
     "independent_runs": 5,
+    "fpga_parallel_lanes": 32,
+    "partial_batch_accounting": "all executed lane work is charged to requested frames",
+    "fpga_evidence": "physical FPGA counters",
     "separation": "core, CPU kernel, transport, and live FPS are distinct"
   },
   "opencv_runs": [
     {
       "run": 1,
       "samples": 1000,
-      "mean_ms": 0.47800220000000004,
-      "median_ms": 0.4403,
-      "p95_ms": 0.8775,
-      "min_ms": 0.1959,
-      "max_ms": 6.5579,
-      "stdev_ms": 0.37610063873272004,
-      "mean_fps": 2092.0405805663654,
-      "output_crc32": 1531346825
+      "mean_ms": 0.0796468,
+      "median_ms": 0.0754125,
+      "p95_ms": 0.105471875,
+      "min_ms": 0.066546875,
+      "max_ms": 0.115475,
+      "stdev_ms": 0.011210069235290209,
+      "mean_fps": 12555.432233310063,
+      "output_crc32": 2656445203
     },
     {
       "run": 2,
       "samples": 1000,
-      "mean_ms": 0.360344,
-      "median_ms": 0.3161,
-      "p95_ms": 0.6276,
-      "min_ms": 0.1953,
-      "max_ms": 3.1443,
-      "stdev_ms": 0.22096694450528115,
-      "mean_fps": 2775.1259907199787,
-      "output_crc32": 1531346825
+      "mean_ms": 0.07639,
+      "median_ms": 0.070521875,
+      "p95_ms": 0.13238125,
+      "min_ms": 0.063415625,
+      "max_ms": 0.1725625,
+      "stdev_ms": 0.02002566571146887,
+      "mean_fps": 13090.718680455557,
+      "output_crc32": 2656445203
     },
     {
       "run": 3,
       "samples": 1000,
-      "mean_ms": 0.405462,
-      "median_ms": 0.2835,
-      "p95_ms": 0.4975,
-      "min_ms": 0.1955,
-      "max_ms": 55.4214,
-      "stdev_ms": 1.832856921954357,
-      "mean_fps": 2466.322368064085,
-      "output_crc32": 1531346825
+      "mean_ms": 0.0755802,
+      "median_ms": 0.06875,
+      "p95_ms": 0.133078125,
+      "min_ms": 0.06341875,
+      "max_ms": 0.14368125,
+      "stdev_ms": 0.01884514038379656,
+      "mean_fps": 13230.97848378279,
+      "output_crc32": 2656445203
     },
     {
       "run": 4,
       "samples": 1000,
-      "mean_ms": 0.3156425,
-      "median_ms": 0.2314,
-      "p95_ms": 0.5064,
-      "min_ms": 0.1955,
-      "max_ms": 5.9326,
-      "stdev_ms": 0.2989958036223084,
-      "mean_fps": 3168.141172370641,
-      "output_crc32": 1531346825
+      "mean_ms": 0.0840459,
+      "median_ms": 0.069021875,
+      "p95_ms": 0.17755625,
+      "min_ms": 0.059534375,
+      "max_ms": 0.24830625,
+      "stdev_ms": 0.03882227258291946,
+      "mean_fps": 11898.260355353443,
+      "output_crc32": 2656445203
     },
     {
       "run": 5,
       "samples": 1000,
-      "mean_ms": 0.3132011,
-      "median_ms": 0.23085,
-      "p95_ms": 0.5134,
-      "min_ms": 0.1954,
-      "max_ms": 6.5075,
-      "stdev_ms": 0.30436706837105426,
-      "mean_fps": 3192.8368067672814,
-      "output_crc32": 1531346825
+      "mean_ms": 0.0833831,
+      "median_ms": 0.070940625,
+      "p95_ms": 0.166696875,
+      "min_ms": 0.06509375,
+      "max_ms": 0.198665625,
+      "stdev_ms": 0.030522130465286988,
+      "mean_fps": 11992.837877219725,
+      "output_crc32": 2656445203
     }
   ],
   "fpga_compute_runs": [
     {
       "run": 1,
       "frames": 1000,
+      "measurement": "physical_fpga_counters",
       "core_clock_hz": 200000000,
-      "frame_interval_cycles": 76800,
-      "sustained_frame_ms": 0.384,
-      "sustained_fps": 2604.1666666666665,
+      "frame_interval_cycles": 2400,
+      "effective_frame_interval_cycles": 2457.6,
+      "sustained_frame_ms": 0.012288,
+      "sustained_fps": 81380.20833333333,
       "first_input_to_last_output_cycles": 76807,
       "accepted_pixels": 76800,
       "produced_pixels": 75684,
       "valid_gap_cycles": 0,
-      "output_crc32": 1531346825
+      "output_crc32": 2656445203
     },
     {
       "run": 2,
       "frames": 1000,
+      "measurement": "physical_fpga_counters",
       "core_clock_hz": 200000000,
-      "frame_interval_cycles": 76800,
-      "sustained_frame_ms": 0.384,
-      "sustained_fps": 2604.1666666666665,
+      "frame_interval_cycles": 2400,
+      "effective_frame_interval_cycles": 2457.6,
+      "sustained_frame_ms": 0.012288,
+      "sustained_fps": 81380.20833333333,
       "first_input_to_last_output_cycles": 76807,
       "accepted_pixels": 76800,
       "produced_pixels": 75684,
       "valid_gap_cycles": 0,
-      "output_crc32": 1531346825
+      "output_crc32": 2656445203
     },
     {
       "run": 3,
       "frames": 1000,
+      "measurement": "physical_fpga_counters",
       "core_clock_hz": 200000000,
-      "frame_interval_cycles": 76800,
-      "sustained_frame_ms": 0.384,
-      "sustained_fps": 2604.1666666666665,
+      "frame_interval_cycles": 2400,
+      "effective_frame_interval_cycles": 2457.6,
+      "sustained_frame_ms": 0.012288,
+      "sustained_fps": 81380.20833333333,
       "first_input_to_last_output_cycles": 76807,
       "accepted_pixels": 76800,
       "produced_pixels": 75684,
       "valid_gap_cycles": 0,
-      "output_crc32": 1531346825
+      "output_crc32": 2656445203
     },
     {
       "run": 4,
       "frames": 1000,
+      "measurement": "physical_fpga_counters",
       "core_clock_hz": 200000000,
-      "frame_interval_cycles": 76800,
-      "sustained_frame_ms": 0.384,
-      "sustained_fps": 2604.1666666666665,
+      "frame_interval_cycles": 2400,
+      "effective_frame_interval_cycles": 2457.6,
+      "sustained_frame_ms": 0.012288,
+      "sustained_fps": 81380.20833333333,
       "first_input_to_last_output_cycles": 76807,
       "accepted_pixels": 76800,
       "produced_pixels": 75684,
       "valid_gap_cycles": 0,
-      "output_crc32": 1531346825
+      "output_crc32": 2656445203
     },
     {
       "run": 5,
       "frames": 1000,
+      "measurement": "physical_fpga_counters",
       "core_clock_hz": 200000000,
-      "frame_interval_cycles": 76800,
-      "sustained_frame_ms": 0.384,
-      "sustained_fps": 2604.1666666666665,
+      "frame_interval_cycles": 2400,
+      "effective_frame_interval_cycles": 2457.6,
+      "sustained_frame_ms": 0.012288,
+      "sustained_fps": 81380.20833333333,
       "first_input_to_last_output_cycles": 76807,
       "accepted_pixels": 76800,
       "produced_pixels": 75684,
       "valid_gap_cycles": 0,
-      "output_crc32": 1531346825
+      "output_crc32": 2656445203
     }
   ],
   "comparison": {
-    "opencv_median_ms": 0.2835,
-    "fpga_median_frame_ms": 0.384,
-    "throughput_ratio": 0.7382812499999999,
+    "opencv_median_ms": 0.070521875,
+    "fpga_median_frame_ms": 0.012288,
+    "throughput_ratio": 5.739084879557291,
     "required_ratio": 1.05,
-    "bit_exact_crc_match": true
+    "bit_exact_crc_match": true,
+    "evidence_kind": "physical_measurement",
+    "crc_evidence": "FPGA status readback"
   },
-  "live_sessions": []
+  "live_sessions": [
+    {
+      "profile": "safe",
+      "mode": "grayscale",
+      "frames": 1000,
+      "request_to_end_seconds": 133.71108670003014,
+      "request_to_first_frame_seconds": 0.5657922000391409,
+      "interframe_fps": 7.503113933107676,
+      "host_cpu_percent": 2.7,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    },
+    {
+      "profile": "safe",
+      "mode": "reference_sobel",
+      "frames": 1000,
+      "request_to_end_seconds": 133.71024679997936,
+      "request_to_first_frame_seconds": 0.5653440000023693,
+      "interframe_fps": 7.503120870174283,
+      "host_cpu_percent": 2.9,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    },
+    {
+      "profile": "safe",
+      "mode": "threshold",
+      "frames": 1000,
+      "request_to_end_seconds": 133.71040849998826,
+      "request_to_first_frame_seconds": 0.565687499998603,
+      "interframe_fps": 7.503127029582451,
+      "host_cpu_percent": 2.4,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    },
+    {
+      "profile": "medium",
+      "mode": "grayscale",
+      "frames": 1000,
+      "request_to_end_seconds": 67.00553940003738,
+      "request_to_first_frame_seconds": 0.4330070000141859,
+      "interframe_fps": 15.00624622606407,
+      "host_cpu_percent": 5.4,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    },
+    {
+      "profile": "medium",
+      "mode": "reference_sobel",
+      "frames": 1000,
+      "request_to_end_seconds": 67.00568269996438,
+      "request_to_first_frame_seconds": 0.43308889999752864,
+      "interframe_fps": 15.006241244443418,
+      "host_cpu_percent": 5.8,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    },
+    {
+      "profile": "medium",
+      "mode": "threshold",
+      "frames": 1000,
+      "request_to_end_seconds": 67.00562329997774,
+      "request_to_first_frame_seconds": 0.4330469999695197,
+      "interframe_fps": 15.006224811882468,
+      "host_cpu_percent": 4.4,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    },
+    {
+      "profile": "fast",
+      "mode": "grayscale",
+      "frames": 1000,
+      "request_to_end_seconds": 33.65302189998329,
+      "request_to_first_frame_seconds": 0.3666535000083968,
+      "interframe_fps": 30.012511972910094,
+      "host_cpu_percent": 6.4,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    },
+    {
+      "profile": "fast",
+      "mode": "reference_sobel",
+      "frames": 1000,
+      "request_to_end_seconds": 33.65307030000258,
+      "request_to_first_frame_seconds": 0.3667911000084132,
+      "interframe_fps": 30.012558137574647,
+      "host_cpu_percent": 5.9,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    },
+    {
+      "profile": "fast",
+      "mode": "threshold",
+      "frames": 1000,
+      "request_to_end_seconds": 33.653215800004546,
+      "request_to_first_frame_seconds": 0.36914940003771335,
+      "interframe_fps": 30.014615856070982,
+      "host_cpu_percent": 5.5,
+      "integrity_errors": 0,
+      "integrity": {
+        "missing_packets": 0,
+        "duplicate_packets": 0,
+        "reordered_packets": 0,
+        "malformed_packets": 0,
+        "crc_mismatches": 0,
+        "frame_sequence_gaps": 0,
+        "discontinuity_frames": 1
+      }
+    }
+  ]
 }

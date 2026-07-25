@@ -1,191 +1,345 @@
-# Arty A7 streaming Sobel accelerator
+# Arty A7 real-time edge accelerator
 
-This project is a complete FPGA camera-processing path for the Digilent Arty
-A7-100T (`xc7a100tcsg324-1`):
+An OV7670 camera feeds a timing-clean, 32-lane Sobel pipeline in an Arty
+A7-100T. The FPGA converts RGB565 to grayscale, detects edges, packages the
+result into integrity-checked UDP packets, and streams validated frames to a
+guided Streamlit console.
 
 ```text
-OV7670 camera -> RGB565 capture -> grayscale -> FPGA Sobel accelerator
-              -> validated UDP packets -> laptop capture/live display
+OV7670 → RGB565 capture → grayscale → 32-lane Sobel @ 200 MHz
+       → M5CV/UDP packetizer → strict host reassembly → live view/events
 ```
 
-The accelerator is the 100 MHz streaming Sobel datapath in `rtl/conv/`. It
-uses BRAM line buffers, forms a 3x3 window, and accepts one valid pixel per
-clock once the pipeline is full. Camera control and Ethernet are the input and
-output plumbing around that compute core.
+## The result
 
-## Current status
+The completed physical acceptance run measured the FPGA at **5.739× the
+throughput of single-thread OpenCV** on the same deterministic 320×240 inputs.
+Both implementations produced the same combined output CRC.
 
-| Milestone | Result |
+| Accepted measurement | Result |
+|---|---:|
+| FPGA sustained frame time | **0.012288 ms** |
+| FPGA sustained compute throughput | **81,380 frames/s** |
+| OpenCV median kernel time | **0.070522 ms** |
+| OpenCV median compute throughput | **14,180 frames/s** |
+| FPGA / OpenCV throughput | **5.739×** |
+| Core-time reduction | **82.6%** |
+| Bit-exact combined CRC | **`0x9e562313` — match** |
+| Live frames checked | **9,000** |
+| Missing/duplicate/reordered/malformed/CRC/sequence errors | **0** |
+
+This is a controlled Sobel-kernel comparison, not a claim about every possible
+computer-vision workload. FPGA core time, camera rate, Ethernet transport, and
+host display rate are reported separately. The live camera is sensor-limited
+to the selected 7.5, 15, or 30 FPS profile; the accelerator has substantially
+more compute headroom than the camera requires.
+
+The complete accepted evidence is in:
+
+- [`docs/m7_benchmark_results.json`](docs/m7_benchmark_results.json)
+- [`docs/m7_benchmark_results.csv`](docs/m7_benchmark_results.csv)
+- [`docs/milestone7_benchmark_results.md`](docs/milestone7_benchmark_results.md)
+- [`docs/milestone7_timing_summary_pass.rpt`](docs/milestone7_timing_summary_pass.rpt)
+
+## Start with the GUI
+
+The M7 console is the normal way to operate the project. It programs the
+verified image, checks the board, controls the live stream, runs acceptance,
+shows saved results, and explains the compute and packet path.
+
+1. Install the host dependencies once:
+
+   ```powershell
+   py -3 -m pip install -r scripts/python/requirements-m7.txt
+   ```
+
+2. Double-click [`Launch_M7_Dashboard.cmd`](Launch_M7_Dashboard.cmd).
+
+The browser opens to the local Streamlit app. No benchmark, packet-receiver, or
+Vivado command needs to be typed after that. The terminal fallback is:
+
+```powershell
+.\scripts\run_m7_dashboard.ps1
+```
+
+The console has five work areas:
+
+| Area | What it does |
 |---|---|
-| M1 board reset, LEDs, UART | Complete, hardware tested |
-| M2 one-pixel-per-clock Sobel core | Complete, simulated and hardware tested |
-| M3 physical OV7670 capture | Complete, 306-frame hardware run |
-| M4 100 Mb/s Ethernet, ARP, UDP echo | Complete, 10,000-echo hardware run |
-| M5 camera/Sobel over UDP | Complete, 216 consecutive reconstructed frames |
-| M6 live laptop viewer and OpenCV benchmark | Complete, 300-frame display and final physical benchmark passed |
-| M7 optimized application/dashboard | 32-lane routed design projects 5.71x OpenCV throughput; final board acceptance pending |
+| **1 · Setup** | Checks dependencies and IPv4, programs the verified bitstream, explains switches/LEDs, and runs the FPGA health check |
+| **2 · Live** | Applies safe/medium/fast camera profiles, displays validated frames, watches integrity counters, and creates activity events |
+| **3 · Benchmark** | Runs a quick shakedown or full 5×1,000 acceptance plus the physical 3×3 profile/mode matrix |
+| **Proof** | Makes the speed result, CRC match, live FPS, host CPU, and zero-error matrix explicit and downloadable |
+| **How it works** | Animates one Sobel computation and provides a click-to-explore UDP packet/reassembly exhibit |
 
-The tested M5 bitstream also preserves M4 UDP echo on port 4000. M6 reuses the
-same bitstream: it adds laptop display and measurement, not a new FPGA data
-path.
-
-## Hardware and network setup
+## Hardware setup
 
 Required hardware:
 
-- Arty A7-100T
-- direct-DVP OV7670 module wired as documented in
-  `docs/milestone3_camera_hardware_contract.md`
-- USB cable for programming/UART
-- Ethernet cable and the ASIX adapter used during validation
+- Digilent Arty A7-100T (`xc7a100tcsg324-1`)
+- direct-DVP OV7670 module
+- USB cable for power, JTAG programming, and UART
+- Ethernet cable to the validation computer
+- the tested ASIX USB Ethernet adapter, or another adapter configured the same
+  way
 
-Configure the Windows adapter named `Ethernet 2`:
+Wire the camera exactly as documented in
+[`docs/milestone3_camera_hardware_contract.md`](docs/milestone3_camera_hardware_contract.md).
+Power the board down before moving camera wiring.
 
-```text
-IPv4 address: 192.168.10.1
-Subnet mask:  255.255.255.0
-Gateway:      blank
-FPGA address: 192.168.10.2
-FPGA MAC:     02:00:00:00:00:01
-```
-
-Program this bitstream in Vivado Hardware Manager:
+Configure the direct Windows Ethernet adapter:
 
 ```text
-vivado_project_m5/arty_conv_m5.runs/impl_1/arty_m5_camera_ethernet_top.bit
+Computer IPv4: 192.168.10.1
+Subnet mask:   255.255.255.0
+Gateway:       blank
+FPGA IPv4:     192.168.10.2
+FPGA MAC:      02:00:00:00:00:01
 ```
 
-Tested SHA-256:
+The dashboard detects whether `192.168.10.1` is assigned and shows the exact
+one-time Windows command if it is missing.
+
+### Switches
+
+Use this normal dashboard position:
 
 ```text
-8c9577a1ff240642bf1aef7a37178feb910d6b0b2e218a7052d94dc535e7bc00
+SW0 = 0 for the live lens, or 1 for OV7670 color bars
+SW1 = 0
+SW2 = 1
+SW3 = 0
 ```
 
-Board controls for the integrated image:
-
-| Control | Function |
+| Control | Exact M7 function |
 |---|---|
-| `BTN0` | complete reset |
-| `BTN1` | restart camera initialization and PHY discovery |
-| `BTN2` | clear sticky errors and counters |
-| `BTN3` | print a coherent M5 UART status line |
-| `SW0` | select OV7670 color bars on the next initialization |
-| `SW1` | force grayscale; leave at `0` for host-selected mode |
-| `SW2` | local stream enable; set to `1` |
-| `LD4` | heartbeat |
-| `LD5` | camera configured and Ethernet linked |
-| `LD6` | packet activity |
-| `LD7` | sticky error |
+| `SW0` | Camera source on the next initialization: `0` live lens, `1` internal color bars |
+| `SW1` | Grayscale override: `0` lets the GUI select grayscale/Sobel; `1` forces grayscale |
+| `SW2` | Local streaming gate: must be `1` for camera packets; `0` is a hard inhibit |
+| `SW3` | Reserved and unused by the M7 RTL; leave at `0` |
 
-After programming, set `SW1=0`, `SW2=1`, choose `SW0`, press `BTN1`, and wait
-for `LD5`. Use color bars (`SW0=1`) for deterministic testing and the live lens
-(`SW0=0`) for normal viewing.
+Changing `SW0` does not immediately reprogram the sensor. Press `BTN1`, or use a
+dashboard configuration action that restarts camera initialization.
 
-## Host setup
+### Buttons and LEDs
 
-The proven PGM receiver uses only the Python standard library. The M6 viewer
-and benchmark require NumPy and desktop OpenCV:
-
-```powershell
-py -3 -m pip install -r scripts/python/requirements-m6.txt
-```
-
-`pyserial` is needed only for the UART monitor, and Scapy/Npcap is needed only
-for raw Ethernet diagnostics.
-
-## Run the project
-
-Run commands below from the repository root.
-
-First verify that the integrated bitstream still answers M4 UDP echo:
-
-```powershell
-py -3 scripts/python/ethernet_test.py udp --count 1 --timeout 2
-```
-
-Save one validated FPGA Sobel frame as a PGM:
-
-```powershell
-py -3 scripts/python/camera_udp_receiver.py --frames 1 --stream sobel --timeout 10
-```
-
-Saved frames appear under `docs/m5_frames/`. That generated directory is
-ignored by Git.
-
-Display the continuous FPGA Sobel stream on the laptop:
-
-```powershell
-py -3 scripts/python/camera_udp_viewer.py --stream sobel
-```
-
-Viewer keys:
-
-- `Q` or `Esc`: stop and send the FPGA STOP command
-- `S`: save the current validated frame under `docs/m6_snapshots/`
-
-Display the grayscale diagnostic stream:
-
-```powershell
-py -3 scripts/python/camera_udp_viewer.py --stream gray
-```
-
-## Captured laptop output
-
-These are lossless PNG copies of frames saved from the live viewer with `S`.
-The grayscale image is the camera stream sent to the laptop; the Sobel image
-was computed in the FPGA before transmission.
-
-| Grayscale diagnostic stream | FPGA Sobel stream |
+| Control | Meaning |
 |---|---|
-| ![Live OV7670 grayscale frame](docs/assets/m6_gray_live.png) | ![Live FPGA Sobel frame](docs/assets/m6_sobel_live.png) |
+| `BTN0` | Full design reset |
+| `BTN1` | Restart camera initialization and Ethernet PHY discovery |
+| `BTN2` | Clear sticky errors and counters |
+| `BTN3` | Print one coherent UART status report |
+| `LD4` | Heartbeat; should blink whenever the design is alive |
+| `LD5` | Camera configured, camera ID valid, and Ethernet link/identity valid |
+| `LD6` | Camera packet activity; visible during live transport, not necessarily during the very short synthetic compute test |
+| `LD7` | Any combined sticky error; should remain off |
 
-If port 4001 times out, confirm that Hardware Manager programmed the M5
-bitstream rather than the M4 image, run the one-packet UDP echo to populate
-ARP, verify `SW2=1`, and press `BTN3` for the UART status line.
+If `LD7` turns on, stop the stream, correct the physical cause, press `BTN2` to
+clear flags, press `BTN1` to reinitialize, and run **FPGA health check** again.
 
-## Benchmark FPGA and OpenCV
+## Program the correct M7 image
 
-Measure the laptop OpenCV kernel without hardware:
+The dashboard’s **Program verified bitstream** button calls Vivado 2026.1 in
+batch mode and checks that exactly one A7-100T is attached.
 
-```powershell
-py -3 scripts/python/benchmark_m6_opencv.py --cpu-only --cpu-samples 1000
-```
-
-Run the complete physical comparison (300 FPGA Sobel frames followed by 300
-grayscale frames processed by OpenCV):
-
-```powershell
-py -3 scripts/python/benchmark_m6_opencv.py --frames 300
-```
-
-Results are written to:
+Verified image:
 
 ```text
-docs/m6_benchmark_results.json
-docs/m6_benchmark_results.csv
+artifacts/m7_runs/build/arty_m7_camera_ethernet_top.bit
 ```
 
-The benchmark reports three different quantities:
+```text
+SHA-256 0fb90997a1765c921955a383959c1cba94410ff54119dac3a46bf799a80689b6
+Size     3,826,007 bytes
+```
 
-1. measured OpenCV CPU kernel time;
-2. measured end-to-end frame rate for FPGA and CPU paths;
-3. the FPGA core's labeled throughput estimate from one pixel/clock at 100 MHz.
+Generated Vivado mirror:
 
-The estimate is not presented as camera FPS. Optimized OpenCV may beat this
-small FPGA core on a modern laptop; the result should report that honestly.
+```text
+vivado_project_m7/arty_conv_m7.runs/impl_1/arty_m7_camera_ethernet_top.bit
+```
 
-The final controlled 1,000-sample OpenCV run measured 0.629 ms mean, 0.504 ms
-median, and 1.116 ms p95. The final physical FPGA and CPU paths both measured
-7.503 FPS with zero packet/frame integrity errors, proving that the current
-camera path, not Sobel compute, limits end-to-end frame rate.
+To inspect the implemented design manually:
 
+```powershell
+& "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat" `
+  "C:\Users\Om Patel\Desktop\arty-conv-accelerator\vivado_project_m7\arty_conv_m7.xpr"
+```
 
-The bitstream supplies a 24 MHz camera `XCLK`, then programs the conservative
-QVGA timing values in `rtl/camera/camera_register_init.sv`: `CLKRC=0x01`,
-`COM3=0x04`, `COM14=0x19`, downsample control `0x72=0x11`, and pixel-clock
-scaling `0x73=0xF1`. The extra downsample and pixel-clock scaling configuration
-is the leading cause of the observed four-to-one reduction from the sensor's
-nominal 30 FPS mode. That diagnosis is consistent with the identical 7.503 FPS
-cadence in both stream modes and the absence of scheduler/FIFO drops; the exact
-contribution of each sensor divider still needs a change-and-measure hardware
-test. The conservative profile was retained because it produced stable, error-free initial bring-up.
+Do not select an M5/M6 bitstream. A stale image will answer older protocol
+commands but cannot acknowledge M7 opcode 3 status requests.
+
+## What the three processing modes mean
+
+### Grayscale diagnostic
+
+RGB565 stores red, green, and blue in 16 bits. The FPGA combines those channels
+into one 8-bit brightness value. Grayscale is useful because it:
+
+- verifies the camera, capture timing, pixel order, and UDP transport before
+  edge processing complicates the picture;
+- supplies the exact input used by the OpenCV control;
+- removes color information that Sobel does not need.
+
+### Reference Sobel
+
+Sobel evaluates a 3×3 neighborhood around every interior pixel. Two kernels
+measure horizontal and vertical brightness change:
+
+```text
+Gx                  Gy
+-1  0  +1           +1  +2  +1
+-2  0  +2            0   0   0
+-1  0  +1           -1  -2  -1
+```
+
+The project computes `min(255, |Gx| + |Gy|)`. Flat regions approach zero;
+strong boundaries approach 255. A 320×240 input produces a 318×238 Sobel image
+because a complete 3×3 neighborhood does not exist at the outer border.
+
+### Thresholded Sobel
+
+Thresholding keeps edge values at or above a chosen magnitude and suppresses
+weaker responses. It turns a detailed edge-strength image into a cheaper
+decision signal for contours, motion regions, occupancy, or event triggers.
+
+Whether the camera sees an obvious edge does **not** affect packet correctness
+or benchmark validity. A high-contrast target only makes the Sobel output
+easier for a person to recognize. The controlled compute benchmark uses 32
+deterministic patterns so both FPGA and OpenCV receive identical work.
+
+## Why the FPGA is faster here
+
+OpenCV executes the Sobel operations as instructions on general-purpose CPU
+cores. The M7 design turns the algorithm into physical dataflow:
+
+1. BRAM line buffers keep two previous image rows next to the arithmetic.
+2. Shift registers form each 3×3 window without rereading a full frame.
+3. Dedicated adders compute `Gx` and `Gy` in parallel.
+4. Saturation and optional thresholding are pipeline stages, not software
+   branches.
+5. Thirty-two independent synthetic lanes operate at 200 MHz for the controlled
+   benchmark.
+6. Counters and a combined CRC are read directly from the FPGA to prove both
+   time and output identity.
+
+After the pipeline fills, pixels continue moving deterministically without
+operating-system scheduling. In a real camera system that means the CPU can
+spend its time on tracking, decisions, storage, networking, or the user
+interface instead of repeating local pixel arithmetic.
+
+Sobel itself is a building block, not a complete vision application. The same
+line-rate architecture is useful in robotics, industrial inspection, smart
+cameras, document scanning, lane/contour extraction, and as a front end to more
+expensive algorithms.
+
+## UDP packet and validation contract
+
+One full payload packet contains:
+
+```text
+Ethernet 14 B | IPv4 20 B | UDP 8 B | M5CV header 32 B
+| pixel payload up to 1,024 B | Ethernet FCS 4 B
+```
+
+The 32-byte `M5CV` header carries:
+
+- magic/version and stream mode;
+- first, last, and discontinuity flags;
+- frame sequence and packet index/count;
+- pixel offset and payload length;
+- frame width/height;
+- a CRC32 for the pixel payload.
+
+The host rejects a packet or frame if dimensions, count, order, offsets, flags,
+length, CRC, or frame sequence are inconsistent. Grayscale frames contain
+76,800 bytes in 75 packets. Sobel frames contain 75,684 bytes in 74 packets;
+the final packet carries 932 pixels.
+
+UDP keeps the FPGA transport small and deterministic. The application header
+adds the evidence required to distinguish “a datagram arrived” from “this
+complete video frame is correct.”
+
+## Benchmark methodology
+
+Full acceptance performs:
+
+1. five independent OpenCV runs of 1,000 deterministic frames;
+2. five physical FPGA synthetic runs of 1,000 frames;
+3. combined output CRC comparison;
+4. safe, medium, and fast live camera sessions;
+5. grayscale, reference Sobel, and thresholded Sobel in every profile;
+6. 1,000 validated live frames in every profile/mode cell.
+
+The accepted live matrix:
+
+| Profile | Grayscale | Reference Sobel | Thresholded Sobel | Frames | Errors |
+|---|---:|---:|---:|---:|---:|
+| safe | 7.5031 FPS | 7.5031 FPS | 7.5031 FPS | 3,000 | 0 |
+| medium | 15.0062 FPS | 15.0062 FPS | 15.0062 FPS | 3,000 | 0 |
+| fast | 30.0125 FPS | 30.0126 FPS | 30.0146 FPS | 3,000 | 0 |
+
+The first frame after each deliberate STOP/START is marked as a discontinuity.
+That expected session-boundary marker is tracked separately and is not an
+integrity error.
+
+Dashboard-launched results are saved under:
+
+```text
+artifacts/m7_runs/YYYYMMDD_HHMMSS/
+  results.json
+  results.csv
+  results.md
+  console.log
+```
+
+The **Proof** tab always opens the newest parseable result and provides download
+buttons.
+
+## Implementation status
+
+| Property | Routed M7 result |
+|---|---:|
+| Target | Arty A7-100T / `xc7a100tcsg324-1` |
+| Synthetic lanes | 32 |
+| Accelerator clock | 200 MHz |
+| WNS / TNS | +0.030 ns / 0 ns |
+| WHS / THS | +0.024 ns / 0 ns |
+| LUTs | 17,731 / 63,400 (27.97%) |
+| Registers | 35,303 / 126,800 (27.84%) |
+| BRAM tiles | 47 / 135 (34.81%) |
+| DSP blocks | 0 |
+
+All M7 RTL testbenches and host tests pass. The routed bitstream completed full
+physical acceptance on July 25, 2026.
+
+## Developer entry points
+
+The GUI is preferred for normal use. The underlying tools remain independently
+runnable for development and CI:
+
+```powershell
+# Host tests
+py -3 -m unittest discover -s scripts/python -p "test_*.py"
+
+# M7 RTL testbenches
+& "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat" `
+  -mode batch -source scripts/run_m7_simulations.tcl
+
+# Rebuild implementation and bitstream
+& "C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat" `
+  -mode batch -source scripts/build_m7_bitstream.tcl
+```
+
+Key source areas:
+
+```text
+rtl/conv/                         grayscale, Sobel, accelerated pipeline
+rtl/camera/                       OV7670 clock, SCCB initialization, capture
+rtl/integration/                  control receiver, stream FIFO, packetizer
+rtl/ethernet/                     MII, ARP/IPv4/UDP, CRC/FCS
+rtl/top/arty_m7_camera_ethernet_top.sv
+scripts/python/m7_dashboard.py    guided operator console
+scripts/python/m7_showcase.py     interactive computation/packet exhibits
+scripts/python/benchmark_m7.py    acceptance runner
+```

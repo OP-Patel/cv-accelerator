@@ -487,7 +487,7 @@ The board-independent implementation for this plan is now checked in:
 - The final 200 MHz routed candidate passes at WNS +0.030 ns, TNS 0.000 ns,
   WHS +0.024 ns, and THS 0.000 ns with zero failed routes. It uses 17,731 LUTs,
   35,303 registers, 47 BRAM tiles, and 0 DSPs. Its bitstream SHA-256 is
-  `d6666a158584773f10465d0522cf54dd1ca304ec009b39494d6166383ec26b15`.
+  `0fb90997a1765c921955a383959c1cba94410ff54119dac3a46bf799a80689b6`.
 - The first programmed image exposed an invalid M7 ACK IPv4 checksum. The ACK
   generator now uses the proven folded one's-complement calculation, and a new
   packet-level regression validates checksum `0xa571`, opcode `0x83`, and build
@@ -521,15 +521,16 @@ two-flop synchronizer, and the remaining CDC/DRC findings are classified in
 
 The stronger exact single-thread OpenCV formulation uses `spatialGradient`,
 `convertScaleAbs`, and saturating `add`. Five independent 1,000-frame runs
-measured a 0.070253 ms median. Charging the final partial 32-lane FPGA batch
-against exactly 1,000 requested frames projects 0.012288 ms per frame and
-5.7172x throughput. The static report passes the 1.05x target, but it is not a
-hardware result. The newest hash still needs to be programmed and rerun when
-the board is intentionally reattached.
+measured a 0.070522 ms median in the final physical acceptance run. Five
+matching FPGA runs reported 2,457.6 effective cycles, 0.012288 ms per requested
+frame, zero valid gaps, and combined CRC `0x9e562313`. The physical FPGA/OpenCV
+throughput ratio is 5.7391x, passing the 1.05x target with bit-exact agreement.
 
-The physical FPGA/OpenCV comparison, threshold mode, dashboard, and
-activity-monitor items remain open. Camera-profile qualification, static
-throughput margin, and CDC/DRC classification no longer block those tasks.
+The live benchmark also completed 1,000 grayscale, reference-Sobel, and
+thresholded-Sobel frames in every safe/medium/fast profile: 9,000 total frames
+with zero integrity errors. Dashboard acceptance and the activity-monitor
+demonstration remain open. Camera-profile qualification, physical compute
+acceptance, live threshold operation, and CDC/DRC classification are complete.
 
 ## Features enabled by this foundation after M7
 
