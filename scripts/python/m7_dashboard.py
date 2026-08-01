@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import html
 import json
@@ -30,6 +31,12 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from m6_stream_client import CONTROL_FORMAT, CONTROL_MAGIC, STREAM_GRAYSCALE, STREAM_SOBEL
 from m7_activity_monitor import ActivityMonitor, ActivitySettings, EventLog, Region
+from m7_exhibits import (
+    render_compute_comparison,
+    render_resource_budget,
+    render_system_pipeline,
+    render_wiring_map,
+)
 from m7_protocol import M7_VERSION, OPCODE_STOP, PROFILE_NAMES
 from m7_setup_check import dependency_versions, local_ipv4_assignments
 from m7_showcase import render_sobel_walkthrough, render_udp_explorer
@@ -44,6 +51,7 @@ DEFAULT_VIVADO = Path(r"C:\AMDDesignTools\2026.1\Vivado\bin\vivado.bat")
 VERIFIED_SHA256 = "0fb90997a1765c921955a383959c1cba94410ff54119dac3a46bf799a80689b6"
 DOC_RESULT = REPO_ROOT / "docs" / "m7_benchmark_results.json"
 ACCEPTED_RESULT = ARTIFACT_ROOT / "20260725_140143" / "results.json"
+SOBEL_HERO = REPO_ROOT / "docs" / "assets" / "m6_sobel_live.png"
 
 PROFILE_DESCRIPTIONS = {
     "safe": ("7.503 FPS", "Conservative sensor clocking; best first-link diagnostic."),
@@ -74,8 +82,8 @@ MODE_DESCRIPTIONS = {
 
 
 st.set_page_config(
-    page_title="M7 · Arty A7 edge accelerator",
-    page_icon="◆",
+    page_title="Arty A7 real-time vision accelerator",
+    page_icon="▣",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -84,30 +92,33 @@ st.markdown(
     """
 <style>
   :root {
-    --m7-bg: #071018;
-    --m7-surface: #0b151e;
-    --m7-surface-2: #101e29;
-    --m7-line: #243642;
-    --m7-ink: #edf3f7;
-    --m7-muted: #91a0ac;
-    --m7-accent: #ff5f68;
-    --m7-good: #56d6a9;
-    --m7-warn: #f5c46b;
+    --m7-bg: #060608;
+    --m7-surface: #0b0b0e;
+    --m7-surface-2: #111116;
+    --m7-line: #2b2b33;
+    --m7-ink: #f4f4f5;
+    --m7-muted: #a1a1aa;
+    --m7-accent: #ef4444;
+    --m7-blue: #3b82f6;
+    --m7-good: #3b82f6;
+    --m7-warn: #ef4444;
   }
   .stApp {
-    background:
-      radial-gradient(circle at 82% -10%, rgba(255,95,104,.08), transparent 26rem),
-      var(--m7-bg);
+    background: var(--m7-bg);
     color: var(--m7-ink);
+    font-family: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
   }
-  .block-container { max-width: 1380px; padding-top: 1.7rem; padding-bottom: 4rem; }
+  .stApp button, .stApp input, .stApp select, .stApp textarea {
+    font-family: inherit;
+  }
+  .block-container { max-width: none; padding: 0 0 4rem; }
   header[data-testid="stHeader"] { background: transparent; }
   [data-testid="stSidebarCollapsedControl"] { color: var(--m7-muted); }
-  h1, h2, h3 { letter-spacing: -.035em; }
+  h1, h2, h3 { letter-spacing: -.035em; font-family: inherit; }
   h1 { font-size: clamp(2rem, 4vw, 3.5rem) !important; line-height: 1.02 !important; }
   h2 { margin-top: 1rem !important; }
   p, label, [data-testid="stCaptionContainer"] { color: var(--m7-muted); }
-  code { color: #f6abb0 !important; }
+  code { color: var(--m7-blue) !important; }
   hr { border-color: var(--m7-line) !important; margin: 2.2rem 0 !important; }
   [data-baseweb="tab-list"] {
     gap: 1.3rem;
@@ -123,7 +134,7 @@ st.markdown(
   [data-baseweb="tab-highlight"] { background: var(--m7-accent); }
   div.stButton > button, div.stDownloadButton > button {
     border-color: var(--m7-line);
-    border-radius: 9px;
+    border-radius: 2px;
     min-height: 2.7rem;
     transition: transform .16s ease, border-color .16s ease, background .16s ease;
   }
@@ -135,7 +146,7 @@ st.markdown(
   button[kind="primary"] {
     background: var(--m7-accent) !important;
     border-color: var(--m7-accent) !important;
-    color: #21090c !important;
+    color: #ffffff !important;
     font-weight: 800 !important;
   }
   [data-testid="stMetric"] {
@@ -148,9 +159,14 @@ st.markdown(
     font-variant-numeric: tabular-nums;
   }
   [data-testid="stMetricDelta"] svg { display:none; }
-  [data-testid="stAlert"] { border-radius: 10px; border: 1px solid var(--m7-line); }
-  [data-testid="stExpander"] { border-color: var(--m7-line); background: rgba(11,21,30,.5); }
-  [data-testid="stDataFrame"] { border: 1px solid var(--m7-line); border-radius: 10px; overflow:hidden; }
+  [data-testid="stAlert"] {
+    border-radius:2px;
+    border:1px solid var(--m7-line);
+    border-left:2px solid var(--m7-blue);
+    background:var(--m7-surface-2) !important;
+  }
+  [data-testid="stExpander"] { border-color: var(--m7-line); background: var(--m7-surface); }
+  [data-testid="stDataFrame"] { border: 1px solid var(--m7-line); border-radius: 2px; overflow:hidden; }
   .m7-header {
     display:grid;
     grid-template-columns: 1.6fr .8fr;
@@ -195,13 +211,13 @@ st.markdown(
     display:inline-block;
     padding:.28rem .55rem;
     border:1px solid var(--m7-line);
-    border-radius:999px;
+    border-radius:2px;
     color:var(--m7-muted);
     font:650 .68rem/1.2 ui-monospace,monospace;
     margin:.1rem .25rem .1rem 0;
   }
-  .m7-badge.good { border-color:#2d6a56; color:var(--m7-good); background:rgba(86,214,169,.07); }
-  .m7-badge.accent { border-color:#834149; color:#ff9ea4; background:rgba(255,95,104,.08); }
+  .m7-badge.good { border-color:var(--m7-blue); color:#8bb7ff; background:#0b1322; }
+  .m7-badge.accent { border-color:var(--m7-accent); color:#ff8b8b; background:#1a0b0d; }
   .m7-step {
     display:grid;
     grid-template-columns:2.2rem 1fr;
@@ -234,8 +250,8 @@ st.markdown(
     display:grid; grid-template-columns:7rem 1fr 7rem; align-items:center; gap:.7rem;
     margin:.7rem 0; color:var(--m7-muted); font-size:.82rem;
   }
-  .m7-track { height:.65rem; background:#1a2933; border-radius:99px; overflow:hidden; }
-  .m7-fill { height:100%; border-radius:99px; background:#71808a; }
+  .m7-track { height:.65rem; background:#202027; border-radius:0; overflow:hidden; }
+  .m7-fill { height:100%; border-radius:0; background:#71717a; }
   .m7-fill.fpga { width:17.42%; background:var(--m7-accent); }
   .m7-fill.cpu { width:100%; }
   .m7-log {
@@ -244,10 +260,124 @@ st.markdown(
     font: .75rem/1.55 ui-monospace, "Cascadia Code", monospace;
     padding-left:.8rem;
   }
+  .stTabs {
+    width: min(1440px, 100%);
+    margin: 0 auto;
+    padding: 0 clamp(1rem, 3vw, 3rem);
+  }
+  .edge-hero {
+    min-height: 500px;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(460px, .95fr);
+    overflow: hidden;
+    border-bottom: 1px solid var(--m7-line);
+    background: #050506;
+    isolation: isolate;
+  }
+  .edge-copy {
+    padding: clamp(4rem, 8vw, 7.5rem) clamp(1.2rem, 6vw, 7rem) 3rem;
+    align-self:center;
+    animation: edge-rise .65s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes edge-rise { from { opacity:0; transform:translateY(14px); } }
+  .edge-brand {
+    color:var(--m7-ink);
+    font:800 .78rem/1 "Cascadia Mono","Cascadia Code",Consolas,monospace;
+    letter-spacing:.14em;
+  }
+  .edge-brand i { color:var(--m7-accent); font-style:normal; }
+  .edge-kicker {
+    color:var(--m7-accent);
+    font:750 .68rem/1.2 ui-monospace,"Cascadia Code",monospace;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-top:2rem;
+  }
+  .edge-copy h1 {
+    max-width:780px;
+    margin:.65rem 0 .9rem;
+    font-size:clamp(2.8rem,5.3vw,5.8rem) !important;
+    line-height:.92 !important;
+    letter-spacing:-.065em;
+    text-transform:uppercase;
+  }
+  .edge-copy p { max-width:690px; margin:0; color:#a1a1aa; font-size:.9rem; line-height:1.65; }
+  .edge-proof {
+    margin-top:1.7rem;
+    display:flex;
+    align-items:baseline;
+    gap:.75rem;
+    color:var(--m7-muted);
+    font:700 .68rem/1.3 ui-monospace,monospace;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .edge-proof strong { color:var(--m7-blue); font-size:1.65rem; letter-spacing:-.05em; }
+  .edge-cta {
+    display:inline-block;
+    margin-top:1.8rem;
+    color:var(--m7-ink) !important;
+    text-decoration:none;
+    border-bottom:1px solid var(--m7-blue);
+    padding-bottom:.3rem;
+    font:750 .72rem/1.2 ui-monospace,monospace;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    transition:color .18s ease,letter-spacing .18s ease;
+  }
+  .edge-cta:hover { color:var(--m7-blue) !important; letter-spacing:.11em; }
+  .edge-visual {
+    min-height:500px;
+    position:relative;
+    background-image: var(--hero-image);
+    background-size:cover;
+    background-position:center;
+    animation: edge-focus 1.1s ease both;
+  }
+  @keyframes edge-focus { from { opacity:0; filter:contrast(1.8) brightness(.25); transform:scale(1.035); } }
+  .edge-readout {
+    position:absolute; left:12%; right:8%; bottom:2.5rem; z-index:2;
+    border-top:1px solid var(--m7-blue); padding:.8rem;
+    color:#e4e4e7; background:#060608;
+    font:700 .65rem/1.55 "Cascadia Mono",Consolas,monospace; letter-spacing:.06em;
+  }
+  .edge-readout span { color:#8bb7ff; }
+  .edge-scan {
+    position:absolute; left:0; right:0; height:1px; top:15%; z-index:2;
+    background:var(--m7-blue);
+    animation:edge-scan 4.2s ease-in-out infinite;
+  }
+  @keyframes edge-scan { 50% { top:82%; opacity:.65; } }
+  .tech-stack { margin:1rem 0 2rem; border-top:1px solid var(--m7-line); }
+  .tech-row { display:grid; grid-template-columns:9rem 1fr 1.4fr; gap:1.2rem; padding:1rem 0; border-bottom:1px solid var(--m7-line); }
+  .tech-row b { color:var(--m7-accent); font:750 .72rem/1.3 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; }
+  .tech-row strong { color:var(--m7-ink); font-size:.9rem; }
+  .tech-row span { color:var(--m7-muted); font-size:.82rem; line-height:1.5; }
+  .m7-metrics {
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    border-top:1px solid var(--m7-line);
+    border-bottom:1px solid var(--m7-line);
+    margin:1rem 0;
+  }
+  .m7-metric { padding:1rem .9rem 1rem 0; }
+  .m7-metric + .m7-metric { border-left:1px solid var(--m7-line); padding-left:.9rem; }
+  .m7-metric span { display:block; color:var(--m7-muted); font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; }
+  .m7-metric b { display:block; color:var(--m7-ink); margin-top:.45rem; font-size:1.2rem; letter-spacing:-.04em; }
+  .m7-metric.primary b { color:#8bb7ff; }
   @media(max-width: 780px) {
     .m7-header { grid-template-columns:1fr; }
     .m7-switches, .m7-leds { grid-template-columns:repeat(2,1fr); }
     .m7-bar-row { grid-template-columns:5rem 1fr 6rem; }
+    .stTabs { padding:0 1rem; }
+    .edge-hero { grid-template-columns:1fr; min-height:0; }
+    .edge-copy { padding:5rem 1.2rem 2.5rem; }
+    .edge-copy h1 { font-size:clamp(3.15rem,18vw,5.6rem) !important; }
+    .edge-visual { min-height:330px; }
+    .tech-row { grid-template-columns:1fr; gap:.35rem; }
+    .m7-metrics { grid-template-columns:1fr 1fr; }
+    .m7-metric, .m7-metric + .m7-metric { border-left:0; border-bottom:1px solid var(--m7-line); padding-left:0; }
   }
 </style>
 """,
@@ -345,6 +475,15 @@ def tail_text(path: Path, lines: int = 14) -> str:
         return ""
 
 
+def image_data_uri(path: Path) -> str:
+    """Return a self-contained PNG URI so the hero works offline."""
+    try:
+        payload = base64.b64encode(path.read_bytes()).decode("ascii")
+    except OSError:
+        return "none"
+    return f"url('data:image/png;base64,{payload}')"
+
+
 def render_result_metrics(result: dict[str, Any] | None) -> None:
     if not result:
         st.info("No parseable M7 benchmark result is available yet.")
@@ -353,12 +492,18 @@ def render_result_metrics(result: dict[str, Any] | None) -> None:
     live = result.get("live_sessions", [])
     total_live = sum(int(item.get("frames", 0)) for item in live)
     total_errors = sum(int(item.get("integrity_errors", 0)) for item in live)
-    columns = st.columns(5)
-    columns[0].metric("FPGA advantage", f"{comparison['throughput_ratio']:.3f}×")
-    columns[1].metric("FPGA core frame", f"{comparison['fpga_median_frame_ms']:.6f} ms")
-    columns[2].metric("OpenCV kernel", f"{comparison['opencv_median_ms']:.6f} ms")
-    columns[3].metric("Live frames checked", f"{total_live:,}")
-    columns[4].metric("Integrity errors", f"{total_errors:,}")
+    st.markdown(
+        f"""
+<div class="m7-metrics">
+  <div class="m7-metric primary"><span>FPGA / OpenCV</span><b>{comparison['throughput_ratio']:.3f}×</b></div>
+  <div class="m7-metric"><span>FPGA core frame</span><b>{comparison['fpga_median_frame_ms']:.6f} ms</b></div>
+  <div class="m7-metric"><span>OpenCV kernel</span><b>{comparison['opencv_median_ms']:.6f} ms</b></div>
+  <div class="m7-metric"><span>Live frames checked</span><b>{total_live:,}</b></div>
+  <div class="m7-metric"><span>Integrity errors</span><b>{total_errors:,}</b></div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 
 def render_compute_bars(result: dict[str, Any]) -> None:
@@ -479,17 +624,20 @@ def render_header(result: dict[str, Any] | None) -> None:
     ratio = comparison.get("throughput_ratio", 5.739084879557291)
     st.markdown(
         f"""
-<div class="m7-header">
-  <div>
-    <div class="m7-kicker">Arty A7-100T · Milestone 7 operator console</div>
-    <h1>From photons to verified edges.</h1>
-    <p>Program the board, operate the camera, qualify all profiles, and inspect
-    the packet/computation path from one guided interface.</p>
+<div class="edge-hero">
+  <div class="edge-copy">
+    <div class="edge-brand"><i>▣</i> PERSONAL RESEARCH PROJECT / MILESTONE 7</div>
+    <div class="edge-kicker">ARTY A7-100T / SYSTEMVERILOG / OV7670 / 10/100 ETHERNET</div>
+    <h1>Real-time FPGA<br>vision accelerator</h1>
+    <p>Direct camera capture, fixed-point grayscale and Sobel processing, custom
+    UDP transport, and strict host-side frame validation.</p>
+    <div class="edge-proof"><strong>{ratio:.3f}×</strong> controlled Sobel throughput relative to single-thread OpenCV</div>
+    <a class="edge-cta" href="#project-overview">View implementation details ↓</a>
   </div>
-  <div class="m7-proof-mark">
-    PHYSICAL CORE RESULT
-    <b>{ratio:.3f}× faster</b>
-    than single-thread OpenCV · bit-exact CRC agreement
+  <div class="edge-visual" style="--hero-image:{image_data_uri(SOBEL_HERO)}">
+    <div class="edge-scan"></div>
+    <div class="edge-readout"><span>REAL CAPTURE / SOBEL / 318 × 238</span><br>
+    32-LANE TEST CORE @ 200 MHz · CRC 0x9e562313 · TIMING CLEAN</div>
   </div>
 </div>
 """,
@@ -500,9 +648,37 @@ def render_header(result: dict[str, Any] | None) -> None:
 result_path, latest_result = load_latest_result()
 render_header(latest_result)
 
-setup_tab, live_tab, benchmark_tab, proof_tab, learn_tab = st.tabs(
-    ("1 · Setup", "2 · Live", "3 · Benchmark", "Proof", "How it works")
+project_tab, setup_tab, live_tab, benchmark_tab, proof_tab, architecture_tab = st.tabs(
+    ("Project", "1 · Setup", "2 · Live", "3 · Benchmark", "Evidence", "Architecture")
 )
+
+
+with project_tab:
+    st.markdown('<span id="project-overview"></span>', unsafe_allow_html=True)
+    section_label("Implemented system")
+    st.subheader("Camera-to-host hardware and software data path")
+    st.markdown(
+        '<p class="m7-copy">The implementation includes the camera electrical interface, '
+        'pixel pipeline, clock-domain crossings, Ethernet transport, control protocol, '
+        'host validation, benchmark harness, and operator interface. The current M7 '
+        'bitstream was routed and physically validated on the Arty A7-100T.</p>',
+        unsafe_allow_html=True,
+    )
+    render_system_pipeline()
+
+    st.divider()
+    section_label("Physical validation")
+    st.subheader("Measured compute and live-stream results")
+    render_result_metrics(latest_result)
+    st.caption(
+        "Physical counters measure compute; the 9,000-frame matrix measures the live "
+        "camera and network path. Matching CRC proves the two kernels returned the same data."
+    )
+
+    st.divider()
+    section_label("Implementation comparison")
+    st.subheader("Single-thread OpenCV and FPGA Sobel execution")
+    render_compute_comparison()
 
 
 with setup_tab:
@@ -806,8 +982,8 @@ with live_tab:
             else:
                 st.markdown(
                     """
-<div style="min-height:330px;border:1px dashed #314653;border-radius:14px;
-display:grid;place-items:center;color:#71818c;background:#09131b">
+<div style="min-height:330px;border:1px dashed #3f3f46;border-radius:2px;
+display:grid;place-items:center;color:#a1a1aa;background:#09090b">
 Start a session to place validated pixels here
 </div>
 """,
@@ -881,7 +1057,7 @@ Start a session to place validated pixels here
 
 with benchmark_tab:
     section_label("Acceptance runner")
-    st.subheader("Measure speed and prove the result is correct")
+    st.subheader("Controlled benchmark and physical acceptance")
     st.markdown(
         '<p class="m7-copy">The benchmark separates core compute from camera and '
         "network rate. Full acceptance repeats the controlled compute comparison "
@@ -1026,7 +1202,7 @@ with benchmark_tab:
 
 with proof_tab:
     section_label("Accepted physical result")
-    st.subheader("The result is fast, repeated, and bit-exact")
+    st.subheader("Accepted physical benchmark results")
     if not latest_result:
         st.warning("No benchmark result is available.")
     else:
@@ -1069,7 +1245,7 @@ with proof_tab:
         if live_sessions:
             st.divider()
             section_label("9,000-frame live matrix")
-            st.subheader("Every camera rate and processing mode passed")
+            st.subheader("Live profile and processing-mode validation matrix")
             live_rows = [
                 {
                     "Profile": item["profile"],
@@ -1091,7 +1267,7 @@ with proof_tab:
         download_col, files_col = st.columns([1, 1.4], gap="large")
         with download_col:
             section_label("Evidence bundle")
-            st.subheader("Download the exact result")
+            st.subheader("Download benchmark artifacts")
             if result_path:
                 st.caption(str(result_path.relative_to(REPO_ROOT)))
                 st.download_button(
@@ -1159,9 +1335,32 @@ with proof_tab:
                 )
 
 
-with learn_tab:
-    section_label("Why dedicated hardware matters")
-    st.subheader("Sobel is a small algorithm with a large systems lesson")
+with architecture_tab:
+    section_label("Implementation anatomy")
+    st.subheader("Technology and verification stack")
+    st.markdown(
+        '<p class="m7-copy">There is no soft processor or operating system on the '
+        'board. Camera control, pixel arithmetic, protocol handling, observability, '
+        'and Ethernet framing are synthesized into the Artix-7 fabric.</p>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        """
+<div class="tech-stack">
+  <div class="tech-row"><b>Sensor</b><strong>OV7670 · direct DVP · SCCB</strong><span>24 MHz XCLK, reviewed register table, 8-bit camera bus, RGB565 byte capture, 320×240 at 7.5/15/30 FPS.</span></div>
+  <div class="tech-row"><b>FPGA RTL</b><strong>SystemVerilog · Artix-7 primitives</strong><span>MMCM/ODDR clocks, XPM asynchronous FIFOs, synchronized resets, frame-locked configuration, hardware counters and UART status.</span></div>
+  <div class="tech-row"><b>Vision</b><strong>Fixed-point grayscale + 3×3 Sobel</strong><span>BRAM line buffers, sliding window, parallel signed Gx/Gy, L1 magnitude, saturation, threshold mode, and 32 independent test lanes.</span></div>
+  <div class="tech-row"><b>Network</b><strong>DP83848J · MII · ARP/IPv4/UDP</strong><span>PHY discovery over MDIO, custom frame RX/TX, checksums/FCS, bounded arbitration, M5CT control and M5CV image packet contracts.</span></div>
+  <div class="tech-row"><b>Host</b><strong>Python · NumPy · OpenCV · Streamlit</strong><span>Socket control, strict packet reassembly, CRC verification, activity decisions, operator workflows, live display and downloadable evidence.</span></div>
+  <div class="tech-row"><b>Evidence</b><strong>Vivado 2026.1 · xsim · physical acceptance</strong><span>12 self-checking RTL benches, host regressions, timing/CDC/DRC review, bitstream hash, repeated counters and a 9,000-frame live matrix.</span></div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    st.divider()
+    section_label("Compute architecture")
+    st.subheader("Sobel compute pipeline")
     st.markdown(
         """
 Sobel finds rapid brightness changes—the boundaries between objects, lanes,
@@ -1179,8 +1378,13 @@ fills, data keeps moving without an operating system or per-frame scheduler.
     render_sobel_walkthrough()
 
     st.divider()
+    section_label("Camera and cable map")
+    st.subheader("Exact wiring and Ethernet ownership")
+    render_wiring_map()
+
+    st.divider()
     section_label("Packet explorer")
-    st.subheader("How processed pixels become trustworthy UDP")
+    st.subheader("UDP packet fields and host validation")
     st.markdown(
         '<p class="m7-copy">UDP keeps the link simple, but the application does '
         "not treat arrival as correctness. The custom M5CV header makes frame "
@@ -1190,7 +1394,12 @@ fills, data keeps moving without an operating system or per-frame scheduler.
     render_udp_explorer()
 
     st.divider()
-    section_label("Where this becomes useful")
+    section_label("Routed resource budget")
+    st.subheader("Routed implementation resource usage")
+    render_resource_budget()
+
+    st.divider()
+    section_label("Applicable system contexts")
     real_world = st.columns(4)
     use_cases = (
         ("Robotics", "Extract boundaries before navigation data reaches a control CPU."),
@@ -1203,7 +1412,7 @@ fills, data keeps moving without an operating system or per-frame scheduler.
             st.markdown(f"#### {title}")
             st.write(copy)
     st.info(
-        "The critical property is not that Sobel is the final application. It is "
-        "that the FPGA can perform deterministic, line-rate preprocessing next to "
-        "the sensor, leaving the CPU free for tracking, decisions, storage, or a UI."
+        "Sobel is used here as a verified preprocessing workload. The implemented "
+        "architecture demonstrates deterministic, line-rate processing adjacent to "
+        "the sensor while the host handles higher-level decisions, storage, and display."
     )

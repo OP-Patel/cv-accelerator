@@ -9,30 +9,33 @@ import streamlit.components.v1 as components
 _SHARED_STYLE = """
   :root {
     color-scheme: dark;
-    --ink: #edf3f7;
-    --muted: #91a0ac;
-    --surface: #0b151e;
-    --surface-2: #101e29;
-    --line: #243642;
-    --accent: #ff5f68;
-    --accent-soft: rgba(255, 95, 104, .14);
-    --good: #56d6a9;
-    --warn: #f5c46b;
+    --ink: #f4f4f5;
+    --muted: #a1a1aa;
+    --surface: #060608;
+    --surface-2: #111116;
+    --line: #2b2b33;
+    --accent: #ef4444;
+    --accent-soft: #1a0b0d;
+    --good: #3b82f6;
+    --blue: #3b82f6;
+    --warn: #ef4444;
   }
   * { box-sizing: border-box; }
+  html { scrollbar-color: var(--blue) var(--surface); scrollbar-width: thin; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--blue); border: 2px solid var(--surface); }
   body {
     margin: 0;
     background: transparent;
     color: var(--ink);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
   }
   button, select, input { font: inherit; }
   .exhibit {
     border: 1px solid var(--line);
-    border-radius: 18px;
-    background:
-      radial-gradient(circle at 95% 0%, rgba(255,95,104,.09), transparent 29%),
-      var(--surface);
+    border-radius: 0;
+    background: var(--surface);
     padding: 22px;
     overflow: hidden;
   }
@@ -50,7 +53,7 @@ _SHARED_STYLE = """
   }
   .lede { color: var(--muted); line-height: 1.55; max-width: 840px; margin: 0; }
   .mono { font-family: ui-monospace, "Cascadia Code", monospace; }
-  .good { color: var(--good); }
+  .good { color: var(--blue); }
   .accent { color: var(--accent); }
 """
 
@@ -77,7 +80,7 @@ def render_udp_explorer() -> None:
     color: var(--ink);
     background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 9px;
+    border-radius: 0;
     padding: 8px 30px 8px 10px;
   }}
   .packet {{
@@ -89,9 +92,9 @@ def render_udp_explorer() -> None:
   .field {{
     position: relative;
     border: 1px solid var(--line);
-    background: #0f1d27;
+    background: var(--surface-2);
     color: var(--ink);
-    border-radius: 9px;
+    border-radius: 0;
     padding: 12px 9px;
     text-align: left;
     cursor: pointer;
@@ -103,13 +106,13 @@ def render_udp_explorer() -> None:
     position: absolute;
     inset: auto 0 0;
     height: 3px;
-    background: var(--accent);
+    background: var(--blue);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform .2s ease;
   }}
-  .field:hover {{ transform: translateY(-3px); border-color: #526775; }}
-  .field.active {{ background: var(--accent-soft); border-color: var(--accent); }}
+  .field:hover {{ transform: translateY(-2px); border-color: var(--blue); }}
+  .field.active {{ background: #101b2f; border-color: var(--blue); }}
   .field.active::after {{ transform: scaleX(1); }}
   .field strong {{ display:block; font-size: 13px; line-height: 1.2; }}
   .field small {{ color: var(--muted); font: 11px/1.3 ui-monospace, monospace; }}
@@ -120,13 +123,13 @@ def render_udp_explorer() -> None:
     grid-template-columns: 1.1fr 1.9fr;
     gap: 18px;
     padding: 17px;
-    border-left: 3px solid var(--accent);
+    border-left: 3px solid var(--blue);
     background: var(--surface-2);
-    border-radius: 5px 12px 12px 5px;
+    border-radius: 0;
   }}
   .detail h3 {{ font-size: 17px; margin: 0 0 7px; }}
   .detail p {{ color: var(--muted); margin: 0; line-height: 1.5; font-size: 13px; }}
-  .bytes {{ color: var(--accent); font: 700 27px/1 ui-monospace, monospace; margin-bottom: 8px; }}
+  .bytes {{ color: #8bb7ff; font: 700 27px/1 ui-monospace, monospace; margin-bottom: 8px; }}
   .contract {{
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -136,11 +139,11 @@ def render_udp_explorer() -> None:
   .check {{
     padding: 10px;
     border: 1px solid var(--line);
-    border-radius: 9px;
+    border-radius: 0;
     color: var(--muted);
     font-size: 11px;
   }}
-  .check b {{ display: block; color: var(--good); font-size: 13px; margin-bottom: 3px; }}
+  .check b {{ display: block; color: #8bb7ff; font-size: 13px; margin-bottom: 3px; }}
   .math {{
     display: flex;
     align-items: center;
@@ -163,9 +166,9 @@ def render_udp_explorer() -> None:
 </head>
 <body>
 <section class="exhibit">
-  <div class="eyebrow">Wire contract / one packet</div>
-  <h2>The image travels with receipts.</h2>
-  <p class="lede">Click a field. The FPGA emits bounded UDP datagrams; the host
+  <div class="eyebrow">Protocol inspection / one packet</div>
+  <h2>UDP packet and frame validation contract</h2>
+  <p class="lede">Select a field. The FPGA emits bounded UDP datagrams; the host
   accepts a frame only after checking shape, ordering, offsets, flags, and every
   payload CRC.</p>
   <div class="toolbar">
@@ -258,8 +261,8 @@ streamMath();
 </body>
 </html>
 """,
-        height=590,
-        scrolling=False,
+        height=650,
+        scrolling=True,
     )
 
 
@@ -282,7 +285,7 @@ def render_sobel_walkthrough() -> None:
   .panel {{
     background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 13px;
+    border-radius: 0;
     padding: 15px;
     min-height: 275px;
   }}
@@ -294,23 +297,23 @@ def render_sobel_walkthrough() -> None:
   }}
   .pixel, .kernel span {{
     aspect-ratio: 1;
-    border: 1px solid #334957;
-    border-radius: 7px;
+    border: 1px solid #3f3f46;
+    border-radius: 0;
     display: grid;
     place-items: center;
     font: 700 15px/1 ui-monospace, monospace;
     transition: all .28s ease;
   }}
   .pixel {{ background: rgb(var(--v), var(--v), var(--v)); color: #fff; text-shadow: 0 1px 3px #000; }}
-  .pixel.hot {{ border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); transform: scale(.94); }}
-  .kernel span {{ aspect-ratio: auto; min-height: 34px; background:#0a141c; color:var(--ink); }}
+  .pixel.hot {{ border-color: var(--blue); transform: scale(.94); }}
+  .kernel span {{ aspect-ratio: auto; min-height: 34px; background:#09090b; color:var(--ink); }}
   .kernels {{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }}
-  .kernel-label {{ font: 700 11px/1 ui-monospace, monospace; color:var(--accent); margin: 0 0 6px; }}
+  .kernel-label {{ font: 700 11px/1 ui-monospace, monospace; color:#8bb7ff; margin: 0 0 6px; }}
   .equation {{
     margin-top: 11px;
     padding: 11px;
-    border-radius: 8px;
-    background: #081119;
+    border-radius: 0;
+    background: #09090b;
     font: 12px/1.55 ui-monospace, monospace;
     color: var(--muted);
   }}
@@ -321,44 +324,48 @@ def render_sobel_walkthrough() -> None:
     place-items:center;
     margin: 12px 0;
     border: 1px solid var(--line);
-    border-radius: 10px;
-    background:#071018;
+    border-radius: 0;
+    background:#09090b;
     position:relative;
     overflow:hidden;
   }}
   .output::before {{
     content:"";
     position:absolute;
-    inset:0;
-    background:linear-gradient(90deg, transparent, rgba(255,95,104,.22), transparent);
-    transform:translateX(-110%);
+    top:0;
+    bottom:0;
+    left:0;
+    width:2px;
+    background:var(--blue);
   }}
   .output.scan::before {{ animation: scan .7s ease; }}
-  @keyframes scan {{ to {{ transform:translateX(110%); }} }}
+  @keyframes scan {{ from {{ left:0; }} to {{ left:100%; }} }}
   .output-value {{ font: 800 42px/1 ui-monospace, monospace; }}
   .pipeline {{ display:grid; gap:7px; }}
   .stage {{
     display:flex; align-items:center; gap:9px;
     padding:8px 10px;
-    border:1px solid var(--line); border-radius:8px;
+    border:1px solid var(--line); border-radius:0;
     color:var(--muted); font-size:12px;
     transition:all .25s ease;
   }}
   .stage i {{
-    width:7px; height:7px; border-radius:50%; background:#435663;
-    box-shadow:0 0 0 0 rgba(255,95,104,.4);
+    width:7px; height:7px; background:#52525b;
   }}
-  .stage.done {{ color:var(--ink); border-color:#345747; }}
-  .stage.done i {{ background:var(--good); }}
+  .stage.done {{ color:var(--ink); border-color:var(--blue); }}
+  .stage.done i {{ background:var(--blue); }}
   .stage.active {{ color:var(--ink); border-color:var(--accent); background:var(--accent-soft); }}
-  .stage.active i {{ background:var(--accent); animation:pulse 1.1s infinite; }}
-  @keyframes pulse {{ 70% {{ box-shadow:0 0 0 8px rgba(255,95,104,0); }} }}
-  .controls {{ display:flex; align-items:center; gap:8px; margin-top:14px; flex-wrap:wrap; }}
+  .stage.active i {{ background:var(--accent); }}
+  .controls {{
+    display:flex; align-items:center; gap:8px; margin-top:14px; padding:8px 0;
+    flex-wrap:wrap; position:sticky; top:0; z-index:5; background:var(--surface);
+    border-bottom:1px solid var(--line);
+  }}
   .control {{
-    border:1px solid var(--line); border-radius:8px; background:#11212c; color:var(--ink);
+    border:1px solid var(--line); border-radius:0; background:#111116; color:var(--ink);
     padding:8px 12px; cursor:pointer;
   }}
-  .control.primary {{ border-color:var(--accent); background:var(--accent); color:#19090b; font-weight:800; }}
+  .control.primary {{ border-color:var(--blue); background:var(--blue); color:#ffffff; font-weight:800; }}
   .control:hover {{ transform:translateY(-1px); }}
   .step-copy {{ margin-left:auto; color:var(--muted); font-size:12px; }}
   .compare {{
@@ -366,17 +373,17 @@ def render_sobel_walkthrough() -> None:
     margin-top:15px; padding-top:15px; border-top:1px solid var(--line);
   }}
   .bar-row {{ display:grid; grid-template-columns:82px 1fr 88px; gap:9px; align-items:center; margin:8px 0; font-size:12px; }}
-  .track {{ height:9px; background:#1b2a34; border-radius:99px; overflow:hidden; }}
-  .fill {{ height:100%; border-radius:99px; background:#71808a; transform-origin:left; animation:grow .8s ease both; }}
-  .fill.fpga {{ width:17.42%; background:var(--accent); }}
+  .track {{ height:9px; background:#202027; border-radius:0; overflow:hidden; }}
+  .fill {{ height:100%; border-radius:0; background:#71717a; transform-origin:left; animation:grow .8s ease both; }}
+  .fill.fpga {{ width:17.42%; background:var(--blue); }}
   .fill.cpu {{ width:100%; }}
   @keyframes grow {{ from {{ transform:scaleX(0); }} }}
   .proof {{
-    border-left:2px solid var(--good); padding-left:13px; color:var(--muted);
+    border-left:2px solid var(--blue); padding-left:13px; color:var(--muted);
     font-size:12px; line-height:1.5;
   }}
-  .proof strong {{ display:block; color:var(--good); font-size:23px; }}
-  input[type=range] {{ accent-color:var(--accent); width:120px; }}
+  .proof strong {{ display:block; color:#8bb7ff; font-size:23px; }}
+  input[type=range] {{ accent-color:var(--blue); width:120px; }}
   @media(max-width: 780px) {{
     .walk-grid {{ grid-template-columns:1fr; }}
     .compare {{ grid-template-columns:1fr; }}
@@ -386,11 +393,12 @@ def render_sobel_walkthrough() -> None:
 </head>
 <body>
 <section class="exhibit">
-  <div class="eyebrow">Computation walkthrough / one output pixel</div>
-  <h2>Nine neighbors become one edge value.</h2>
+  <div class="eyebrow">Computation inspection / one output pixel</div>
+  <h2>One-pixel Sobel calculation and pipeline stages</h2>
   <p class="lede">Step through the same saturating <span class="mono">|Gx| + |Gy|</span>
-  operation used by both implementations. The FPGA wins by keeping the line
-  buffers, window, arithmetic, and 32 independent lanes in dedicated hardware.</p>
+  operation used by both implementations. The FPGA keeps the line buffers,
+  window and arithmetic in dedicated hardware; the controlled benchmark uses
+  32 independent lanes.</p>
   <div class="walk-grid">
     <div class="panel">
       <h3>3 × 3 grayscale window</h3>
@@ -510,7 +518,6 @@ render();
 </body>
 </html>
 """,
-        height=835,
-        scrolling=False,
+        height=1000,
+        scrolling=True,
     )
-
