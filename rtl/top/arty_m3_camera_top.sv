@@ -55,11 +55,10 @@ module arty_m3_camera_top #(
     (* ASYNC_REG = "TRUE" *) logic [1:0] clear_cam_sync;
     (* ASYNC_REG = "TRUE" *) logic [1:0] byte_swap_cam_sync;
     logic capture_reset;
-    logic cam_pixel_valid, cam_frame_start, cam_frame_end, cam_line_end, cam_byte_seen;
+    logic cam_pixel_valid, cam_frame_start, cam_frame_end, cam_line_end;
     logic [X_W-1:0] cam_pixel_x;
     logic [Y_W-1:0] cam_pixel_y;
     logic [15:0] cam_pixel_rgb565;
-    logic cam_capture_error;
     logic [3:0] cam_capture_flags;
     logic [15:0] observed_line_bytes_cam, observed_frame_lines_cam;
     (* ASYNC_REG = "TRUE" *) logic [15:0] observed_line_bytes_sync [0:1];
@@ -70,27 +69,21 @@ module arty_m3_camera_top #(
     logic [Y_W-1:0] fifo_y;
     logic [15:0] fifo_rgb565;
     logic fifo_overflow;
-    logic [31:0] dropped_pixels;
-    logic [15:0] maximum_occupancy;
 
     logic gray_valid, gray_frame_start, gray_frame_end, gray_line_end;
     logic [X_W-1:0] gray_x;
     logic [Y_W-1:0] gray_y;
     logic [7:0] gray_pixel;
-    logic [15:0] aligned_rgb565;
     logic coordinate_error;
 
     logic sobel_valid;
     logic [X_W-1:0] sobel_x;
     logic [Y_W-1:0] sobel_y;
     logic [7:0] sobel_pixel;
-    logic [31:0] pipeline_inputs, pipeline_outputs;
-    logic [31:0] pipeline_frames_started, pipeline_frames_completed;
-    logic [31:0] pipeline_protocol_errors, pipeline_crc;
+    logic [31:0] pipeline_protocol_errors;
 
     (* ASYNC_REG = "TRUE" *) logic [1:0] capture_flags_sync [0:3];
     (* ASYNC_REG = "TRUE" *) logic [1:0] overflow_sync;
-    (* ASYNC_REG = "TRUE" *) logic [1:0] uart_rx_sync;
     logic [15:0] live_error_flags;
 
     logic snapshot_valid;
@@ -189,8 +182,8 @@ module arty_m3_camera_top #(
         .byte_swap(byte_swap_cam_sync[1]),
         .pixel_valid(cam_pixel_valid), .pixel_x(cam_pixel_x), .pixel_y(cam_pixel_y),
         .pixel_rgb565(cam_pixel_rgb565), .frame_start(cam_frame_start),
-        .frame_end(cam_frame_end), .line_end(cam_line_end), .byte_seen(cam_byte_seen),
-        .capture_error(cam_capture_error), .error_flags(cam_capture_flags),
+        .frame_end(cam_frame_end), .line_end(cam_line_end), .byte_seen(),
+        .capture_error(), .error_flags(cam_capture_flags),
         .observed_line_bytes(observed_line_bytes_cam),
         .observed_frame_lines(observed_frame_lines_cam)
     );
@@ -213,8 +206,8 @@ module arty_m3_camera_top #(
         .read_clk(clk_100mhz), .read_valid(fifo_valid), .read_x(fifo_x), .read_y(fifo_y),
         .read_rgb565(fifo_rgb565), .read_frame_start(fifo_frame_start),
         .read_frame_end(fifo_frame_end), .read_line_end(fifo_line_end),
-        .overflow_sticky(fifo_overflow), .dropped_pixels(dropped_pixels),
-        .maximum_occupancy(maximum_occupancy)
+        .overflow_sticky(fifo_overflow), .dropped_pixels(),
+        .maximum_occupancy()
     );
 
     camera_stream_adapter #(
@@ -225,7 +218,7 @@ module arty_m3_camera_top #(
         .fifo_rgb565(fifo_rgb565), .fifo_frame_start(fifo_frame_start),
         .fifo_frame_end(fifo_frame_end), .fifo_line_end(fifo_line_end),
         .in_valid(gray_valid), .in_x(gray_x), .in_y(gray_y), .in_gray(gray_pixel),
-        .in_rgb565(aligned_rgb565), .frame_start(gray_frame_start),
+        .in_rgb565(), .frame_start(gray_frame_start),
         .frame_end(gray_frame_end), .line_end(gray_line_end),
         .coordinate_error(coordinate_error)
     );
@@ -237,9 +230,9 @@ module arty_m3_camera_top #(
         .in_valid(gray_valid && !sw_clean[1]), .in_x(gray_x), .in_y(gray_y),
         .in_gray(gray_pixel), .out_valid(sobel_valid), .out_x(sobel_x),
         .out_y(sobel_y), .out_pixel(sobel_pixel),
-        .accepted_input_pixels(pipeline_inputs), .valid_output_pixels(pipeline_outputs),
-        .frames_started(pipeline_frames_started), .frames_completed(pipeline_frames_completed),
-        .protocol_errors(pipeline_protocol_errors), .output_checksum(pipeline_crc)
+        .accepted_input_pixels(), .valid_output_pixels(),
+        .frames_started(), .frames_completed(),
+        .protocol_errors(pipeline_protocol_errors), .output_checksum()
     );
 
     generate
@@ -314,11 +307,9 @@ module arty_m3_camera_top #(
             report_pending     <= 1'b0;
             report_start       <= 1'b0;
             overflow_sync      <= '0;
-            uart_rx_sync       <= 2'b11;
         end else begin
             heartbeat_counter   <= heartbeat_counter + 1'b1;
             overflow_sync       <= {overflow_sync[0], fifo_overflow};
-            uart_rx_sync        <= {uart_rx_sync[0], uart_rx};
             restart_delayed     <= restart_clean;
             status_delayed      <= status_clean;
             clock_ready_delayed <= clock_ready;
@@ -343,11 +334,4 @@ module arty_m3_camera_top #(
         init_done && !init_error,
         heartbeat_counter[HEARTBEAT_BIT]
     };
-
-    // Keep useful debug-only values visible to synthesis and ILA insertion.
-    logic unused_debug;
-    assign unused_debug = cam_byte_seen ^ cam_capture_error ^ aligned_rgb565[0] ^
-                          dropped_pixels[0] ^ maximum_occupancy[0] ^ pipeline_inputs[0] ^
-                          pipeline_outputs[0] ^ pipeline_frames_started[0] ^
-                          pipeline_frames_completed[0] ^ pipeline_crc[0] ^ uart_rx_sync[1];
 endmodule

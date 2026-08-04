@@ -27,7 +27,7 @@ module m5_stream_fifo #(
     localparam integer COUNT_W = $clog2(FIFO_DEPTH) + 1;
     logic [11:0] fifo_input, fifo_output;
     logic fifo_full, fifo_empty, fifo_write;
-    logic fifo_overflow, fifo_underflow, write_reset_busy, read_reset_busy;
+    logic write_reset_busy, read_reset_busy;
     logic [COUNT_W-1:0] write_count;
     logic discarding_frame, discontinuity_pending, enable_delayed;
 
@@ -51,10 +51,10 @@ module m5_stream_fifo #(
     ) u_fifo (
         .rst(reset),
         .wr_clk(write_clk), .wr_en(fifo_write), .din(fifo_input),
-        .full(fifo_full), .overflow(fifo_overflow),
+        .full(fifo_full), .overflow(),
         .wr_data_count(write_count), .wr_rst_busy(write_reset_busy),
         .rd_clk(read_clk), .rd_en(read_enable && read_valid), .dout(fifo_output),
-        .empty(fifo_empty), .data_valid(), .underflow(fifo_underflow),
+        .empty(fifo_empty), .data_valid(), .underflow(),
         .rd_rst_busy(read_reset_busy), .almost_empty(), .almost_full(),
         .dbiterr(), .sbiterr(), .prog_empty(), .prog_full(),
         .rd_data_count(), .wr_ack(), .injectdbiterr(1'b0),
@@ -111,6 +111,4 @@ module m5_stream_fifo #(
     assign {read_discontinuity, read_frame_start, read_frame_end,
             read_stream_id, read_pixel} = fifo_output;
 
-    logic unused_fifo_status;
-    assign unused_fifo_status = fifo_overflow ^ fifo_underflow;
 endmodule

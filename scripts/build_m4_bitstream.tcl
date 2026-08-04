@@ -1,5 +1,6 @@
 # Builds the Arty A7-100T DP83848 10/100 Ethernet bitstream.
 # Use the legacy project when present; otherwise create a clean M4-only project.
+source m4_project_files.tcl
 set project_dir ../vivado_project
 set project_name arty_conv
 set project_file $project_dir/$project_name.xpr
@@ -20,25 +21,7 @@ file mkdir ../docs
 
 # Existing projects may predate Milestone 4. Add the complete source set before
 # selecting the top so Vivado cannot silently fall back to an older milestone.
-foreach source {
-    ../rtl/top/arty_m4_ethernet_top.sv
-    ../rtl/debug/reset_sync.sv
-    ../rtl/debug/uart_tx.sv
-    ../rtl/debug/debounce.sv
-    ../rtl/debug/m4_uart_reporter.sv
-    ../rtl/ethernet/ethernet_ref_clock.sv
-    ../rtl/ethernet/phy_reset.sv
-    ../rtl/ethernet/mdio_master.sv
-    ../rtl/ethernet/phy_bringup.sv
-    ../rtl/ethernet/mii_tx.sv
-    ../rtl/ethernet/mii_rx.sv
-    ../rtl/ethernet/ethernet_fcs.sv
-    ../rtl/ethernet/ethernet_async_fifo.sv
-    ../rtl/ethernet/ethernet_frame_tx.sv
-    ../rtl/ethernet/ethernet_frame_rx.sv
-    ../rtl/ethernet/arp_responder.sv
-    ../rtl/ethernet/udp_echo.sv
-} {
+foreach source $m4_design_sources {
     if {[llength [get_files -quiet [file tail $source]]] == 0} {
         add_files -norecurse $source
     }

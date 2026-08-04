@@ -75,8 +75,6 @@ module arty_m5_camera_ethernet_top #(
     logic [31:0] camera_frame_period_cycles;
     logic [31:0] camera_frame_pclk_edges, camera_active_bytes;
     logic [15:0] camera_line_pclk_edges, camera_active_lines;
-    logic [31:0] camera_source_frame_pclk_edges, camera_source_active_bytes;
-    logic [15:0] camera_source_line_pclk_edges, camera_source_active_lines;
     logic [127:0] camera_timing_source_snapshot, camera_timing_snapshot;
     logic camera_timing_snapshot_busy, camera_timing_snapshot_valid;
     logic camera_id_valid;
@@ -87,9 +85,7 @@ module arty_m5_camera_ethernet_top #(
     logic [X_W-1:0] camera_pixel_x;
     logic [Y_W-1:0] camera_pixel_y;
     logic [15:0] camera_pixel_rgb565;
-    logic camera_capture_error, camera_byte_seen;
-    logic [3:0] camera_capture_flags;
-    logic [15:0] observed_line_bytes, observed_frame_lines;
+    logic camera_capture_error;
 
     logic camera_fifo_valid, camera_fifo_frame_start, camera_fifo_frame_end;
     logic camera_fifo_line_end;
@@ -97,23 +93,20 @@ module arty_m5_camera_ethernet_top #(
     logic [Y_W-1:0] camera_fifo_y;
     logic [15:0] camera_fifo_rgb565;
     logic camera_fifo_overflow;
-    logic [31:0] camera_dropped_pixels;
     logic [15:0] camera_fifo_maximum;
 
-    logic gray_valid, gray_frame_start, gray_frame_end, gray_line_end;
+    logic gray_valid, gray_frame_start, gray_frame_end;
     logic [X_W-1:0] gray_x;
     logic [Y_W-1:0] gray_y;
     logic [7:0] gray_pixel;
-    logic [15:0] aligned_rgb565;
     logic coordinate_error;
     logic sobel_valid;
     logic [X_W-1:0] sobel_x;
     logic [Y_W-1:0] sobel_y;
     logic [7:0] sobel_pixel;
-    logic [31:0] pipeline_inputs, pipeline_outputs, pipeline_frames_started;
-    logic [31:0] pipeline_frames_completed, pipeline_errors, pipeline_crc;
+    logic [31:0] pipeline_errors;
     logic core_locked, core_input_overflow, core_output_overflow;
-    logic core_metrics_busy, core_metrics_valid, core_metrics_request;
+    logic core_metrics_busy, core_metrics_request;
     logic [31:0] core_latency_cycles, core_frame_interval_cycles;
     logic [31:0] core_accepted_pixels, core_produced_pixels;
     logic [31:0] core_valid_gap_cycles, core_completed_frames;
@@ -139,8 +132,8 @@ module arty_m5_camera_ethernet_top #(
     logic mdio_ack_error, mdio_timeout, mdio_drive_low;
     logic [4:0] mdio_phy, mdio_register;
     logic [15:0] mdio_write_data, mdio_read_data;
-    logic [15:0] phy_id1, phy_id2, bmsr, physts;
-    logic identity_valid, link_up, speed_100, full_duplex, discovery_done;
+    logic [15:0] phy_id1, phy_id2;
+    logic identity_valid, link_up, speed_100, discovery_done;
     logic [3:0] phy_errors;
     logic bringup_start;
     (* ASYNC_REG = "TRUE" *) logic [1:0] rx_reset_sync, tx_reset_sync;
@@ -205,7 +198,7 @@ module arty_m5_camera_ethernet_top #(
     logic stream_fifo_discontinuity, stream_fifo_id;
     logic [7:0] stream_fifo_pixel;
     logic stream_fifo_overflow;
-    logic [31:0] stream_dropped_frames, stream_dropped_pixels;
+    logic [31:0] stream_dropped_frames;
     logic [15:0] stream_fifo_maximum;
 
     // Transmit scheduler, packet generators, and MII bridge.
@@ -218,7 +211,7 @@ module arty_m5_camera_ethernet_top #(
     logic [15:0] ack_source_port;
     logic [7:0] ack_version, ack_opcode, ack_status;
     logic ack_stream_id;
-    logic arp_grant, control_grant, echo_grant, camera_grant, test_grant;
+    logic arp_grant, control_grant, echo_grant;
     logic [2:0] active_source;
     logic frame_tx_start, frame_tx_busy, frame_tx_done, frame_tx_length_error;
     logic [10:0] frame_tx_index, frame_tx_length;
@@ -236,7 +229,7 @@ module arty_m5_camera_ethernet_top #(
 
     // UART snapshot and reporting signals.
     localparam integer RX_STATUS_W = 224;
-    logic snapshot_busy, snapshot_valid;
+    logic snapshot_valid;
     logic [RX_STATUS_W-1:0] rx_status_source, rx_status_snapshot;
     logic [31:0] report_frames, report_packets, report_bytes, report_drops;
     logic [31:0] report_packet_errors, report_control_errors, report_bad_frames;
@@ -318,10 +311,8 @@ module arty_m5_camera_ethernet_top #(
         .cam_pclk(cam_pclk), .camera_reset(camera_reset), .clear(clear_level),
         .cam_vsync(cam_vsync), .cam_href(cam_href),
         .frame_period_system_cycles(camera_frame_period_cycles),
-        .frame_pclk_edges(camera_source_frame_pclk_edges),
-        .line_pclk_edges(camera_source_line_pclk_edges),
-        .active_bytes(camera_source_active_bytes),
-        .active_lines(camera_source_active_lines),
+        .frame_pclk_edges(), .line_pclk_edges(),
+        .active_bytes(), .active_lines(),
         .source_snapshot(camera_timing_source_snapshot)
     );
     m5_status_snapshot #(.WIDTH(128)) u_camera_timing_snapshot (
@@ -353,10 +344,9 @@ module arty_m5_camera_ethernet_top #(
         .pixel_valid(camera_pixel_valid), .pixel_x(camera_pixel_x),
         .pixel_y(camera_pixel_y), .pixel_rgb565(camera_pixel_rgb565),
         .frame_start(camera_frame_start), .frame_end(camera_frame_end),
-        .line_end(camera_line_end), .byte_seen(camera_byte_seen),
-        .capture_error(camera_capture_error), .error_flags(camera_capture_flags),
-        .observed_line_bytes(observed_line_bytes),
-        .observed_frame_lines(observed_frame_lines)
+        .line_end(camera_line_end), .byte_seen(),
+        .capture_error(camera_capture_error), .error_flags(),
+        .observed_line_bytes(), .observed_frame_lines()
     );
     camera_stream_cdc #(
         .FIFO_DEPTH(CAMERA_FIFO_DEPTH), .X_W(X_W), .Y_W(Y_W)
@@ -371,7 +361,7 @@ module arty_m5_camera_ethernet_top #(
         .read_rgb565(camera_fifo_rgb565), .read_frame_start(camera_fifo_frame_start),
         .read_frame_end(camera_fifo_frame_end), .read_line_end(camera_fifo_line_end),
         .overflow_sticky(camera_fifo_overflow),
-        .dropped_pixels(camera_dropped_pixels),
+        .dropped_pixels(),
         .maximum_occupancy(camera_fifo_maximum)
     );
     camera_stream_adapter #(
@@ -383,8 +373,8 @@ module arty_m5_camera_ethernet_top #(
         .fifo_frame_start(camera_fifo_frame_start),
         .fifo_frame_end(camera_fifo_frame_end), .fifo_line_end(camera_fifo_line_end),
         .in_valid(gray_valid), .in_x(gray_x), .in_y(gray_y), .in_gray(gray_pixel),
-        .in_rgb565(aligned_rgb565), .frame_start(gray_frame_start),
-        .frame_end(gray_frame_end), .line_end(gray_line_end),
+        .in_rgb565(), .frame_start(gray_frame_start),
+        .frame_end(gray_frame_end), .line_end(),
         .coordinate_error(coordinate_error)
     );
     generate
@@ -405,7 +395,7 @@ module arty_m5_camera_ethernet_top #(
                 .out_pixel(sobel_pixel), .core_locked(core_locked),
                 .input_overflow_sticky(core_input_overflow),
                 .output_overflow_sticky(core_output_overflow),
-                .metrics_busy(core_metrics_busy), .metrics_valid(core_metrics_valid),
+                .metrics_busy(core_metrics_busy), .metrics_valid(),
                 .synthetic_busy(core_synthetic_busy),
                 .synthetic_completed_frames(core_synthetic_completed_frames),
                 .last_latency_cycles(core_latency_cycles),
@@ -416,12 +406,7 @@ module arty_m5_camera_ethernet_top #(
                 .completed_frames(core_completed_frames),
                 .last_output_crc(core_output_crc)
             );
-            assign pipeline_inputs = core_accepted_pixels;
-            assign pipeline_outputs = core_produced_pixels;
-            assign pipeline_frames_started = core_completed_frames;
-            assign pipeline_frames_completed = core_completed_frames;
             assign pipeline_errors = {30'd0, core_output_overflow, core_input_overflow};
-            assign pipeline_crc = 0;
         end else begin : g_m5_pipeline
             conv_pipeline_top #(
                 .IMAGE_WIDTH(IMAGE_WIDTH), .IMAGE_HEIGHT(IMAGE_HEIGHT),
@@ -430,17 +415,14 @@ module arty_m5_camera_ethernet_top #(
                 .clk(clk_100mhz), .reset(reset), .in_valid(gray_valid),
                 .in_x(gray_x), .in_y(gray_y), .in_gray(gray_pixel),
                 .out_valid(sobel_valid), .out_x(sobel_x), .out_y(sobel_y),
-                .out_pixel(sobel_pixel), .accepted_input_pixels(pipeline_inputs),
-                .valid_output_pixels(pipeline_outputs),
-                .frames_started(pipeline_frames_started),
-                .frames_completed(pipeline_frames_completed),
-                .protocol_errors(pipeline_errors), .output_checksum(pipeline_crc)
+                .out_pixel(sobel_pixel), .accepted_input_pixels(),
+                .valid_output_pixels(), .frames_started(), .frames_completed(),
+                .protocol_errors(pipeline_errors), .output_checksum()
             );
             assign core_locked = 1'b1;
             assign core_input_overflow = 1'b0;
             assign core_output_overflow = 1'b0;
             assign core_metrics_busy = 1'b0;
-            assign core_metrics_valid = 1'b0;
             assign core_latency_cycles = 0;
             assign core_frame_interval_cycles = 0;
             assign core_accepted_pixels = 0;
@@ -499,8 +481,8 @@ module arty_m5_camera_ethernet_top #(
         .command_read_data(mdio_read_data), .command_busy(mdio_busy),
         .command_done(mdio_done), .command_ack_error(mdio_ack_error),
         .command_timeout_error(mdio_timeout), .phy_id1(phy_id1), .phy_id2(phy_id2),
-        .bmsr(bmsr), .physts(physts), .identity_valid(identity_valid),
-        .link_up(link_up), .speed_100(speed_100), .full_duplex(full_duplex),
+        .bmsr(), .physts(), .identity_valid(identity_valid),
+        .link_up(link_up), .speed_100(speed_100), .full_duplex(),
         .discovery_done(discovery_done), .error_flags(phy_errors)
     );
 
@@ -686,7 +668,7 @@ module arty_m5_camera_ethernet_top #(
         .read_discontinuity(stream_fifo_discontinuity),
         .read_stream_id(stream_fifo_id), .read_pixel(stream_fifo_pixel),
         .overflow_sticky(stream_fifo_overflow), .dropped_frames(stream_dropped_frames),
-        .dropped_pixels(stream_dropped_pixels), .maximum_occupancy(stream_fifo_maximum)
+        .dropped_pixels(), .maximum_occupancy(stream_fifo_maximum)
     );
     m5_stream_packetizer #(
         .IMAGE_WIDTH(IMAGE_WIDTH), .IMAGE_HEIGHT(IMAGE_HEIGHT),
@@ -822,8 +804,7 @@ module arty_m5_camera_ethernet_top #(
         .camera_pending(camera_packet_ready), .test_pending(1'b0),
         .frame_start(frame_tx_start), .active_source(active_source),
         .arp_grant(arp_grant), .control_grant(control_grant),
-        .echo_grant(echo_grant), .camera_grant(camera_grant),
-        .test_grant(test_grant)
+        .echo_grant(echo_grant), .camera_grant(), .test_grant()
     );
     always_comb begin
         frame_tx_length = camera_length;
@@ -871,7 +852,7 @@ module arty_m5_camera_ethernet_top #(
     };
     m5_status_snapshot #(.WIDTH(RX_STATUS_W)) u_status_snapshot (
         .destination_clk(clk_100mhz), .destination_reset(reset),
-        .request(status_pulse), .busy(snapshot_busy),
+        .request(status_pulse), .busy(),
         .snapshot_valid(snapshot_valid), .snapshot_data(rx_status_snapshot),
         .source_clk(eth_rx_clk), .source_reset(rx_reset), .source_data(rx_status_source)
     );
@@ -940,16 +921,4 @@ module arty_m5_camera_ethernet_top #(
         camera_init_done && camera_id_valid && identity_valid && link_up,
         heartbeat[26]
     };
-
-    logic unused_debug;
-    assign unused_debug = uart_rx ^ eth_crs ^ full_duplex ^ bmsr[0] ^ physts[15] ^
-                          camera_byte_seen ^ camera_capture_flags[0] ^ observed_line_bytes[0] ^
-                          observed_frame_lines[0] ^ camera_dropped_pixels[0] ^
-                          camera_fifo_maximum[0] ^ aligned_rgb565[0] ^ gray_line_end ^
-                          pipeline_inputs[0] ^ pipeline_outputs[0] ^
-                          pipeline_frames_started[0] ^ pipeline_frames_completed[0] ^
-                          pipeline_crc[0] ^ stream_dropped_pixels[0] ^
-                          stream_fifo_maximum[0] ^ camera_grant ^ test_grant ^ snapshot_busy ^
-                          core_metrics_valid ^ active_threshold[0] ^ camera_timing_readback[0] ^
-                          camera_timing_snapshot_valid ^ camera_source_active_lines[0];
 endmodule

@@ -50,7 +50,6 @@ module m7_accelerated_pipeline #(
     logic [INPUT_W-1:0] input_data;
     logic [INPUT_W-1:0] core_input_data;
     logic input_full, input_empty, input_wr_busy, input_rd_busy;
-    logic input_fifo_overflow, input_fifo_underflow;
     logic core_in_valid;
     logic [X_W-1:0] core_in_x;
     logic [Y_W-1:0] core_in_y;
@@ -61,7 +60,7 @@ module m7_accelerated_pipeline #(
     logic [7:0] core_out_pixel;
     logic [OUTPUT_W-1:0] output_data, system_output_data;
     logic output_full, output_empty, output_wr_busy, output_rd_busy;
-    logic output_fifo_overflow, output_fifo_underflow;
+    logic output_fifo_overflow;
     logic output_overflow_core_sticky;
     (* ASYNC_REG = "TRUE" *) logic [1:0] output_overflow_system_sync;
     logic [31:0] primary_pipeline_counter [0:5];
@@ -145,11 +144,11 @@ module m7_accelerated_pipeline #(
         .rst(fifo_reset),
         .wr_clk(system_clk),
         .wr_en(in_valid && allow_live_input && !input_full && !input_wr_busy),
-        .din(input_data), .full(input_full), .overflow(input_fifo_overflow),
+        .din(input_data), .full(input_full), .overflow(),
         .wr_data_count(), .wr_rst_busy(input_wr_busy),
         .rd_clk(core_clk), .rd_en(input_fifo_read),
         .dout(core_input_data), .empty(input_empty), .data_valid(),
-        .underflow(input_fifo_underflow), .rd_rst_busy(input_rd_busy),
+        .underflow(), .rd_rst_busy(input_rd_busy),
         .almost_empty(), .almost_full(), .dbiterr(), .sbiterr(),
         .prog_empty(), .prog_full(), .rd_data_count(), .wr_ack(),
         .injectdbiterr(1'b0), .injectsbiterr(1'b0), .sleep(1'b0)
@@ -464,7 +463,7 @@ module m7_accelerated_pipeline #(
         .wr_data_count(), .wr_rst_busy(output_wr_busy),
         .rd_clk(system_clk), .rd_en(!output_empty && !output_rd_busy),
         .dout(system_output_data), .empty(output_empty), .data_valid(),
-        .underflow(output_fifo_underflow), .rd_rst_busy(output_rd_busy),
+        .underflow(), .rd_rst_busy(output_rd_busy),
         .almost_empty(), .almost_full(), .dbiterr(), .sbiterr(),
         .prog_empty(), .prog_full(), .rd_data_count(), .wr_ack(),
         .injectdbiterr(1'b0), .injectsbiterr(1'b0), .sleep(1'b0)
@@ -493,8 +492,4 @@ module m7_accelerated_pipeline #(
                 output_overflow_sticky <= 1'b1;
         end
     end
-
-    logic unused_fifo_status;
-    assign unused_fifo_status = input_fifo_overflow ^ input_fifo_underflow ^
-                                output_fifo_underflow ^ output_full;
 endmodule

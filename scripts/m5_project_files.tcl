@@ -34,8 +34,6 @@ set m5_design_sources {
     ../rtl/ethernet/ethernet_frame_rx.sv
     ../rtl/ethernet/arp_responder.sv
     ../rtl/ethernet/udp_echo.sv
-    ../rtl/integration/m5_control_receiver.sv
-    ../rtl/integration/m5_control_ack.sv
     ../rtl/integration/m5_stream_fifo.sv
     ../rtl/integration/m5_stream_packetizer.sv
     ../rtl/integration/m5_tx_scheduler.sv
@@ -45,6 +43,8 @@ set m5_design_sources {
 }
 
 set m5_sim_sources {
+    ../rtl/integration/m5_control_receiver.sv
+    ../rtl/integration/m5_control_ack.sv
     ../sim/tb/tb_m5_control_receiver.sv
     ../sim/tb/tb_m5_tx_scheduler.sv
     ../sim/tb/tb_m5_stream_packetizer.sv

@@ -13,10 +13,9 @@ module arty_bringup_top #(
     output logic uart_tx,
     output logic [3:0] led
 );
-    // Dynamically calculate how many binary bits are needed to represent a count
     localparam integer STATUS_COUNTER_WIDTH =
         (STATUS_INTERVAL_CYCLES <= 1) ? 1 : $clog2(STATUS_INTERVAL_CYCLES);
-    localparam integer INPUT_SETTLE_CYCLES = DEBOUNCE_CYCLES + 3; // +3 for synchronizer propagation delay
+    localparam integer INPUT_SETTLE_CYCLES = DEBOUNCE_CYCLES + 3;
     localparam integer INPUT_SETTLE_COUNTER_WIDTH =
         (INPUT_SETTLE_CYCLES <= 1) ? 1 : $clog2(INPUT_SETTLE_CYCLES);
     localparam integer MESSAGE_LENGTH = 14;
@@ -45,9 +44,6 @@ module arty_bringup_top #(
     logic uart_send;
     logic uart_busy;
 
-    // Keep the receive pin synchronized and available for later milestones.
-    (* ASYNC_REG = "TRUE" *) logic [1:0] uart_rx_sync;
-
     reset_sync u_reset_sync (
         .clk(clk_100mhz),
         .async_reset_in(reset_btn),
@@ -55,7 +51,7 @@ module arty_bringup_top #(
     );
 
     genvar input_index;
-    generate // Creates 3 button debounce instances, one for each button, and 4 switch debounce instances, one for each switch.
+    generate
         for (input_index = 0; input_index < 3; input_index = input_index + 1) begin : g_btn_debounce
             debounce #(
                 .STABLE_CYCLES(DEBOUNCE_CYCLES)
@@ -119,10 +115,8 @@ module arty_bringup_top #(
     always_ff @(posedge clk_100mhz) begin
         if (reset_sync) begin
             counter <= 27'd0;
-            uart_rx_sync <= 2'b11;
         end else begin
             counter <= counter + 27'd1;
-            uart_rx_sync <= {uart_rx_sync[0], uart_rx};
         end
     end
 
@@ -209,5 +203,4 @@ module arty_bringup_top #(
     assign led = reset_sync
         ? 4'b0000
         : {sw_clean[2:0], counter[HEARTBEAT_BIT]};
-
 endmodule

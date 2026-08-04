@@ -2,9 +2,9 @@
 source m5_project_files.tcl
 set m7_design_sources [concat $m5_design_sources {
     ../rtl/top/arty_m7_camera_ethernet_top.sv
-    ../rtl/conv/synthetic_pixel_source.sv
 }]
 set m7_sim_sources [concat $m5_sim_sources {
+    ../rtl/conv/synthetic_pixel_source.sv
     ../sim/tb/tb_camera_register_profiles.sv
     ../sim/tb/tb_camera_timing_monitor.sv
     ../sim/tb/tb_m7_threshold_sobel.sv

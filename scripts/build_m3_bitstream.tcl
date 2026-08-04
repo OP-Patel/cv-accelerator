@@ -3,7 +3,7 @@
 
 set camera_constraints "../constraints/arty_a7_camera.xdc"
 if {![file exists $camera_constraints]} {
-    error "Missing $camera_constraints. Copy the template, fill every verified pin/voltage TODO, and review it before building."
+    error "Missing $camera_constraints. Copy the template, replace every pin/voltage placeholder with verified values, and review it before building."
 }
 
 open_project ../vivado_project/arty_conv.xpr

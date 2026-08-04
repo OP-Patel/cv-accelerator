@@ -1,17 +1,27 @@
 # Run from scripts/: vivado -mode batch -source run_m4_simulations.tcl
+source m4_project_files.tcl
+set project_dir ../vivado_project
+set project_name arty_conv
+set project_file $project_dir/$project_name.xpr
 if {[file exists ../vivado_project/arty_conv.xpr]} {
-    open_project ../vivado_project/arty_conv.xpr
+    open_project $project_file
 } else {
-    open_project ../vivado_project_m4/arty_conv_m4.xpr
+    set project_dir ../vivado_project_m4
+    set project_name arty_conv_m4
+    set project_file $project_dir/$project_name.xpr
+    if {[file exists $project_file]} {
+        open_project $project_file
+    } else {
+        create_project $project_name $project_dir -part xc7a100tcsg324-1
+        set_property board_part digilentinc.com:arty-a7-100:part0:1.1 [current_project]
+    }
 }
-foreach test_source {
-    ../sim/models/dp83848_mii_model.sv
-    ../sim/tb/tb_mdio_master.sv
-    ../sim/tb/tb_mii_tx_rx.sv
-    ../sim/tb/tb_ethernet_frames.sv
-    ../sim/tb/tb_arp_udp.sv
-    ../sim/tb/tb_arty_m4_ethernet_top.sv
-} {
+foreach source $m4_design_sources {
+    if {[llength [get_files -quiet [file tail $source]]] == 0} {
+        add_files -norecurse $source
+    }
+}
+foreach test_source $m4_sim_sources {
     if {[llength [get_files -quiet [file tail $test_source]]] == 0} {
         add_files -fileset sim_1 -norecurse $test_source
     }

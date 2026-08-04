@@ -42,8 +42,6 @@ module arty_m2_sobel_top #(
     logic [7:0] uart_data;
     logic uart_send, uart_busy, reporter_busy;
 
-    (* ASYNC_REG = "TRUE" *) logic [1:0] uart_rx_sync;
-
     reset_sync u_reset_sync (
         .clk(clk_100mhz), .async_reset_in(reset_btn), .sync_reset_out(reset)
     );
@@ -115,7 +113,6 @@ module arty_m2_sobel_top #(
     always_ff @(posedge clk_100mhz) begin
         if (reset) begin
             heartbeat_counter <= '0;
-            uart_rx_sync       <= 2'b11;
             start_delayed      <= 1'b0;
             active_pattern     <= '0;
             finalize_pending   <= 1'b0;
@@ -123,7 +120,6 @@ module arty_m2_sobel_top #(
             error_sticky       <= 1'b0;
         end else begin
             heartbeat_counter <= heartbeat_counter + 1'b1;
-            uart_rx_sync <= {uart_rx_sync[0], uart_rx};
             start_delayed <= start_clean;
             finalize_pending <= 1'b0;
 

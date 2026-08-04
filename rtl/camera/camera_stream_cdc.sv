@@ -32,8 +32,6 @@ module camera_stream_cdc #(
     logic [DATA_W-1:0] fifo_input, fifo_output;
     logic fifo_full, fifo_empty;
     logic fifo_write, fifo_read;
-    logic fifo_data_valid;
-    logic fifo_overflow, fifo_underflow;
     logic [COUNT_W-1:0] write_count;
     logic write_reset_busy, read_reset_busy;
 
@@ -66,11 +64,11 @@ module camera_stream_cdc #(
     ) u_fifo (
         .rst(reset),
         .wr_clk(write_clk), .wr_en(fifo_write), .din(fifo_input),
-        .full(fifo_full), .overflow(fifo_overflow),
+        .full(fifo_full), .overflow(),
         .wr_data_count(write_count), .wr_rst_busy(write_reset_busy),
         .rd_clk(read_clk), .rd_en(fifo_read), .dout(fifo_output),
-        .empty(fifo_empty), .data_valid(fifo_data_valid),
-        .underflow(fifo_underflow), .rd_rst_busy(read_reset_busy),
+        .empty(fifo_empty), .data_valid(),
+        .underflow(), .rd_rst_busy(read_reset_busy),
         .almost_empty(), .almost_full(), .dbiterr(), .sbiterr(),
         .prog_empty(), .prog_full(), .rd_data_count(), .wr_ack(),
         .injectdbiterr(1'b0), .injectsbiterr(1'b0), .sleep(1'b0)
@@ -102,7 +100,4 @@ module camera_stream_cdc #(
         read_x, read_y, read_rgb565
     } = fifo_output;
 
-    // These signals are intentionally consumed by the guarded read/write logic.
-    logic unused_fifo_status;
-    assign unused_fifo_status = fifo_data_valid ^ fifo_overflow ^ fifo_underflow;
 endmodule

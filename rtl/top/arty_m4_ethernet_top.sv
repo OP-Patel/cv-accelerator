@@ -43,7 +43,7 @@ module arty_m4_ethernet_top #(
     logic [15:0] mdio_write_data, mdio_read_data;
     logic mdio_drive_low;
     logic bringup_start, phy_ready_delayed, discovery_delayed, link_delayed;
-    logic [15:0] phy_id1, phy_id2, bmsr, physts;
+    logic [15:0] phy_id1, phy_id2;
     logic identity_valid, link_up, speed_100, full_duplex, discovery_done;
     logic [3:0] phy_errors;
 
@@ -56,7 +56,7 @@ module arty_m4_ethernet_top #(
     logic [7:0] rx_read_data;
     logic rx_frame_done, rx_frame_valid, rx_ipv4_checksum_valid;
     logic [10:0] rx_frame_length;
-    logic [47:0] rx_destination_mac, rx_source_mac;
+    logic [47:0] rx_source_mac;
     logic [15:0] rx_ether_type, rx_arp_opcode, rx_udp_source_port, rx_udp_destination_port, rx_udp_length;
     logic [15:0] rx_ip_total_length;
     logic [31:0] rx_source_ip, rx_destination_ip;
@@ -141,7 +141,7 @@ module arty_m4_ethernet_top #(
         .command_register_address(mdio_register), .command_write_data(mdio_write_data),
         .command_read_data(mdio_read_data), .command_busy(mdio_busy), .command_done(mdio_done),
         .command_ack_error(mdio_ack_error), .command_timeout_error(mdio_timeout),
-        .phy_id1(phy_id1), .phy_id2(phy_id2), .bmsr(bmsr), .physts(physts),
+        .phy_id1(phy_id1), .phy_id2(phy_id2), .bmsr(), .physts(),
         .identity_valid(identity_valid), .link_up(link_up), .speed_100(speed_100),
         .full_duplex(full_duplex), .discovery_done(discovery_done), .error_flags(phy_errors)
     );
@@ -173,7 +173,7 @@ module arty_m4_ethernet_top #(
         .frame_end(rx_frame_end), .mii_rx_error(rx_error), .odd_nibble(rx_odd),
         .read_address(rx_read_address), .read_data(rx_read_data), .frame_done(rx_frame_done),
         .frame_valid(rx_frame_valid), .frame_length(rx_frame_length),
-        .destination_mac(rx_destination_mac), .source_mac(rx_source_mac), .ether_type(rx_ether_type),
+        .destination_mac(), .source_mac(rx_source_mac), .ether_type(rx_ether_type),
         .source_ip(rx_source_ip), .destination_ip(rx_destination_ip), .arp_opcode(rx_arp_opcode),
         .udp_source_port(rx_udp_source_port), .udp_destination_port(rx_udp_destination_port),
         .udp_length(rx_udp_length), .ip_protocol(rx_ip_protocol),
@@ -331,7 +331,4 @@ module arty_m4_ethernet_top #(
         end
     end
     assign led = reset ? 4'b0 : {|combined_errors, (report_tx_count!=0)||(report_rx_count!=0), identity_valid&&link_up, heartbeat[26]};
-    logic unused;
-    assign unused = uart_rx ^ bmsr[0] ^ physts[15] ^ rx_destination_mac[0] ^
-                    rx_frame_length[0] ^ eth_crs;
 endmodule
