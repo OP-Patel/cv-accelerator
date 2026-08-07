@@ -30,30 +30,14 @@ with a bit-exact output CRC.
 
 ## Demo
 
-A polished demo should be 30-35 seconds and show the physical system, live mode
-changes, and the accepted evidence—not the setup delay.
+[![Watch the Arty A7 real-time vision accelerator demo](https://img.youtube.com/vi/zik1mwUIBYg/hqdefault.jpg)](https://youtu.be/zik1mwUIBYg)
 
-| Time | Show | Action |
-|---:|---|---|
-| 0-4 s | Board, camera, and dashboard together | Move a high-contrast object in front of the lens. |
-| 4-10 s | **Setup** health panel | Show the programmed build ID, link, camera, and core checks in green. |
-| 10-21 s | **Live** view at the fast profile | Switch from grayscale to reference Sobel, then enable thresholded Sobel. |
-| 21-29 s | **Benchmark** result | Hold on `5.739x`, the matching `0x9e562313` CRC, and PASS. |
-| 29-35 s | **Evidence** integrity panel | Show 9,000 checked frames, zero integrity errors, and timing met. |
+**[Watch the complete hardware demo on YouTube](https://youtu.be/zik1mwUIBYg).**
 
-Suggested voice-over:
-
-> This Arty A7 captures an OV7670 directly, computes Sobel edges in custom RTL,
-> and sends validated frames over a network stack running entirely in the FPGA.
-> The live path reaches the camera's 30 FPS rate. A separate 32-lane physical
-> benchmark is bit-exact with OpenCV and measures 5.739 times its throughput,
-> with zero errors across 9,000 live frames.
-
-Before recording, program the verified bitstream, run the health check, select
-the fast profile, clear counters, and place a bold object against a plain
-background. Record at 1080p/30 FPS with the cursor visible, trim all waiting,
-and avoid tiny terminal text. Save the final clip as `docs/assets/demo.mp4`; a
-poster image linked to the MP4 works well at the top of a GitHub README.
+The demo follows the physical camera-to-host path, explains how the streaming
+Sobel pipeline detects edges, shows live grayscale, reference Sobel, and
+thresholded Sobel modes, and closes with the accepted performance and integrity
+evidence.
 
 ## Architecture
 
