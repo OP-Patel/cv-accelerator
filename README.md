@@ -29,9 +29,6 @@ with a bit-exact output CRC.
 | Design reference | [Technical design](docs/technical-design.md) |
 
 ## Demo
-
-[![Watch the Arty A7 real-time vision accelerator demo](https://img.youtube.com/vi/zik1mwUIBYg/hqdefault.jpg)](https://youtu.be/zik1mwUIBYg)
-
 **[Watch the complete hardware demo on YouTube](https://youtu.be/zik1mwUIBYg).**
 
 The demo follows the physical camera-to-host path, explains how the streaming
